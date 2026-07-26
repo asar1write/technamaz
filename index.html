@@ -3,13 +3,13 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Asar - HD Cartoon Hub</title>
+    <title>Tech Asar - Ultimate Cartoon Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
             --bg-color: #0f0f0f;
             --surface-color: #212121;
-            --border-color: #383838;
+            --border-color: #3f3f3f;
             --text-main: #ffffff;
             --text-secondary: #aaa;
             --yt-red: #ff0000;
@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* --- YouTube Style Header & Large Search Bar --- */
+        /* --- Perfect YouTube Style Header & Large Search Bar --- */
         header {
             display: flex;
             justify-content: space-between;
@@ -63,16 +63,17 @@
             border-radius: 4px;
         }
 
-        /* YouTube Style Prominent Search Bar */
+        /* Large, Fully Visible YouTube Style Search Bar */
         .search-container {
             display: flex;
             flex: 1;
             max-width: 650px;
+            height: 44px;
             background: #121212;
             border: 1px solid #303030;
             border-radius: 40px;
             overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.5);
+            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
         }
 
         .search-container:focus-within {
@@ -81,29 +82,36 @@
 
         .search-input {
             width: 100%;
-            padding: 12px 24px;
+            height: 100%;
+            padding: 0 24px;
             background: transparent;
             border: none;
-            color: #ffffff !important; /* Text is now clearly visible */
+            color: #ffffff !important;
             font-size: 16px;
             outline: none;
         }
 
         .search-input::placeholder {
-            color: #888888;
+            color: #aaaaaa;
+            opacity: 1;
         }
 
         .search-btn {
+            width: 65px;
+            height: 100%;
             background: #222222;
             border: none;
             border-left: 1px solid #303030;
-            padding: 0 28px;
             cursor: pointer;
-            fill: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
             transition: background 0.2s;
+            flex-shrink: 0;
+        }
+
+        .search-btn svg {
+            fill: #ffffff;
         }
 
         .search-btn:hover {
@@ -131,7 +139,7 @@
             padding: 24px;
         }
 
-        /* --- Redesigned Top Video Player --- */
+        /* --- Top Active Video Player --- */
         .active-player-section {
             display: none;
             background: var(--surface-color);
@@ -329,7 +337,9 @@
         /* Mobile Responsiveness */
         @media (max-width: 768px) {
             header { padding: 10px 15px; gap: 10px; }
-            .search-input { padding: 10px 14px; font-size: 14px; }
+            .search-container { height: 38px; max-width: none; }
+            .search-input { padding: 0 15px; font-size: 14px; }
+            .search-btn { width: 50px; }
             .main-container { padding: 15px; }
         }
     </style>
@@ -343,9 +353,9 @@
             <div class="logo-text">Tech<span>Asar</span></div>
         </div>
 
-        <!-- Fully Visible Large Search Bar -->
+        <!-- Large Working Search Bar -->
         <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="डोरीमोन, मोटू-पतलू या कार्टून सर्च करें..." onkeypress="handleSearchKey(event)">
+            <input type="text" id="search-input" class="search-input" placeholder="डोरीमोन हिंदी, मोटू-पतलू या कार्टून सर्च करें..." onkeypress="handleSearchKey(event)">
             <button class="search-btn" onclick="triggerSearch()">
                 <svg viewBox="0 0 24 24" width="20" height="20">
                     <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -359,7 +369,7 @@
     <!-- Main Container -->
     <div class="main-container">
         
-        <!-- Redesigned Top Active Player Section -->
+        <!-- Top Video Player Section -->
         <div class="active-player-section" id="active-player-section">
             <div class="player-top-bar">
                 <div class="playing-title-top" id="playing-title-top">वीडियो शीर्षक</div>
@@ -380,7 +390,7 @@
 
         <!-- Video Cards Grid -->
         <div class="video-grid" id="video-grid">
-            <div class="status-message">वीडियो लोड हो रहे हैं...</div>
+            <div class="status-message">डोरीमोन और कार्टून वीडियो लोड हो रहे हैं...</div>
         </div>
     </div>
 
@@ -395,23 +405,24 @@
         const playingTitleTop = document.getElementById('playing-title-top');
         const searchInput = document.getElementById('search-input');
 
-        // On Page Load - Fetch Doraemon in Hindi & Mixed cartoons
+        // On Page Load - Fetch mixed cartoons with Doraemon in Hindi forced
         window.onload = () => {
             fetchHomeFeed();
         };
 
         async function fetchHomeFeed() {
             searchInput.value = "";
-            let mixedQuery = "\"Doraemon in Hindi\" OR \"Motu Patlu in Hindi\" OR \"Not Your Type\" OR \"Chhota Bheem\"";
+            // Specifically prioritizing Doraemon in Hindi mixed with other top cartoons
+            let mixedQuery = "Doraemon in Hindi OR Motu Patlu in Hindi OR Not Your Type OR Chhota Bheem";
             fetchVideos(mixedQuery);
         }
 
         async function fetchVideos(query) {
-            videoGrid.innerHTML = '<div class="status-message">वीडियो खोजे जा रहे हैं...</div>';
+            videoGrid.innerHTML = '<div class="status-message">वीडियो फेच हो रही हैं...</div>';
             
-            // Blocking shorts, songs, music
+            // Filtering out shorts, music, songs
             const finalQuery = query + " -song -songs -music -dj -shorts";
-            const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=28&q=${encodeURIComponent(finalQuery)}&type=video&videoDuration=long&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
+            const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=30&q=${encodeURIComponent(finalQuery)}&type=video&videoDuration=long&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
 
             try {
                 const response = await fetch(API_URL);
@@ -426,7 +437,7 @@
         function renderVideos(videos) {
             videoGrid.innerHTML = '';
             if (!videos || videos.length === 0) {
-                videoGrid.innerHTML = '<div class="status-message">कोई वीडियो नहीं मिला। दूसरा नाम सर्च करें।</div>';
+                videoGrid.innerHTML = '<div class="status-message">कोई वीडियो नहीं मिला। कृपया दूसरा नाम सर्च करें।</div>';
                 return;
             }
 
@@ -493,7 +504,7 @@
         function triggerSearch() {
             let query = searchInput.value.trim();
             if (query) {
-                // Automatically add Hindi context to search for better cartoons
+                // Fetching user typed query with Hindi context
                 fetchVideos(query + " Hindi");
             }
         }
