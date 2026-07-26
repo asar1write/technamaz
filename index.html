@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Asar - Modern Hub</title>
+    <title>Tech Asar - HD Video Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,65 +28,55 @@
             overflow-x: hidden;
         }
 
-        /* --- Ultra Smooth Modern Header --- */
+        /* --- Header & Visible Search Bar --- */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 12px 28px;
-            background-color: rgba(15, 15, 15, 0.95);
-            backdrop-filter: blur(10px);
+            padding: 12px 24px;
+            background-color: #121212;
             position: sticky;
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid var(--border-color);
+            gap: 15px;
         }
 
         .logo-area {
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 8px;
             cursor: pointer;
+            flex-shrink: 0;
         }
 
         .logo-text {
-            font-size: 24px;
+            font-size: 22px;
             font-weight: 700;
             letter-spacing: -0.5px;
         }
 
         .logo-text span {
             color: var(--yt-red);
-            background: rgba(255, 0, 0, 0.12);
-            padding: 2px 8px;
-            border-radius: 6px;
+            background: rgba(255, 0, 0, 0.15);
+            padding: 2px 6px;
+            border-radius: 4px;
         }
 
-        /* Sleek Search Bar */
+        /* Fully Visible Search Bar */
         .search-container {
             display: flex;
-            flex: 0.55;
+            flex: 1;
             max-width: 600px;
-        }
-
-        .search-box {
-            display: flex;
-            width: 100%;
-            background: #121212;
-            border: 1px solid var(--border-color);
-            border-radius: 50px;
+            background: #222222;
+            border: 1px solid #444444;
+            border-radius: 40px;
             overflow: hidden;
-            transition: border-color 0.3s, box-shadow 0.3s;
-        }
-
-        .search-box:focus-within {
-            border-color: #3a86ff;
-            box-shadow: 0 0 10px rgba(58, 134, 255, 0.2);
         }
 
         .search-input {
             width: 100%;
-            padding: 12px 22px;
+            padding: 10px 20px;
             background: transparent;
             border: none;
             color: white;
@@ -95,43 +85,35 @@
         }
 
         .search-btn {
-            background: #1c1c1c;
+            background: #333333;
             border: none;
-            border-left: 1px solid var(--border-color);
-            padding: 0 24px;
+            padding: 0 22px;
             cursor: pointer;
-            fill: var(--text-secondary);
+            fill: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, fill 0.2s;
+            transition: background 0.2s;
         }
 
         .search-btn:hover {
-            background: #2a2a2a;
-            fill: #fff;
-        }
-
-        .header-right {
-            display: flex;
-            align-items: center;
-            gap: 15px;
+            background: var(--yt-red);
         }
 
         .user-profile {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            background: linear-gradient(135deg, #ff0000, #ff7b00);
+            background: #ff0000;
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(255,0,0,0.3);
+            flex-shrink: 0;
         }
 
-        /* --- Main Container --- */
+        /* --- Main Layout --- */
         .main-container {
             max-width: 1650px;
             margin: 0 auto;
@@ -145,21 +127,15 @@
             border-radius: 16px;
             overflow: hidden;
             margin-bottom: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.85);
+            box-shadow: 0 15px 40px rgba(0,0,0,0.8);
             border: 1px solid var(--border-color);
-            animation: fadeInPlayer 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-
-        @keyframes fadeInPlayer {
-            from { opacity: 0; transform: translateY(-15px); }
-            to { opacity: 1; transform: translateY(0); }
         }
 
         .player-top-bar {
             display: flex;
             justify-content: space-between;
             align-items: center;
-            padding: 14px 22px;
+            padding: 12px 20px;
             background: #141414;
             border-bottom: 1px solid var(--border-color);
         }
@@ -175,29 +151,27 @@
         }
 
         .close-player-btn {
-            background: #2a2a2a;
+            background: #333;
             color: white;
             border: none;
-            width: 34px;
-            height: 34px;
+            width: 32px;
+            height: 32px;
             border-radius: 50%;
             font-size: 18px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s, transform 0.2s;
         }
 
         .close-player-btn:hover {
             background: var(--yt-red);
-            transform: scale(1.05);
         }
 
         .video-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%; /* 16:9 */
             background: #000;
         }
 
@@ -213,7 +187,7 @@
         .player-footer-bar {
             display: flex;
             justify-content: flex-end;
-            padding: 12px 22px;
+            padding: 12px 20px;
             background: #141414;
             border-top: 1px solid var(--border-color);
         }
@@ -222,7 +196,7 @@
             background: var(--yt-red);
             color: white;
             border: none;
-            padding: 9px 20px;
+            padding: 8px 18px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
@@ -230,20 +204,17 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s, transform 0.2s;
+            transition: background 0.2s;
         }
 
-        .landscape-btn:hover {
-            background: #cc0000;
-            transform: scale(1.02);
-        }
+        .landscape-btn:hover { background: #cc0000; }
 
         /* --- Video Cards Grid --- */
         .video-grid {
             display: grid;
             grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-            gap: 24px;
-            row-gap: 40px;
+            gap: 20px;
+            row-gap: 35px;
         }
 
         .video-card {
@@ -251,38 +222,32 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: transform 0.3s ease;
-            animation: cardAppear 0.4s ease;
-        }
-
-        @keyframes cardAppear {
-            from { opacity: 0; transform: scale(0.97); }
-            to { opacity: 1; transform: scale(1); }
+            transition: transform 0.25s ease;
         }
 
         .video-card:hover {
-            transform: translateY(-6px);
+            transform: translateY(-4px);
         }
 
         .thumbnail-container {
             width: 100%;
             aspect-ratio: 16/9;
-            border-radius: 14px;
+            border-radius: 12px;
             overflow: hidden;
             position: relative;
             background: #1a1a1a;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
         .thumbnail {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.4s ease;
+            transition: transform 0.3s ease;
         }
 
         .video-card:hover .thumbnail {
-            transform: scale(1.06);
+            transform: scale(1.05);
         }
 
         .hd-badge {
@@ -303,17 +268,16 @@
         }
 
         .channel-avatar {
-            width: 40px;
-            height: 40px;
+            width: 38px;
+            height: 38px;
             border-radius: 50%;
             flex-shrink: 0;
-            box-shadow: 0 2px 6px rgba(0,0,0,0.3);
         }
 
         .meta-text {
             display: flex;
             flex-direction: column;
-            gap: 5px;
+            gap: 4px;
         }
 
         .card-title {
@@ -340,11 +304,10 @@
             font-size: 18px;
         }
 
-        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            header { padding: 10px 15px; }
-            .search-container { flex: 1; max-width: none; }
-            .search-input { padding: 10px 15px; font-size: 14px; }
+            header { padding: 10px 12px; }
+            .logo-text { font-size: 18px; }
+            .search-container { max-width: none; }
             .main-container { padding: 15px; }
         }
     </style>
@@ -358,20 +321,17 @@
             <div class="logo-text">Tech<span>Asar</span></div>
         </div>
 
+        <!-- Fully Visible Working Search Bar -->
         <div class="search-container">
-            <div class="search-box">
-                <input type="text" id="search-input" class="search-input" placeholder="सर्च करें..." onkeypress="handleSearchKey(event)">
-                <button class="search-btn" onclick="triggerSearch()">
-                    <svg viewBox="0 0 24 24" width="20" height="20">
-                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
-                    </svg>
-                </button>
-            </div>
+            <input type="text" id="search-input" class="search-input" placeholder="डोरीमोन, मोटू-पतलू या कुछ भी सर्च करें..." onkeypress="handleSearchKey(event)">
+            <button class="search-btn" onclick="triggerSearch()">
+                <svg viewBox="0 0 24 24" width="18" height="18">
+                    <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                </svg>
+            </button>
         </div>
 
-        <div class="header-right">
-            <div class="user-profile">TA</div>
-        </div>
+        <div class="user-profile">TA</div>
     </header>
 
     <!-- Main Container -->
@@ -391,7 +351,7 @@
                     <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
                         <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
                     </svg>
-                    रोटेट (लैंडस्केप)
+                    फुलस्क्रीन / रोटेट
                 </button>
             </div>
         </div>
@@ -413,22 +373,20 @@
         const playingTitleTop = document.getElementById('playing-title-top');
         const searchInput = document.getElementById('search-input');
 
-        // On Page Load - Fetch mixed cartoons & Not Your Type videos automatically
+        // On Page Load - Fetch Doraemon, Motu Patlu & Not Your Type videos
         window.onload = () => {
             fetchHomeFeed();
         };
 
         async function fetchHomeFeed() {
             searchInput.value = "";
-            // Mixed query including "Not Your Type" channel and popular cartoons
-            let mixedQuery = "\"Not Your Type\" OR \"Motu Patlu\" OR \"Chhota Bheem\" OR \"Doraemon\" OR \"Ssoftoons\"";
+            let mixedQuery = "\"Doraemon\" OR \"Motu Patlu\" OR \"Not Your Type\" OR \"Chhota Bheem\" OR \"Ssoftoons\"";
             fetchVideos(mixedQuery);
         }
 
         async function fetchVideos(query) {
-            videoGrid.innerHTML = '<div class="status-message">वीडियो लोड हो रहे हैं...</div>';
+            videoGrid.innerHTML = '<div class="status-message">वीडियो खोजे जा रहे हैं...</div>';
             
-            // Blocking shorts, songs, and adult content
             const finalQuery = query + " -song -songs -music -dj -shorts";
             const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=28&q=${encodeURIComponent(finalQuery)}&type=video&videoDuration=long&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
 
@@ -445,7 +403,7 @@
         function renderVideos(videos) {
             videoGrid.innerHTML = '';
             if (!videos || videos.length === 0) {
-                videoGrid.innerHTML = '<div class="status-message">कोई वीडियो नहीं मिला। कुछ और खोजें।</div>';
+                videoGrid.innerHTML = '<div class="status-message">कोई वीडियो नहीं मिला। दूसरा नाम सर्च करें।</div>';
                 return;
             }
 
@@ -527,5 +485,4 @@
         }
     </script>
 </body>
-    </html>
-    
+</html>
