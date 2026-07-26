@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Asar - YouTube Kids Hub</title>
+    <title>Tech Asar - Ultimate Cartoon Hub</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -28,7 +28,11 @@
             overflow-x: hidden;
         }
 
-        /* --- Header & Full Responsive Search Bar --- */
+        body.modal-open {
+            overflow: hidden; /* Prevent background scrolling when player is open */
+        }
+
+        /* --- Header & Search Bar --- */
         header {
             display: flex;
             justify-content: space-between;
@@ -61,7 +65,6 @@
             border-radius: 4px;
         }
 
-        /* Search Container */
         .search-container {
             display: flex;
             flex: 0.55;
@@ -122,27 +125,91 @@
             font-weight: bold;
         }
 
-        /* --- Main App Layout --- */
+        /* --- Main Layout --- */
         .main-container {
             max-width: 1700px;
             margin: 0 auto;
             padding: 24px;
         }
 
-        /* --- Premium Video Player Section --- */
-        .player-section {
-            display: none;
-            margin-bottom: 40px;
-            background: var(--surface-color);
-            padding: 20px;
-            border-radius: 16px;
-            box-shadow: 0 15px 35px rgba(0,0,0,0.7);
-            animation: fadeIn 0.4s ease;
+        .section-header {
+            font-size: 22px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
         }
 
-        @keyframes fadeIn {
-            from { opacity: 0; transform: translateY(-10px); }
-            to { opacity: 1; transform: translateY(0); }
+        /* --- YouTube Modal Player (Popup Window) --- */
+        .video-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.92);
+            z-index: 3000;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            animation: fadeInModal 0.3s ease;
+        }
+
+        @keyframes fadeInModal {
+            from { opacity: 0; transform: scale(0.95); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-content-box {
+            width: 100%;
+            max-width: 1100px;
+            background: #181818;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            display: flex;
+            flex-direction: column;
+            position: relative;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 20px;
+            background: #212121;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .modal-title {
+            font-size: 16px;
+            font-weight: 600;
+            color: #fff;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            max-width: 85%;
+        }
+
+        .close-modal-btn {
+            background: #333;
+            color: white;
+            border: none;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            font-size: 20px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: background 0.2s;
+        }
+
+        .close-modal-btn:hover {
+            background: var(--yt-red);
         }
 
         .video-wrapper {
@@ -150,8 +217,6 @@
             width: 100%;
             padding-top: 56.25%; /* 16:9 Aspect Ratio */
             background: #000;
-            border-radius: 10px;
-            overflow: hidden;
         }
 
         .video-wrapper iframe {
@@ -163,27 +228,18 @@
             border: none;
         }
 
-        .player-footer {
+        .modal-footer {
             display: flex;
-            justify-content: space-between;
-            align-items: center;
-            margin-top: 15px;
-            flex-wrap: wrap;
-            gap: 15px;
-        }
-
-        .playing-title {
-            font-size: 18px;
-            font-weight: 600;
-            line-height: 1.4;
-            max-width: 800px;
+            justify-content: flex-end;
+            padding: 12px 20px;
+            background: #212121;
         }
 
         .landscape-btn {
             background: var(--yt-red);
             color: white;
             border: none;
-            padding: 10px 20px;
+            padding: 8px 16px;
             border-radius: 20px;
             cursor: pointer;
             font-weight: 600;
@@ -195,16 +251,6 @@
         }
 
         .landscape-btn:hover { background: #cc0000; }
-
-        /* --- Home Section Title --- */
-        .section-header {
-            font-size: 22px;
-            font-weight: 700;
-            margin-bottom: 20px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-        }
 
         /* --- Video Cards Grid (YouTube Style) --- */
         .video-grid {
@@ -219,11 +265,17 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: transform 0.2s ease;
+            transition: transform 0.25s ease, opacity 0.3s ease;
+            animation: cardAppear 0.5s ease;
+        }
+
+        @keyframes cardAppear {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .video-card:hover {
-            transform: translateY(-4px);
+            transform: translateY(-5px);
         }
 
         .thumbnail-container {
@@ -233,7 +285,7 @@
             overflow: hidden;
             position: relative;
             background: #1a1a1a;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.4);
         }
 
         .thumbnail {
@@ -244,7 +296,7 @@
         }
 
         .video-card:hover .thumbnail {
-            transform: scale(1.04);
+            transform: scale(1.05);
         }
 
         .hd-badge {
@@ -257,7 +309,6 @@
             padding: 3px 6px;
             border-radius: 4px;
             font-weight: 700;
-            letter-spacing: 0.5px;
         }
 
         .card-details {
@@ -309,6 +360,8 @@
             .search-container { flex: 1; }
             .search-input { padding: 8px 12px; font-size: 14px; }
             .main-container { padding: 15px; }
+            .video-modal { padding: 0; align-items: flex-end; }
+            .modal-content-box { border-radius: 16px 16px 0 0; max-height: 90vh; }
         }
     </style>
 </head>
@@ -317,14 +370,13 @@
     <!-- Header -->
     <header>
         <div class="logo-area" onclick="fetchHomeFeed()">
-            <svg height="22" viewBox="0 0 90 20" width="90"><path d="M27.9727 3.12324C27.6435 1.89335 26.6765 0.92633 25.4466 0.597168C23.2197 0 14.2857 0 14.2857 0C14.2857 0 5.35174 0 3.12482 0.597168C1.89493 0.92633 0.927914 1.89335 0.598752 3.12324C0 5.35016 0 10 0 10C0 10 0 14.6498 0.598752 16.8768C0.927914 18.1067 1.89493 19.0737 3.12482 19.4028C5.35174 20 14.2857 20 14.2857 20C14.2857 20 23.2197 20 25.4466 19.4028C26.6765 19.0737 27.6435 18.1067 27.9727 16.8768C28.5714 14.6498 28.5714 10 28.5714 10C28.5714 10 28.5714 5.35016 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4286 14.2857L18.8571 10L11.4286 5.71429V14.2857Z" fill="#FFFFFF"/></svg>
+            <svg height="22" viewBox="0 0 90 20" width="90"><path d="M27.9727 3.12324C27.6435 1.89335 26.6765 0.92633 25.4466 0.597168C23.2197 0 14.2857 0 14.2857 0C14.2857 0 5.35174 0 3.12482 0.597168C1.89493 0.92633 0.927914 1.89335 0.598752 3.12324C0 5.35016 0 10 0 10C0 10 0 14.6498 0.598752 16.8768C0.927914 18.1067 1.89493 19.0737 3.12482 19.4028C5.35174 20 14.2857 20 14.2857 20C14.2857 20 23.2197 20 25.4466 19.4028C26.765 19.0737 27.6435 18.1067 27.9727 16.8768C28.5714 14.6498 28.5714 10 28.5714 10C28.5714 10 28.5714 5.35016 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4286 14.2857L18.8571 10L11.4286 5.71429V14.2857Z" fill="#FFFFFF"/></svg>
             <div class="logo-text">Tech<span>Asar</span></div>
         </div>
 
-        <!-- Full Responsive Search Bar -->
         <div class="search-container">
             <div class="search-box">
-                <input type="text" id="search-input" class="search-input" placeholder="कार्टून सर्च करें (Motu Patlu, Bheem, Doraemon...)" onkeypress="handleSearchKey(event)">
+                <input type="text" id="search-input" class="search-input" placeholder="कार्टून सर्च करें (Motu Patlu, Bheem, Ssoftoons...)" onkeypress="handleSearchKey(event)">
                 <button class="search-btn" onclick="triggerSearch()">
                     <svg viewBox="0 0 24 24" width="20" height="20">
                         <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -338,23 +390,6 @@
 
     <!-- Main Container -->
     <div class="main-container">
-        
-        <!-- Video Player -->
-        <div class="player-section" id="player-section">
-            <div class="video-wrapper" id="video-wrapper">
-                <iframe id="video-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
-            </div>
-            <div class="player-footer">
-                <div class="playing-title" id="playing-title">वीडियो चल रहा है...</div>
-                <button class="landscape-btn" onclick="rotateToLandscape()">
-                    <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
-                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
-                    </svg>
-                    रोटेट (लैंडस्केप)
-                </button>
-            </div>
-        </div>
-
         <div class="section-header" id="section-title">🔥 ट्रेंडिंग मिक्स्ड कार्टून फीड</div>
 
         <!-- Video Cards Grid -->
@@ -363,15 +398,37 @@
         </div>
     </div>
 
+    <!-- YouTube Style Modal Player Window -->
+    <div class="video-modal" id="video-modal">
+        <div class="modal-content-box" id="modal-content-box">
+            <div class="modal-header">
+                <div class="modal-title" id="modal-title">वीडियो शीर्षक</div>
+                <button class="close-modal-btn" onclick="closeVideoModal()">&times;</button>
+            </div>
+            <div class="video-wrapper" id="video-wrapper">
+                <iframe id="video-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+            </div>
+            <div class="modal-footer">
+                <button class="landscape-btn" onclick="rotateToLandscape()">
+                    <svg viewBox="0 0 24 24" width="18" height="18" fill="white">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                    </svg>
+                    रोटेट (लैंडस्केप)
+                </button>
+            </div>
+        </div>
+    </div>
+
     <!-- JavaScript Engine -->
     <script>
         const API_KEY = 'AIzaSyBMyxZnLCVKqQQ-8Ph1inSaVXb3DIUpKF0';
         
         const videoGrid = document.getElementById('video-grid');
-        const playerSection = document.getElementById('player-section');
+        const videoModal = document.getElementById('video-modal');
+        const modalContentBox = document.getElementById('modal-content-box');
         const videoFrame = document.getElementById('video-frame');
         const videoWrapper = document.getElementById('video-wrapper');
-        const playingTitle = document.getElementById('playing-title');
+        const modalTitle = document.getElementById('modal-title');
         const searchInput = document.getElementById('search-input');
         const sectionTitle = document.getElementById('section-title');
 
@@ -383,12 +440,12 @@
         async function fetchHomeFeed() {
             sectionTitle.innerText = "🔥 ट्रेंडिंग मिक्स्ड कार्टून फीड";
             searchInput.value = "";
-            // Mixed query to pull Motu Patlu, Bheem, Doraemon, Ssoftoons together
-            let mixedQuery = "Motu Patlu OR Chhota Bheem OR Doraemon OR Ssoftoons cartoon hindi";
-            fetchVideos(mixedQuery, false);
+            // Mixed query to pull Motu Patlu, Chhota Bheem, Doraemon, Ssoftoons together
+            let mixedQuery = "Motu Patlu OR Chhota Bheem OR Doraemon OR Ssoftoons OR Shinchan cartoon hindi";
+            fetchVideos(mixedQuery);
         }
 
-        async function fetchVideos(query, isSearch = true) {
+        async function fetchVideos(query) {
             videoGrid.innerHTML = '<div class="status-message">वीडियो लोड हो रहे हैं...</div>';
             
             // Blocking shorts (videoDuration=long), songs, and adult content
@@ -421,12 +478,11 @@
                 const channelTitle = snippet.channelTitle;
                 const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
 
-                // High Definition Thumbnail URLs with fallback
                 const hdThumb = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const fallbackThumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
                 const cardHTML = `
-                    <div class="video-card" onclick="playVideo('${videoId}', '${escapeHtml(title)}')">
+                    <div class="video-card" onclick="openVideoModal('${videoId}', '${escapeHtml(title)}')">
                         <div class="thumbnail-container">
                             <img src="${hdThumb}" onerror="this.onerror=null; this.src='${fallbackThumb}'" class="thumbnail" alt="Thumbnail" loading="lazy">
                             <span class="hd-badge">HD</span>
@@ -444,15 +500,30 @@
             });
         }
 
-        function playVideo(videoId, title) {
+        // Open YouTube Style Modal Player Window
+        function openVideoModal(videoId, title) {
             const currentOrigin = window.location.origin.includes("file://") ? "https://www.youtube.com" : window.location.origin;
 
             // 1080p Force & Error 153 Prevention
             videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd1080&rel=0&modestbranding=1&enablejsapi=1&origin=${currentOrigin}`;
             
-            playingTitle.innerText = title;
-            playerSection.style.display = 'block';
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            modalTitle.innerText = title;
+            videoModal.style.display = 'flex';
+            document.body.classList.add('modal-open');
+        }
+
+        // Close Modal & Stop Video Completely (Returns back cleanly to Home Grid)
+        function closeVideoModal() {
+            videoFrame.src = ''; // Stops the video / audio playback instantly
+            videoModal.style.display = 'none';
+            document.body.classList.remove('modal-open');
+        }
+
+        // Close modal if clicked on background dark overlay outside the box
+        window.onclick = function(event) {
+            if (event.target === videoModal) {
+                closeVideoModal();
+            }
         }
 
         async function rotateToLandscape() {
@@ -472,7 +543,7 @@
             let query = searchInput.value.trim();
             if (query) {
                 sectionTitle.innerText = `🔍 "${query}" के सर्च परिणाम`;
-                fetchVideos(query, true);
+                fetchVideos(query);
             }
         }
 
@@ -487,5 +558,5 @@
         }
     </script>
 </body>
-</html>
+    </html>
     
