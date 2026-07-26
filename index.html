@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Asar - Ultimate Cartoon Hub</title>
+    <title>Tech Asar - Premium YouTube UI</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -11,7 +11,7 @@
             --surface-color: #212121;
             --border-color: #3f3f3f;
             --text-main: #ffffff;
-            --text-secondary: #aaa;
+            --text-secondary: #aaaaaa;
             --yt-red: #ff0000;
         }
 
@@ -28,7 +28,7 @@
             overflow-x: hidden;
         }
 
-        /* --- Perfect YouTube Style Header & Large Search Bar --- */
+        /* --- Header (Home Page) --- */
         header {
             display: flex;
             justify-content: space-between;
@@ -39,7 +39,6 @@
             top: 0;
             z-index: 1000;
             border-bottom: 1px solid var(--border-color);
-            gap: 20px;
         }
 
         .logo-area {
@@ -47,7 +46,6 @@
             align-items: center;
             gap: 8px;
             cursor: pointer;
-            flex-shrink: 0;
         }
 
         .logo-text {
@@ -63,64 +61,33 @@
             border-radius: 4px;
         }
 
-        /* Large, Fully Visible YouTube Style Search Bar */
-        .search-container {
+        .header-actions {
             display: flex;
-            flex: 1;
-            max-width: 650px;
-            height: 44px;
-            background: #121212;
-            border: 1px solid #303030;
-            border-radius: 40px;
-            overflow: hidden;
-            box-shadow: inset 0 2px 5px rgba(0,0,0,0.6);
+            align-items: center;
+            gap: 18px;
         }
 
-        .search-container:focus-within {
-            border-color: #1c62b9;
-        }
-
-        .search-input {
-            width: 100%;
-            height: 100%;
-            padding: 0 24px;
+        .icon-btn {
             background: transparent;
             border: none;
-            color: #ffffff !important;
-            font-size: 16px;
-            outline: none;
-        }
-
-        .search-input::placeholder {
-            color: #aaaaaa;
-            opacity: 1;
-        }
-
-        .search-btn {
-            width: 65px;
-            height: 100%;
-            background: #222222;
-            border: none;
-            border-left: 1px solid #303030;
             cursor: pointer;
+            fill: #ffffff;
             display: flex;
             align-items: center;
             justify-content: center;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
             transition: background 0.2s;
-            flex-shrink: 0;
         }
 
-        .search-btn svg {
-            fill: #ffffff;
-        }
-
-        .search-btn:hover {
-            background: #333333;
+        .icon-btn:hover {
+            background: rgba(255, 255, 255, 0.1);
         }
 
         .user-profile {
-            width: 38px;
-            height: 38px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
             background: #ff0000;
             color: white;
@@ -128,8 +95,98 @@
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            flex-shrink: 0;
             box-shadow: 0 2px 8px rgba(255,0,0,0.3);
+        }
+
+        /* --- YouTube App Style Full Screen Search Overlay --- */
+        .search-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: #0f0f0f;
+            z-index: 2000;
+            display: flex;
+            flex-direction: column;
+            transform: translateX(100%);
+            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .search-overlay.active {
+            transform: translateX(0);
+        }
+
+        .search-overlay-header {
+            display: flex;
+            align-items: center;
+            padding: 10px 16px;
+            gap: 12px;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .search-input-wrapper {
+            flex: 1;
+            background: #222222;
+            border-radius: 40px;
+            display: flex;
+            align-items: center;
+            padding: 0 16px;
+            height: 40px;
+        }
+
+        .search-input-wrapper input {
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: #ffffff;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-input-wrapper input::placeholder {
+            color: #aaaaaa;
+        }
+
+        .mic-btn {
+            background: #222222;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+        }
+
+        /* Search History List */
+        .search-history-list {
+            flex: 1;
+            overflow-y: auto;
+            padding-top: 8px;
+        }
+
+        .history-item {
+            display: flex;
+            align-items: center;
+            padding: 12px 20px;
+            gap: 20px;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+
+        .history-item:hover {
+            background: rgba(255, 255, 255, 0.05);
+        }
+
+        .history-icon, .fill-arrow-icon {
+            fill: #aaaaaa;
+            flex-shrink: 0;
+        }
+
+        .history-text {
+            flex: 1;
+            font-size: 16px;
+            color: #f1f1f1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         /* --- Main Layout --- */
@@ -139,7 +196,7 @@
             padding: 24px;
         }
 
-        /* --- Top Active Video Player --- */
+        /* --- Top Video Player Section --- */
         .active-player-section {
             display: none;
             background: var(--surface-color);
@@ -187,17 +244,14 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            transition: background 0.2s;
         }
 
-        .close-player-btn:hover {
-            background: var(--yt-red);
-        }
+        .close-player-btn:hover { background: var(--yt-red); }
 
         .video-wrapper {
             position: relative;
             width: 100%;
-            padding-top: 56.25%; /* 16:9 Aspect Ratio */
+            padding-top: 56.25%;
             background: #000;
         }
 
@@ -215,7 +269,6 @@
             justify-content: flex-end;
             padding: 12px 20px;
             background: #181818;
-            border-top: 1px solid var(--border-color);
         }
 
         .landscape-btn {
@@ -230,12 +283,6 @@
             display: flex;
             align-items: center;
             gap: 8px;
-            transition: background 0.2s, transform 0.2s;
-        }
-
-        .landscape-btn:hover {
-            background: #cc0000;
-            transform: scale(1.02);
         }
 
         /* --- Video Cards Grid --- */
@@ -253,10 +300,7 @@
             gap: 12px;
             transition: transform 0.25s ease;
         }
-
-        .video-card:hover {
-            transform: translateY(-5px);
-        }
+        .video-card:hover { transform: translateY(-5px); }
 
         .thumbnail-container {
             width: 100%;
@@ -265,7 +309,6 @@
             overflow: hidden;
             position: relative;
             background: #1a1a1a;
-            box-shadow: 0 6px 20px rgba(0,0,0,0.4);
         }
 
         .thumbnail {
@@ -274,22 +317,7 @@
             object-fit: cover;
             transition: transform 0.3s ease;
         }
-
-        .video-card:hover .thumbnail {
-            transform: scale(1.05);
-        }
-
-        .hd-badge {
-            position: absolute;
-            bottom: 8px;
-            right: 8px;
-            background: rgba(0, 0, 0, 0.85);
-            color: #fff;
-            font-size: 11px;
-            padding: 3px 6px;
-            border-radius: 4px;
-            font-weight: 700;
-        }
+        .video-card:hover .thumbnail { transform: scale(1.05); }
 
         .card-details {
             display: flex;
@@ -301,7 +329,6 @@
             height: 40px;
             border-radius: 50%;
             flex-shrink: 0;
-            box-shadow: 0 2px 5px rgba(0,0,0,0.3);
         }
 
         .meta-text {
@@ -334,37 +361,53 @@
             font-size: 18px;
         }
 
-        /* Mobile Responsiveness */
         @media (max-width: 768px) {
-            header { padding: 10px 15px; gap: 10px; }
-            .search-container { height: 38px; max-width: none; }
-            .search-input { padding: 0 15px; font-size: 14px; }
-            .search-btn { width: 50px; }
-            .main-container { padding: 15px; }
+            header { padding: 12px 16px; }
+            .main-container { padding: 16px; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header -->
+    <!-- Header Home -->
     <header>
         <div class="logo-area" onclick="fetchHomeFeed()">
             <svg height="22" viewBox="0 0 90 20" width="90"><path d="M27.9727 3.12324C27.6435 1.89335 26.6765 0.92633 25.4466 0.597168C23.2197 0 14.2857 0 14.2857 0C14.2857 0 5.35174 0 3.12482 0.597168C1.89493 0.92633 0.927914 1.89335 0.598752 3.12324C0 5.35016 0 10 0 10C0 10 0 14.6498 0.598752 16.8768C0.927914 18.1067 1.89493 19.0737 3.12482 19.4028C5.35174 20 14.2857 20 14.2857 20C14.2857 20 23.2197 20 25.4466 19.4028C26.765 19.0737 27.6435 18.1067 27.9727 16.8768C28.5714 14.6498 28.5714 10 28.5714 10C28.5714 10 28.5714 5.35016 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4286 14.2857L18.8571 10L11.4286 5.71429V14.2857Z" fill="#FFFFFF"/></svg>
             <div class="logo-text">Tech<span>Asar</span></div>
         </div>
 
-        <!-- Large Working Search Bar -->
-        <div class="search-container">
-            <input type="text" id="search-input" class="search-input" placeholder="डोरीमोन हिंदी, मोटू-पतलू या कार्टून सर्च करें..." onkeypress="handleSearchKey(event)">
-            <button class="search-btn" onclick="triggerSearch()">
-                <svg viewBox="0 0 24 24" width="20" height="20">
+        <div class="header-actions">
+            <!-- Search Icon to open Overlay -->
+            <button class="icon-btn" onclick="openSearchOverlay()">
+                <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
                 </svg>
             </button>
+            <div class="user-profile">TA</div>
         </div>
-
-        <div class="user-profile">TA</div>
     </header>
+
+    <!-- Full Screen Search Overlay (Based on 5049.jpg) -->
+    <div class="search-overlay" id="search-overlay">
+        <div class="search-overlay-header">
+            <button class="icon-btn" onclick="closeSearchOverlay()">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z"/>
+                </svg>
+            </button>
+            <div class="search-input-wrapper">
+                <input type="text" id="overlay-search-input" placeholder="Search YouTube" onkeypress="handleSearchKey(event)">
+            </div>
+            <button class="icon-btn mic-btn">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M12 14c1.66 0 2.99-1.34 2.99-3L15 5c0-1.66-1.34-3-3-3S9 3.34 9 5v6c0 1.66 1.34 3 3 3zm5.3-3c0 3-2.54 5.1-5.3 5.1S6.7 14 6.7 11H5c0 3.41 2.72 6.23 6 6.72V21h2v-3.28c3.28-.48 6-3.3 6-6.72h-1.7z"/>
+                </svg>
+            </button>
+        </div>
+        <div class="search-history-list" id="search-history-list">
+            <!-- Dynamic History List Goes Here -->
+        </div>
+    </div>
 
     <!-- Main Container -->
     <div class="main-container">
@@ -390,7 +433,7 @@
 
         <!-- Video Cards Grid -->
         <div class="video-grid" id="video-grid">
-            <div class="status-message">डोरीमोन और कार्टून वीडियो लोड हो रहे हैं...</div>
+            <div class="status-message">वीडियो लोड हो रहे हैं...</div>
         </div>
     </div>
 
@@ -403,24 +446,85 @@
         const videoFrame = document.getElementById('video-frame');
         const videoWrapper = document.getElementById('video-wrapper');
         const playingTitleTop = document.getElementById('playing-title-top');
-        const searchInput = document.getElementById('search-input');
+        
+        // Search Overlay Elements
+        const searchOverlay = document.getElementById('search-overlay');
+        const overlaySearchInput = document.getElementById('overlay-search-input');
+        const searchHistoryList = document.getElementById('search-history-list');
 
-        // On Page Load - Fetch mixed cartoons with Doraemon in Hindi forced
+        let searchHistory = JSON.parse(localStorage.getItem('ytSearchHistory')) || [
+            "Doraemon in hindi", "Motu patlu", "Not Your Type"
+        ];
+
         window.onload = () => {
             fetchHomeFeed();
         };
 
         async function fetchHomeFeed() {
-            searchInput.value = "";
-            // Specifically prioritizing Doraemon in Hindi mixed with other top cartoons
             let mixedQuery = "Doraemon in Hindi OR Motu Patlu in Hindi OR Not Your Type OR Chhota Bheem";
             fetchVideos(mixedQuery);
         }
 
+        // --- Overlay & Search History Logic ---
+        function openSearchOverlay() {
+            searchOverlay.classList.add('active');
+            overlaySearchInput.value = "";
+            renderSearchHistory();
+            setTimeout(() => overlaySearchInput.focus(), 300);
+        }
+
+        function closeSearchOverlay() {
+            searchOverlay.classList.remove('active');
+            overlaySearchInput.blur();
+        }
+
+        function renderSearchHistory() {
+            searchHistoryList.innerHTML = '';
+            searchHistory.forEach(term => {
+                const itemHTML = `
+                    <div class="history-item">
+                        <svg class="history-icon" viewBox="0 0 24 24" width="24" height="24">
+                            <path d="M13 3a9 9 0 0 0-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42C8.27 19.99 10.51 21 13 21c4.97 0 9-4.03 9-9s-4.03-9-9-9zm-1 5v5l4.25 2.52.75-1.23-3.5-2.07V8h-1.5z"/>
+                        </svg>
+                        <div class="history-text" onclick="executeSearch('${escapeHtml(term)}')">${term}</div>
+                        <svg class="fill-arrow-icon" viewBox="0 0 24 24" width="24" height="24" onclick="fillSearchInput('${escapeHtml(term)}')">
+                            <path d="M9 4v1.37h5.66L4 20.03l.97.97L15.63 10.34V16H17V4z"/>
+                        </svg>
+                    </div>
+                `;
+                searchHistoryList.insertAdjacentHTML('beforeend', itemHTML);
+            });
+        }
+
+        function fillSearchInput(term) {
+            overlaySearchInput.value = term;
+            overlaySearchInput.focus();
+        }
+
+        function handleSearchKey(event) {
+            if (event.key === 'Enter') {
+                const query = overlaySearchInput.value.trim();
+                if (query) executeSearch(query);
+            }
+        }
+
+        function executeSearch(query) {
+            // Update History
+            searchHistory = searchHistory.filter(t => t.toLowerCase() !== query.toLowerCase());
+            searchHistory.unshift(query);
+            if (searchHistory.length > 10) searchHistory.pop();
+            localStorage.setItem('ytSearchHistory', JSON.stringify(searchHistory));
+
+            closeSearchOverlay();
+            
+            // Add Hindi automatically for better cartoons results
+            fetchVideos(query + " Hindi");
+        }
+
+        // --- Fetch & Render Videos ---
         async function fetchVideos(query) {
             videoGrid.innerHTML = '<div class="status-message">वीडियो फेच हो रही हैं...</div>';
             
-            // Filtering out shorts, music, songs
             const finalQuery = query + " -song -songs -music -dj -shorts";
             const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=30&q=${encodeURIComponent(finalQuery)}&type=video&videoDuration=long&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
 
@@ -449,7 +553,6 @@
                 const title = snippet.title;
                 const channelTitle = snippet.channelTitle;
                 const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
-
                 const hdThumb = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const fallbackThumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
@@ -457,7 +560,6 @@
                     <div class="video-card" onclick="playVideoAtTop('${videoId}', '${escapeHtml(title)}')">
                         <div class="thumbnail-container">
                             <img src="${hdThumb}" onerror="this.onerror=null; this.src='${fallbackThumb}'" class="thumbnail" alt="Thumbnail" loading="lazy">
-                            <span class="hd-badge">HD</span>
                         </div>
                         <div class="card-details">
                             <div class="channel-avatar" style="background-color: ${randomColor}"></div>
@@ -472,14 +574,13 @@
             });
         }
 
+          // --- Video Player Logic ---
         function playVideoAtTop(videoId, title) {
             const currentOrigin = window.location.origin.includes("file://") ? "https://www.youtube.com" : window.location.origin;
 
             videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd1080&rel=0&modestbranding=1&enablejsapi=1&origin=${currentOrigin}`;
-            
             playingTitleTop.innerText = title;
             activePlayerSection.style.display = 'block';
-            
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
 
@@ -492,7 +593,6 @@
             try {
                 if (videoWrapper.requestFullscreen) await videoWrapper.requestFullscreen();
                 else if (videoWrapper.webkitRequestFullscreen) await videoWrapper.webkitRequestFullscreen();
-                
                 if (screen.orientation && screen.orientation.lock) {
                     await screen.orientation.lock("landscape");
                 }
@@ -501,24 +601,10 @@
             }
         }
 
-        function triggerSearch() {
-            let query = searchInput.value.trim();
-            if (query) {
-                // Fetching user typed query with Hindi context
-                fetchVideos(query + " Hindi");
-            }
-        }
-
-        function handleSearchKey(event) {
-            if (event.key === 'Enter') {
-                triggerSearch();
-            }
-        }
-
         function escapeHtml(text) {
             return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
         }
     </script>
 </body>
-    </html>
-    
+</html>
+        
