@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Tech Asar - Premium YouTube UI</title>
+    <title>Tech Asar - Premium App UI</title>
     <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -20,25 +20,29 @@
             padding: 0;
             box-sizing: border-box;
             font-family: 'Roboto', sans-serif;
+            -webkit-tap-highlight-color: transparent;
         }
 
         body {
             background-color: var(--bg-color);
             color: var(--text-main);
             overflow-x: hidden;
+            scroll-behavior: smooth;
         }
 
-        /* --- Header (Home Page) --- */
+        /* --- Smooth Header --- */
         header {
             display: flex;
             justify-content: space-between;
             align-items: center;
             padding: 12px 24px;
-            background-color: #0f0f0f;
+            background-color: rgba(15, 15, 15, 0.95);
+            backdrop-filter: blur(10px);
             position: sticky;
             top: 0;
             z-index: 1000;
-            border-bottom: 1px solid var(--border-color);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
         }
 
         .logo-area {
@@ -64,7 +68,7 @@
         .header-actions {
             display: flex;
             align-items: center;
-            gap: 18px;
+            gap: 16px;
         }
 
         .icon-btn {
@@ -75,30 +79,35 @@
             display: flex;
             align-items: center;
             justify-content: center;
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
-            transition: background 0.2s;
+            transition: background 0.3s ease, transform 0.2s ease;
         }
 
-        .icon-btn:hover {
-            background: rgba(255, 255, 255, 0.1);
+        .icon-btn:hover, .icon-btn:active {
+            background: rgba(255, 255, 255, 0.15);
+            transform: scale(1.05);
         }
 
         .user-profile {
             width: 36px;
             height: 36px;
             border-radius: 50%;
-            background: #ff0000;
+            background: linear-gradient(135deg, #ff0000, #ff4b4b);
             color: white;
             display: flex;
             align-items: center;
             justify-content: center;
             font-weight: bold;
-            box-shadow: 0 2px 8px rgba(255,0,0,0.3);
+            box-shadow: 0 4px 10px rgba(255,0,0,0.3);
+            cursor: pointer;
+            transition: transform 0.2s ease;
         }
+        
+        .user-profile:hover { transform: scale(1.05); }
 
-        /* --- YouTube App Style Full Screen Search Overlay --- */
+        /* --- Full Screen Search Overlay (5049.jpg Style) --- */
         .search-overlay {
             position: fixed;
             top: 0;
@@ -110,7 +119,7 @@
             display: flex;
             flex-direction: column;
             transform: translateX(100%);
-            transition: transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
         .search-overlay.active {
@@ -131,8 +140,14 @@
             border-radius: 40px;
             display: flex;
             align-items: center;
-            padding: 0 16px;
-            height: 40px;
+            padding: 0 18px;
+            height: 42px;
+            border: 1px solid transparent;
+            transition: border-color 0.3s;
+        }
+
+        .search-input-wrapper:focus-within {
+            border-color: #3a86ff;
         }
 
         .search-input-wrapper input {
@@ -150,12 +165,10 @@
 
         .mic-btn {
             background: #222222;
-            width: 40px;
-            height: 40px;
-            border-radius: 50%;
+            width: 42px;
+            height: 42px;
         }
 
-        /* Search History List */
         .search-history-list {
             flex: 1;
             overflow-y: auto;
@@ -165,14 +178,14 @@
         .history-item {
             display: flex;
             align-items: center;
-            padding: 12px 20px;
+            padding: 14px 20px;
             gap: 20px;
             cursor: pointer;
             transition: background 0.2s;
         }
 
-        .history-item:hover {
-            background: rgba(255, 255, 255, 0.05);
+        .history-item:hover, .history-item:active {
+            background: rgba(255, 255, 255, 0.08);
         }
 
         .history-icon, .fill-arrow-icon {
@@ -189,27 +202,91 @@
             text-overflow: ellipsis;
         }
 
-        /* --- Main Layout --- */
+        /* --- Upload Backend Modal --- */
+        .upload-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(5px);
+            z-index: 3000;
+            display: none;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .upload-modal.show {
+            display: flex;
+            opacity: 1;
+        }
+
+        .upload-box {
+            background: #212121;
+            width: 100%;
+            max-width: 450px;
+            border-radius: 16px;
+            padding: 24px;
+            border: 1px solid #3f3f3f;
+            transform: translateY(20px);
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
+            text-align: center;
+        }
+
+        .upload-modal.show .upload-box {
+            transform: translateY(0);
+        }
+
+        .upload-box h3 {
+            margin-bottom: 12px;
+            color: #fff;
+        }
+
+        .upload-box p {
+            color: #aaa;
+            font-size: 14px;
+            margin-bottom: 20px;
+            line-height: 1.5;
+        }
+
+        .upload-btn-action {
+            background: var(--yt-red);
+            color: #fff;
+            border: none;
+            padding: 10px 24px;
+            border-radius: 20px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .upload-btn-action:hover { background: #cc0000; }
+
+        /* --- Main Layout & Player --- */
         .main-container {
             max-width: 1650px;
             margin: 0 auto;
             padding: 24px;
         }
 
-        /* --- Top Video Player Section --- */
         .active-player-section {
             display: none;
             background: var(--surface-color);
             border-radius: 16px;
             overflow: hidden;
             margin-bottom: 30px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.9);
+            box-shadow: 0 25px 60px rgba(0,0,0,0.9);
             border: 1px solid var(--border-color);
-            animation: fadeInPlayer 0.3s ease;
+            animation: slideDown 0.4s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
 
-        @keyframes fadeInPlayer {
-            from { opacity: 0; transform: translateY(-10px); }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
@@ -218,8 +295,8 @@
             justify-content: space-between;
             align-items: center;
             padding: 14px 20px;
-            background: #181818;
-            border-bottom: 1px solid var(--border-color);
+            background: #151515;
+            border-bottom: 1px solid #333;
         }
 
         .playing-title-top {
@@ -233,20 +310,24 @@
         }
 
         .close-player-btn {
-            background: #333;
+            background: #2a2a2a;
             color: white;
             border: none;
-            width: 34px;
-            height: 34px;
+            width: 36px;
+            height: 36px;
             border-radius: 50%;
-            font-size: 18px;
+            font-size: 20px;
             cursor: pointer;
             display: flex;
             align-items: center;
             justify-content: center;
+            transition: all 0.2s ease;
         }
 
-        .close-player-btn:hover { background: var(--yt-red); }
+        .close-player-btn:hover {
+            background: var(--yt-red);
+            transform: scale(1.1);
+        }
 
         .video-wrapper {
             position: relative;
@@ -268,27 +349,30 @@
             display: flex;
             justify-content: flex-end;
             padding: 12px 20px;
-            background: #181818;
+            background: #151515;
         }
 
         .landscape-btn {
             background: var(--yt-red);
             color: white;
             border: none;
-            padding: 10px 20px;
-            border-radius: 20px;
+            padding: 10px 22px;
+            border-radius: 30px;
             cursor: pointer;
             font-weight: 600;
             font-size: 14px;
             display: flex;
             align-items: center;
             gap: 8px;
+            transition: background 0.2s, transform 0.2s;
         }
+        
+        .landscape-btn:hover { transform: scale(1.03); }
 
         /* --- Video Cards Grid --- */
         .video-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-template-columns: repeat(auto-fill, minmax(310px, 1fr));
             gap: 24px;
             row-gap: 40px;
         }
@@ -298,26 +382,40 @@
             display: flex;
             flex-direction: column;
             gap: 12px;
-            transition: transform 0.25s ease;
+            transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
         }
-        .video-card:hover { transform: translateY(-5px); }
+        
+        .video-card:hover { transform: translateY(-6px); }
 
         .thumbnail-container {
             width: 100%;
             aspect-ratio: 16/9;
-            border-radius: 14px;
+            border-radius: 16px;
             overflow: hidden;
             position: relative;
             background: #1a1a1a;
+            box-shadow: 0 6px 15px rgba(0,0,0,0.3);
         }
 
         .thumbnail {
             width: 100%;
             height: 100%;
             object-fit: cover;
-            transition: transform 0.3s ease;
+            transition: transform 0.4s ease;
         }
-        .video-card:hover .thumbnail { transform: scale(1.05); }
+        .video-card:hover .thumbnail { transform: scale(1.07); }
+
+        .hd-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0, 0, 0, 0.85);
+            color: #fff;
+            font-size: 11px;
+            padding: 3px 6px;
+            border-radius: 4px;
+            font-weight: 700;
+        }
 
         .card-details {
             display: flex;
@@ -325,10 +423,11 @@
         }
 
         .channel-avatar {
-            width: 40px;
-            height: 40px;
+            width: 42px;
+            height: 42px;
             border-radius: 50%;
             flex-shrink: 0;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.4);
         }
 
         .meta-text {
@@ -359,25 +458,50 @@
             padding: 80px;
             color: var(--text-secondary);
             font-size: 18px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 15px;
         }
+
+        .loader {
+            border: 4px solid #333;
+            border-top: 4px solid var(--yt-red);
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
 
         @media (max-width: 768px) {
             header { padding: 12px 16px; }
+            .logo-text { font-size: 20px; }
+            .icon-btn { width: 38px; height: 38px; }
             .main-container { padding: 16px; }
+            .video-grid { grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); }
         }
     </style>
 </head>
 <body>
 
-    <!-- Header Home -->
+    <!-- Smooth Header -->
     <header>
         <div class="logo-area" onclick="fetchHomeFeed()">
-            <svg height="22" viewBox="0 0 90 20" width="90"><path d="M27.9727 3.12324C27.6435 1.89335 26.6765 0.92633 25.4466 0.597168C23.2197 0 14.2857 0 14.2857 0C14.2857 0 5.35174 0 3.12482 0.597168C1.89493 0.92633 0.927914 1.89335 0.598752 3.12324C0 5.35016 0 10 0 10C0 10 0 14.6498 0.598752 16.8768C0.927914 18.1067 1.89493 19.0737 3.12482 19.4028C5.35174 20 14.2857 20 14.2857 20C14.2857 20 23.2197 20 25.4466 19.4028C26.765 19.0737 27.6435 18.1067 27.9727 16.8768C28.5714 14.6498 28.5714 10 28.5714 10C28.5714 10 28.5714 5.35016 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4286 14.2857L18.8571 10L11.4286 5.71429V14.2857Z" fill="#FFFFFF"/></svg>
+            <svg height="24" viewBox="0 0 90 20" width="90"><path d="M27.9727 3.12324C27.6435 1.89335 26.6765 0.92633 25.4466 0.597168C23.2197 0 14.2857 0 14.2857 0C14.2857 0 5.35174 0 3.12482 0.597168C1.89493 0.92633 0.927914 1.89335 0.598752 3.12324C0 5.35016 0 10 0 10C0 10 0 14.6498 0.598752 16.8768C0.927914 18.1067 1.89493 19.0737 3.12482 19.4028C5.35174 20 14.2857 20 14.2857 20C14.2857 20 23.2197 20 25.4466 19.4028C26.765 19.0737 27.6435 18.1067 27.9727 16.8768C28.5714 14.6498 28.5714 10 28.5714 10C28.5714 10 28.5714 5.35016 27.9727 3.12324Z" fill="#FF0000"/><path d="M11.4286 14.2857L18.8571 10L11.4286 5.71429V14.2857Z" fill="#FFFFFF"/></svg>
             <div class="logo-text">Tech<span>Asar</span></div>
         </div>
 
         <div class="header-actions">
-            <!-- Search Icon to open Overlay -->
+            <!-- New: Upload Video Icon (Preparation for Mux/S3) -->
+            <button class="icon-btn" onclick="openUploadModal()" title="Upload Custom Video">
+                <svg viewBox="0 0 24 24" width="24" height="24">
+                    <path d="M14 13h-3v3H9v-3H6v-2h3V8h2v3h3v2zm3-7H3v12h14v-6.39l4 1.83V8.56l-4 1.83V6m2-2v16H1V4h18z"/>
+                </svg>
+            </button>
+            
+            <!-- YouTube Style Search Icon -->
             <button class="icon-btn" onclick="openSearchOverlay()">
                 <svg viewBox="0 0 24 24" width="24" height="24">
                     <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
@@ -387,7 +511,16 @@
         </div>
     </header>
 
-    <!-- Full Screen Search Overlay (Based on 5049.jpg) -->
+    <!-- Upload Backend Ready Modal -->
+    <div class="upload-modal" id="upload-modal">
+        <div class="upload-box">
+            <h3>Custom Video Upload (Beta)</h3>
+            <p>Direct AWS S3, Mux, और Cloudinary API इंटीग्रेशन जल्द ही आ रहा है। इसके बाद आप खुद के वीडियो सर्वर पर स्टोर और स्ट्रीम कर पाएंगे।</p>
+            <button class="upload-btn-action" onclick="closeUploadModal()">OK, Close</button>
+        </div>
+    </div>
+
+    <!-- YouTube App Style Full Screen Search Overlay -->
     <div class="search-overlay" id="search-overlay">
         <div class="search-overlay-header">
             <button class="icon-btn" onclick="closeSearchOverlay()">
@@ -396,7 +529,7 @@
                 </svg>
             </button>
             <div class="search-input-wrapper">
-                <input type="text" id="overlay-search-input" placeholder="Search YouTube" onkeypress="handleSearchKey(event)">
+                <input type="text" id="overlay-search-input" placeholder="Search YouTube Videos..." onkeypress="handleSearchKey(event)">
             </div>
             <button class="icon-btn mic-btn">
                 <svg viewBox="0 0 24 24" width="24" height="24">
@@ -405,14 +538,14 @@
             </button>
         </div>
         <div class="search-history-list" id="search-history-list">
-            <!-- Dynamic History List Goes Here -->
+            <!-- Dynamic History List -->
         </div>
     </div>
 
     <!-- Main Container -->
     <div class="main-container">
         
-        <!-- Top Video Player Section -->
+        <!-- Smooth Active Video Player -->
         <div class="active-player-section" id="active-player-section">
             <div class="player-top-bar">
                 <div class="playing-title-top" id="playing-title-top">वीडियो शीर्षक</div>
@@ -433,7 +566,10 @@
 
         <!-- Video Cards Grid -->
         <div class="video-grid" id="video-grid">
-            <div class="status-message">वीडियो लोड हो रहे हैं...</div>
+            <div class="status-message">
+                <div class="loader"></div>
+                डेटा लोड हो रहा है...
+            </div>
         </div>
     </div>
 
@@ -447,13 +583,14 @@
         const videoWrapper = document.getElementById('video-wrapper');
         const playingTitleTop = document.getElementById('playing-title-top');
         
-        // Search Overlay Elements
+        // Modal & Overlay Elements
         const searchOverlay = document.getElementById('search-overlay');
         const overlaySearchInput = document.getElementById('overlay-search-input');
         const searchHistoryList = document.getElementById('search-history-list');
+        const uploadModal = document.getElementById('upload-modal');
 
         let searchHistory = JSON.parse(localStorage.getItem('ytSearchHistory')) || [
-            "Doraemon in hindi", "Motu patlu", "Not Your Type"
+            "Doraemon in hindi", "Motu patlu", "Not Your Type", "Chhota Bheem"
         ];
 
         window.onload = () => {
@@ -463,6 +600,15 @@
         async function fetchHomeFeed() {
             let mixedQuery = "Doraemon in Hindi OR Motu Patlu in Hindi OR Not Your Type OR Chhota Bheem";
             fetchVideos(mixedQuery);
+        }
+
+        // --- Mock Upload Modal Logic (For Mux/AWS preparation) ---
+        function openUploadModal() {
+            uploadModal.classList.add('show');
+        }
+
+        function closeUploadModal() {
+            uploadModal.classList.remove('show');
         }
 
         // --- Overlay & Search History Logic ---
@@ -509,7 +655,7 @@
         }
 
         function executeSearch(query) {
-            // Update History
+            // Update History array
             searchHistory = searchHistory.filter(t => t.toLowerCase() !== query.toLowerCase());
             searchHistory.unshift(query);
             if (searchHistory.length > 10) searchHistory.pop();
@@ -517,13 +663,18 @@
 
             closeSearchOverlay();
             
-            // Add Hindi automatically for better cartoons results
+            // Add Hindi to enforce better cartoon results
             fetchVideos(query + " Hindi");
         }
 
-        // --- Fetch & Render Videos ---
+        // --- Fetch & Render YouTube Videos ---
         async function fetchVideos(query) {
-            videoGrid.innerHTML = '<div class="status-message">वीडियो फेच हो रही हैं...</div>';
+            videoGrid.innerHTML = `
+                <div class="status-message">
+                    <div class="loader"></div>
+                    वीडियो फेच हो रही हैं...
+                </div>
+            `;
             
             const finalQuery = query + " -song -songs -music -dj -shorts";
             const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=30&q=${encodeURIComponent(finalQuery)}&type=video&videoDuration=long&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
@@ -553,6 +704,7 @@
                 const title = snippet.title;
                 const channelTitle = snippet.channelTitle;
                 const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+                
                 const hdThumb = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
                 const fallbackThumb = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
 
@@ -560,6 +712,7 @@
                     <div class="video-card" onclick="playVideoAtTop('${videoId}', '${escapeHtml(title)}')">
                         <div class="thumbnail-container">
                             <img src="${hdThumb}" onerror="this.onerror=null; this.src='${fallbackThumb}'" class="thumbnail" alt="Thumbnail" loading="lazy">
+                            <span class="hd-badge">HD</span>
                         </div>
                         <div class="card-details">
                             <div class="channel-avatar" style="background-color: ${randomColor}"></div>
@@ -574,12 +727,13 @@
             });
         }
 
-          // --- Video Player Logic ---
+        // --- Smooth Video Player Logic ---
         function playVideoAtTop(videoId, title) {
             const currentOrigin = window.location.origin.includes("file://") ? "https://www.youtube.com" : window.location.origin;
 
             videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd1080&rel=0&modestbranding=1&enablejsapi=1&origin=${currentOrigin}`;
             playingTitleTop.innerText = title;
+            
             activePlayerSection.style.display = 'block';
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -593,6 +747,7 @@
             try {
                 if (videoWrapper.requestFullscreen) await videoWrapper.requestFullscreen();
                 else if (videoWrapper.webkitRequestFullscreen) await videoWrapper.webkitRequestFullscreen();
+                
                 if (screen.orientation && screen.orientation.lock) {
                     await screen.orientation.lock("landscape");
                 }
@@ -607,4 +762,3 @@
     </script>
 </body>
 </html>
-        
