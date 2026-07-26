@@ -1,0 +1,445 @@
+<!DOCTYPE html>
+<html lang="hi">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tech Asar - HD Video Player</title>
+    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-color: #0f0f0f;
+            --header-bg: #0f0f0f;
+            --text-color: #ffffff;
+            --text-muted: #aaaaaa;
+            --search-bg: #121212;
+            --search-border: #303030;
+            --accent-color: #ff0000;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Roboto', sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--text-color);
+            overflow-x: hidden;
+        }
+
+        /* --- Header & Search Bar --- */
+        header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 24px;
+            background-color: var(--header-bg);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            border-bottom: 1px solid var(--search-border);
+        }
+
+        .logo-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            cursor: pointer;
+        }
+
+        .logo-text {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -1px;
+        }
+
+        .logo-text span {
+            color: var(--accent-color);
+        }
+
+        .search-container {
+            display: flex;
+            align-items: center;
+            flex: 0.6;
+            max-width: 650px;
+        }
+
+        .search-box {
+            display: flex;
+            width: 100%;
+            background: var(--search-bg);
+            border: 1px solid var(--search-border);
+            border-radius: 40px;
+            overflow: hidden;
+            transition: border 0.3s;
+        }
+
+        .search-box:focus-within {
+            border: 1px solid #1c62b9;
+        }
+
+        .search-input {
+            width: 100%;
+            padding: 10px 20px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-size: 16px;
+            outline: none;
+        }
+
+        .search-btn {
+            background: #222222;
+            border: none;
+            border-left: 1px solid var(--search-border);
+            padding: 0 24px;
+            cursor: pointer;
+            fill: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .search-btn:hover { background: #303030; }
+
+        /* --- Video Player Section --- */
+        .main-content {
+            padding: 20px 24px;
+            max-width: 1600px;
+            margin: 0 auto;
+        }
+
+        .player-container {
+            display: none;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto 30px auto;
+            background: #181818;
+            padding: 15px;
+            border-radius: 12px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            animation: slideDown 0.4s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .video-wrapper {
+            position: relative;
+            width: 100%;
+            padding-top: 56.25%;
+            background: #000;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .video-wrapper iframe {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+
+        .player-info {
+            margin-top: 15px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .now-playing-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 5px;
+        }
+
+        .channel-name {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+
+        .rotate-btn {
+            background: var(--accent-color);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: bold;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* --- Video Grid (Cards) --- */
+        .section-title {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+        }
+
+        .video-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 20px;
+            row-gap: 40px;
+        }
+
+        .video-card {
+            cursor: pointer;
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            transition: transform 0.2s;
+        }
+
+        .video-card:hover { transform: scale(1.02); }
+
+        .thumbnail-container {
+            width: 100%;
+            aspect-ratio: 16/9;
+            border-radius: 12px;
+            overflow: hidden;
+            position: relative;
+            background: #222;
+        }
+
+        /* 4K/HD Thumbnail Setup */
+        .thumbnail {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            transition: transform 0.3s;
+        }
+
+        .video-card:hover .thumbnail { transform: scale(1.05); }
+
+        .hd-badge {
+            position: absolute;
+            bottom: 8px;
+            right: 8px;
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .card-details {
+            display: flex;
+            gap: 12px;
+            padding-right: 10px;
+        }
+
+        .channel-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            flex-shrink: 0;
+        }
+
+        .video-title {
+            font-size: 16px;
+            font-weight: 500;
+            line-height: 1.4;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .status-msg {
+            text-align: center;
+            font-size: 18px;
+            color: var(--text-muted);
+            grid-column: 1 / -1;
+            padding: 40px;
+        }
+
+        /* Mobile View */
+        @media (max-width: 768px) {
+            header { flex-direction: column; gap: 15px; }
+            .search-container { width: 100%; max-width: 100%; }
+            .player-info { flex-direction: column; align-items: flex-start; gap: 15px; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Header -->
+    <header>
+        <div class="logo-container" onclick="fetchVideos('cartoon for kids')">
+            <svg viewBox="0 0 24 24" width="32" height="32" fill="#ff0000">
+                <path d="M21.58 5.64a2.7 2.7 0 0 0-1.9-1.91C17.98 3.33 12 3.33 12 3.33s-5.98 0-7.68.4-2.29 1.52-2.29 3.42A27.2 27.2 0 0 0 2 12a27.2 27.2 0 0 0 .03 6.36 2.7 2.7 0 0 0 1.91 1.91c1.7.46 7.68.46 7.68.46s5.98 0 7.68-.46a2.7 2.7 0 0 0 1.9-1.91A27.2 27.2 0 0 0 22 12a27.2 27.2 0 0 0-.42-6.36zM10 15V9l6.5 3-6.5 3z"/>
+            </svg>
+            <div class="logo-text">Tech <span>Asar</span></div>
+        </div>
+
+        <div class="search-container">
+            <div class="search-box">
+                <input type="text" id="search-input" class="search-input" placeholder="कुछ भी खोजें... (गानों के अलावा)" onkeypress="handleSearchKey(event)">
+                <button class="search-btn" onclick="performSearch()">
+                    <svg viewBox="0 0 24 24" width="20" height="20">
+                        <path d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0 0 16 9.5 6.5 6.5 0 1 0 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        
+        <!-- Video Player -->
+        <div class="player-container" id="player-container">
+            <div class="video-wrapper" id="video-wrapper">
+                <iframe id="video-frame" src="" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen" allowfullscreen></iframe>
+            </div>
+            
+            <div class="player-info">
+                <div>
+                    <div class="now-playing-title" id="now-playing-title">वीडियो चल रहा है...</div>
+                    <div class="channel-name" id="playing-channel">HD 1080p Player</div>
+                </div>
+                
+                <button class="rotate-btn" onclick="openFullscreenAndLandscape()">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="white">
+                        <path d="M7 14H5v5h5v-2H7v-3zm-2-4h2V7h3V5H5v5zm12 7h-3v2h5v-5h-2v3zM14 5v2h3v3h2V5h-5z"/>
+                    </svg>
+                    रोटेट (लैंडस्केप)
+                </button>
+            </div>
+        </div>
+
+        <div class="section-title" id="section-title">लेटेस्ट सुरक्षित वीडियो</div>
+
+        <!-- Video Grid -->
+        <div class="video-grid" id="video-grid">
+            <div class="status-msg">डेटा लोड हो रहा है...</div>
+        </div>
+    </div>
+
+    <script>
+        const API_KEY = 'AIzaSyBMyxZnLCVKqQQ-8Ph1inSaVXb3DIUpKF0';
+        
+        const videoGrid = document.getElementById('video-grid');
+        const playerContainer = document.getElementById('player-container');
+        const videoFrame = document.getElementById('video-frame');
+        const videoWrapper = document.getElementById('video-wrapper');
+        const nowPlayingTitle = document.getElementById('now-playing-title');
+        const searchInput = document.getElementById('search-input');
+        const sectionTitle = document.getElementById('section-title');
+
+        // On Load -> Show Cartoons by default
+        window.onload = () => {
+            fetchVideos('cartoon for kids');
+        };
+
+        async function fetchVideos(userQuery) {
+            sectionTitle.innerText = `"${userQuery}" के परिणाम`;
+            videoGrid.innerHTML = '<div class="status-msg">सुरक्षित वीडियो खोजे जा रहे हैं...</div>';
+            
+            // MASTERSTROKE 1: Query modifiers (-song -music) to block songs
+            const finalQuery = userQuery + " -song -songs -music -dj -tseries";
+            
+            // MASTERSTROKE 2: videoEmbeddable=true ensures NO Error 153. safeSearch=strict blocks adults.
+            const API_URL = `https://www.googleapis.com/youtube/v3/search?part=snippet&maxResults=24&q=${encodeURIComponent(finalQuery)}&type=video&videoEmbeddable=true&safeSearch=strict&key=${API_KEY}`;
+
+            try {
+                const response = await fetch(API_URL);
+                const data = await response.json();
+                if (data.error) throw new Error(data.error.message);
+                displayVideos(data.items);
+            } catch (error) {
+                videoGrid.innerHTML = `<div class="status-msg" style="color: #ff5555;">⚠️ एरर: ${error.message}</div>`;
+            }
+        }
+
+        function displayVideos(videos) {
+            videoGrid.innerHTML = '';
+            if (!videos || videos.length === 0) {
+                videoGrid.innerHTML = '<div class="status-msg">कोई वीडियो नहीं मिला। कुछ और खोजें।</div>';
+                return;
+            }
+
+            videos.forEach(video => {
+                if (!video.id.videoId) return;
+                
+                const videoId = video.id.videoId;
+                const snippet = video.snippet;
+                const title = snippet.title;
+                const channelTitle = snippet.channelTitle;
+                const randomColor = '#' + Math.floor(Math.random()*16777215).toString(16);
+
+                // MASTERSTROKE 3: True HD Max-Res Thumbnail with fallback
+                const trueHdThumbnail = `https://i.ytimg.com/vi/${videoId}/maxresdefault.jpg`;
+                const fallbackThumbnail = `https://i.ytimg.com/vi/${videoId}/hqdefault.jpg`;
+
+                const cardHTML = `
+                    <div class="video-card" onclick="playVideo('${videoId}', '${escapeHtml(title)}')">
+                        <div class="thumbnail-container">
+                            <!-- Try loading maxresdefault (1080p), if not exist, load hqdefault -->
+                            <img src="${trueHdThumbnail}" onerror="this.onerror=null; this.src='${fallbackThumbnail}'" class="thumbnail" alt="HD Thumbnail">
+                            <span class="hd-badge">1080p</span>
+                        </div>
+                        <div class="card-details">
+                            <div class="channel-avatar" style="background-color: ${randomColor}"></div>
+                            <div>
+                                <div class="video-title">${title}</div>
+                                <div class="channel-name">${channelTitle}</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+                videoGrid.insertAdjacentHTML('beforeend', cardHTML);
+            });
+        }
+
+        function playVideo(videoId, title) {
+            // Get current origin (Vercel domain or fallback to youtube for local files)
+            const currentOrigin = window.location.origin.includes("file://") ? "https://www.youtube.com" : window.location.origin;
+
+            // vq=hd1080 pushes for highest quality playback
+            videoFrame.src = `https://www.youtube.com/embed/${videoId}?autoplay=1&vq=hd1080&rel=0&modestbranding=1&enablejsapi=1&origin=${currentOrigin}`;
+            
+            nowPlayingTitle.innerText = title;
+            playerContainer.style.display = 'block';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function openFullscreenAndLandscape() {
+            let elem = videoWrapper;
+            try {
+                if (elem.requestFullscreen) await elem.requestFullscreen();
+                else if (elem.webkitRequestFullscreen) await elem.webkitRequestFullscreen();
+                
+                if (screen.orientation && screen.orientation.lock) {
+                    await screen.orientation.lock("landscape");
+                }
+            } catch (err) {
+                console.warn("Screen rotation issue:", err);
+            }
+        }
+
+        function performSearch() {
+            let query = searchInput.value.trim();
+            if (query) fetchVideos(query);
+        }
+
+        function handleSearchKey(event) {
+            if (event.key === 'Enter') performSearch();
+        }
+
+        function escapeHtml(text) {
+            return text.replace(/'/g, "\\'").replace(/"/g, '&quot;');
+        }
+    </script>
+</body>
+</html>
