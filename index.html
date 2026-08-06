@@ -8,7 +8,7 @@
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* 1. KEYBOARD ISSUE FIX: Lock body firmly */
+    /* Lock body firmly */
     body { 
         background: #f4f7f6; 
         width: 100vw; height: 100vh; 
@@ -16,7 +16,7 @@
         overflow: hidden; 
     }
 
-    /* Notification Toast - 1 LINE */
+    /* Notification Toast - FIXED TEXT OVERFLOW */
     .toast {
         position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
         background: linear-gradient(135deg, #f25c27, #e04a16); color: #fff; padding: 14px 28px;
@@ -24,11 +24,17 @@
         box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
         opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
         display: flex; align-items: center; justify-content: center; gap: 10px; text-align: center; 
-        white-space: nowrap; width: max-content; 
+        
+        /* Forces 1 line but prevents going outside screen */
+        white-space: nowrap; 
+        width: max-content; 
+        max-width: 90vw; 
+        overflow: hidden; 
+        text-overflow: ellipsis;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* 2. CARD CENTER LOCK FIX */
+    /* CARD CENTER LOCK */
     .card-container {
         background: #ffffff; 
         width: 90%; max-width: 380px; padding: 40px 30px;
@@ -44,10 +50,10 @@
     .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
     .card-container p { color: #222; font-size: 12px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px; }
 
-    /* 3. SMOOTH ANIMATION FIX (No Jerks) */
+    /* SMOOTH ANIMATION */
     .input-group { 
         position: relative; text-align: left; 
-        max-height: 60px; /* Exact height to prevent jumping */
+        max-height: 60px; 
         margin-bottom: 15px; opacity: 1; 
         transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); 
         overflow: hidden;
@@ -146,7 +152,7 @@
 
     <!-- Notification Toast -->
     <div id="toast" class="toast">
-        <span id="toast-message">ACTION SUCCESSFUL!</span>
+        <span id="toast-message">SUCCESS!</span>
     </div>
 
     <!-- 1. LOGIN / REGISTER CARD -->
@@ -178,7 +184,7 @@
             <span>OR CONTINUE WITH</span>
         </div>
 
-        <!-- Google Login Only -->
+        <!-- Google Login -->
         <div class="social-login">
             <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
@@ -221,7 +227,7 @@
             toast.classList.add('show');
             
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000); 
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000); 
         }
         let isLoginMode = true; 
     </script>
@@ -249,11 +255,9 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // 4. GOOGLE REDIRECT LISTENER (Solves White Screen Issue)
+        // REDIRECT LISTENER
         getRedirectResult(auth).then((result) => {
-            if (result) {
-                showNotification("GOOGLE LOGIN SUCCESSFUL!");
-            }
+            if (result) showNotification("GOOGLE LOGIN SUCCESS!");
         }).catch((error) => {
             if(error.code !== 'auth/redirect-cancelled-by-user') {
                 showNotification("GOOGLE LOGIN FAILED.");
@@ -261,7 +265,7 @@
         });
 
         // ----------------------------------------
-        // AUTHENTICATION STATE OBSERVER
+        // AUTHENTICATION STATE
         // ----------------------------------------
         onAuthStateChanged(auth, (user) => {
             if (user) {
@@ -306,26 +310,26 @@
         });
 
         // ----------------------------------------
-        // FORGOT PASSWORD LOGIC (Newly Added)
+        // FORGOT PASSWORD LOGIC
         // ----------------------------------------
         document.getElementById('forgot-pass-link').addEventListener('click', async () => {
             const email = document.getElementById('email-input').value.trim();
             if (!email) {
-                showNotification("PLEASE ENTER YOUR EMAIL ADDRESS FIRST");
+                showNotification("ENTER EMAIL FIRST");
                 return;
             }
             try {
                 await sendPasswordResetEmail(auth, email);
-                showNotification("PASSWORD RESET LINK SENT TO YOUR EMAIL!");
+                showNotification("RESET LINK SENT!");
             } catch (error) {
-                if (error.code === 'auth/invalid-email') showNotification("INVALID EMAIL FORMAT.");
-                else if (error.code === 'auth/user-not-found') showNotification("NO ACCOUNT FOUND WITH THIS EMAIL.");
-                else showNotification(error.message);
+                if (error.code === 'auth/invalid-email') showNotification("INVALID EMAIL.");
+                else if (error.code === 'auth/user-not-found') showNotification("USER NOT FOUND.");
+                else showNotification("ERROR SENDING LINK.");
             }
         });
 
         // ----------------------------------------
-        // EMAIL / PASSWORD / USERNAME LOGIC
+        // EMAIL / PASSWORD LOGIC
         // ----------------------------------------
         document.getElementById('email-auth-btn').addEventListener('click', async () => {
             const username = document.getElementById('username-input').value.trim();
@@ -334,8 +338,9 @@
             
             const btn = document.getElementById('email-auth-btn');
 
-            if (!isLoginMode && !username) { showNotification("PLEASE ENTER YOUR FULL NAME"); return; }
-            if (!email || !password) { showNotification("PLEASE ENTER EMAIL & PASSWORD"); return; }
+            // SHORT NOTIFICATION TEXTS
+            if (!isLoginMode && !username) { showNotification("ENTER FULL NAME"); return; }
+            if (!email || !password) { showNotification("ENTER EMAIL & PASSWORD"); return; }
 
             btn.disabled = true;
             btn.textContent = "PROCESSING...";
@@ -345,9 +350,9 @@
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     if (!userCredential.user.emailVerified) {
                         await signOut(auth);
-                        showNotification("EMAIL NOT VERIFIED! PLEASE CHECK YOUR INBOX AND CLICK THE LINK.");
+                        showNotification("UNVERIFIED! CHECK INBOX.");
                     } else {
-                        showNotification("LOGIN SUCCESSFUL!");
+                        showNotification("LOGIN SUCCESS!");
                     }
                 } else {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
@@ -356,14 +361,14 @@
                     await sendEmailVerification(user);
                     await signOut(auth);
                     
-                    showNotification(`REGISTRATION SUCCESSFUL! VERIFICATION LINK SENT TO YOUR EMAIL.`);
+                    showNotification("LINK SENT! CHECK EMAIL.");
                     document.getElementById('toggle-auth-mode').click();
                 }
             } catch (error) {
-                if (error.code === 'auth/email-already-in-use') showNotification("EMAIL IS ALREADY REGISTERED.");
-                else if (error.code === 'auth/invalid-credential') showNotification("INCORRECT EMAIL OR PASSWORD.");
-                else if (error.code === 'auth/weak-password') showNotification("PASSWORD MUST BE AT LEAST 6 CHARACTERS.");
-                else showNotification(error.message);
+                if (error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS.");
+                else if (error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS.");
+                else if (error.code === 'auth/weak-password') showNotification("PASSWORD TOO SHORT.");
+                else showNotification("AUTHENTICATION ERROR.");
             } finally {
                 btn.disabled = false;
                 btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT";
@@ -371,10 +376,10 @@
         });
 
         // ----------------------------------------
-        // GOOGLE LOGIN (Redirect Method for Mobile)
+        // GOOGLE LOGIN
         // ----------------------------------------
         document.getElementById('google-login-btn').addEventListener('click', () => {
-            showNotification("REDIRECTING TO GOOGLE...");
+            showNotification("REDIRECTING...");
             signInWithRedirect(auth, provider);
         });
 
@@ -383,13 +388,13 @@
         // ----------------------------------------
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
-                showNotification("LOGGED OUT SUCCESSFULLY");
+                showNotification("LOGGED OUT!");
                 document.getElementById('password-input').value = ""; 
             });
         });
 
         // ----------------------------------------
-         // CUSTOM MODAL DELETE LOGIC
+        // CUSTOM MODAL DELETE
         // ----------------------------------------
         const deleteModal = document.getElementById('delete-modal');
 
@@ -407,12 +412,12 @@
             const user = auth.currentUser;
             if (user) {
                 deleteUser(user).then(() => {
-                    showNotification("ACCOUNT DELETED PERMANENTLY");
+                    showNotification("ACCOUNT DELETED.");
                 }).catch((error) => {
                     if (error.code === 'auth/requires-recent-login') {
-                        showNotification("SECURITY ALERT: PLEASE LOG OUT AND LOG IN AGAIN TO DELETE");
+                        showNotification("RE-LOGIN TO DELETE.");
                     } else {
-                        showNotification("ERROR DELETING ACCOUNT");
+                        showNotification("ERROR DELETING.");
                     }
                 });
             }
@@ -420,4 +425,4 @@
 
     </script>
 </body>
-</html> 
+</html>
