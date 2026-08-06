@@ -92,6 +92,34 @@
     .social-btn:active { transform: scale(0.92); }
     .social-btn svg { width: 20px; height: 20px; }
 
+    /* --- CUSTOM DELETE MODAL --- */
+    .custom-modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(10, 15, 20, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 4000; opacity: 1; transition: opacity 0.3s ease;
+    }
+    .custom-modal-overlay.hidden { display: none !important; opacity: 0; }
+    
+    .custom-modal {
+        background: #ffffff; width: 85%; max-width: 340px; padding: 35px 25px;
+        border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
+        text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    
+    .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+    .custom-modal p { color: #111; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 0.5px; }
+    
+    .modal-actions { display: flex; gap: 12px; }
+    .modal-btn { 
+        flex: 1; padding: 14px; border-radius: 12px; font-size: 13px; 
+        font-weight: 900; cursor: pointer; text-transform: uppercase; border: none; letter-spacing: 1px;
+        transition: all 0.2s ease;
+    }
+    .modal-btn:active { transform: scale(0.95); }
+    .cancel-btn { background: #f4f7f6; color: #555; }
+    .confirm-delete-btn { background: #dc3545; color: #fff; box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3); }
+
     .hidden { display: none !important; }
 </style>
 </head>
@@ -107,10 +135,7 @@
         <h2 id="form-title">Login here</h2>
         <p id="form-subtitle">Welcome back you've been missed!</p>
 
-        <!-- EMAIL / PASSWORD SECTION -->
         <div id="email-section">
-            
-            <!-- USERNAME INPUT (Hidden during Login, Visible during Register) -->
             <div class="input-group hidden-smooth" id="username-group">
                 <input type="text" id="username-input" placeholder="Full Name">
             </div>
@@ -153,7 +178,19 @@
             <span>Danger Zone</span>
         </div>
         
-        <button id="delete-account-btn" class="primary-btn danger-btn">Delete Account</button>
+        <button id="open-delete-modal-btn" class="primary-btn danger-btn">Delete Account</button>
+    </div>
+
+    <!-- 3. CUSTOM DELETE ACCOUNT MODAL -->
+    <div id="delete-modal" class="custom-modal-overlay hidden">
+        <div class="custom-modal">
+            <h3>Warning</h3>
+            <p>DELETE YOUR ACCOUNT PERMANENTLY?</p>
+            <div class="modal-actions">
+                <button class="modal-btn cancel-btn" id="cancel-delete-btn">Cancel</button>
+                <button class="modal-btn confirm-delete-btn" id="confirm-delete-btn">Delete</button>
+            </div>
+        </div>
     </div>
 
     <!-- UI Scripts -->
@@ -165,7 +202,7 @@
             toast.classList.add('show');
             
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000); // 5 seconds for longer messages
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000); 
         }
         let isLoginMode = true; 
     </script>
@@ -198,13 +235,10 @@
         // ----------------------------------------
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                // VERY IMPORTANT: Check if email is verified
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
-                    // Stay on login screen if not verified
                     document.getElementById('login-card-main').classList.remove('hidden');
                     document.getElementById('dashboard-card').classList.add('hidden');
                 } else {
-                    // User is verified and logged in -> Show Dashboard
                     document.getElementById('login-card-main').classList.add('hidden');
                     document.getElementById('dashboard-card').classList.remove('hidden');
                     
@@ -230,14 +264,14 @@
                 document.getElementById('email-auth-btn').textContent = "Sign in";
                 document.getElementById('forgot-pass-link').style.display = "block";
                 document.getElementById('toggle-auth-mode').innerHTML = `Don't have an account? <span>Register</span>`;
-                usernameGroup.classList.add('hidden-smooth'); // Hide Username
+                usernameGroup.classList.add('hidden-smooth'); 
             } else {
                 document.getElementById('form-title').textContent = "Register here";
                 document.getElementById('form-subtitle').textContent = "Create an account to securely save data";
                 document.getElementById('email-auth-btn').textContent = "Create Account";
                 document.getElementById('forgot-pass-link').style.display = "none";
                 document.getElementById('toggle-auth-mode').innerHTML = `Already have an account? <span>Login</span>`;
-                usernameGroup.classList.remove('hidden-smooth'); // Show Username
+                usernameGroup.classList.remove('hidden-smooth'); 
             }
         });
 
@@ -259,34 +293,21 @@
 
             try {
                 if (isLoginMode) {
-                    // LOGIN PROCESS
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    
-                    // Check Verification Status
                     if (!userCredential.user.emailVerified) {
-                        // Sign them out immediately if not verified
                         await signOut(auth);
                         showNotification("EMAIL NOT VERIFIED! PLEASE CHECK YOUR INBOX AND CLICK THE LINK.");
                     } else {
                         showNotification("LOGIN SUCCESSFUL!");
                     }
                 } else {
-                    // REGISTRATION PROCESS
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     const user = userCredential.user;
-
-                    // 1. Save Username to Firebase Profile
                     await updateProfile(user, { displayName: username });
-
-                    // 2. Send Verification Email
                     await sendEmailVerification(user);
-
-                    // 3. Sign them out immediately so they are forced to verify
                     await signOut(auth);
                     
-                    showNotification(`REGISTRATION SUCCESSFUL! A verification link has been sent to ${email}. Please check your inbox.`);
-                    
-                    // Switch UI back to login mode automatically
+                    showNotification(`REGISTRATION SUCCESSFUL! A verification link has been sent to ${email}.`);
                     document.getElementById('toggle-auth-mode').click();
                 }
             } catch (error) {
@@ -310,30 +331,42 @@
         });
 
         // ----------------------------------------
-        // LOGOUT & ACCOUNT DELETION
+        // LOGOUT LOGIC
         // ----------------------------------------
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
                 showNotification("LOGGED OUT SUCCESSFULLY");
-                document.getElementById('password-input').value = ""; // Clear password for security
+                document.getElementById('password-input').value = ""; 
             });
         });
 
-        document.getElementById('delete-account-btn').addEventListener('click', () => {
+        // ----------------------------------------
+        // CUSTOM MODAL DELETE LOGIC
+        // ----------------------------------------
+        const deleteModal = document.getElementById('delete-modal');
+
+        document.getElementById('open-delete-modal-btn').addEventListener('click', () => {
+            deleteModal.classList.remove('hidden');
+        });
+
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
+            deleteModal.classList.add('hidden');
+        });
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            deleteModal.classList.add('hidden'); // Close modal
+            
             const user = auth.currentUser;
             if (user) {
-                const confirmDelete = confirm("WARNING: This will permanently delete your account and all data. Are you sure?");
-                if (confirmDelete) {
-                    deleteUser(user).then(() => {
-                        showNotification("ACCOUNT DELETED PERMANENTLY");
-                    }).catch((error) => {
-                        if (error.code === 'auth/requires-recent-login') {
-                            showNotification("SECURITY ALERT: PLEASE LOG OUT AND LOG IN AGAIN TO DELETE");
-                        } else {
-                            showNotification("ERROR DELETING ACCOUNT");
-                        }
-                    });
-                }
+                deleteUser(user).then(() => {
+                    showNotification("ACCOUNT DELETED PERMANENTLY");
+                }).catch((error) => {
+                    if (error.code === 'auth/requires-recent-login') {
+                        showNotification("SECURITY ALERT: PLEASE LOG OUT AND LOG IN AGAIN TO DELETE");
+                    } else {
+                        showNotification("ERROR DELETING ACCOUNT");
+                    }
+                });
             }
         });
 
