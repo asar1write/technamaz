@@ -8,9 +8,9 @@
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* 1. BODY LOCK FIX (No Flexbox, No jump) */
+    /* BODY LOCK FIX - Changed background to match image warm tone */
     body { 
-        background: #f4f7f6; 
+        background: #fdf6f2; 
         width: 100vw; 
         height: 100vh; /* Locked by JS below */
         position: fixed; 
@@ -31,23 +31,74 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* 2. CARD ABSOLUTE CENTERING (Fixes the left-shift issue) */
+    /* AUTH WRAPPER - Holds both screens */
+    #auth-flow-wrapper {
+        width: 100%; height: 100%;
+        position: relative;
+    }
+
+    /* CARD ABSOLUTE CENTERING & SLIDE ANIMATIONS */
     .card-container {
         background: #ffffff; 
         width: 90%; max-width: 380px; padding: 40px 30px;
         border-radius: 30px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
         text-align: center;
         position: absolute; 
         top: 50%; 
         left: 50%;
-        transform: translate(-50%, -50%);
-        overflow: hidden;
+        transition: all 0.6s cubic-bezier(0.25, 1, 0.35, 1); /* Ultra smooth slide */
     }
 
+    /* SCREEN 1: WELCOME SCREEN */
+    #welcome-card {
+        transform: translate(-50%, -50%);
+        opacity: 1;
+        pointer-events: all;
+    }
+    #welcome-card.slide-out {
+        transform: translate(-150vw, -50%); /* Slides left */
+        opacity: 0;
+        pointer-events: none;
+    }
+
+    .illustration-wrapper {
+        width: 100%; height: 180px; background: #fffcfb; 
+        border-radius: 20px; margin-bottom: 25px; display: flex; 
+        align-items: center; justify-content: center;
+    }
+    .illustration-wrapper svg { width: 140px; height: auto; }
+
+    .welcome-actions { display: flex; align-items: center; gap: 15px; margin-top: 35px; }
+    .welcome-actions button { flex: 1; padding: 15px; font-size: 14px; font-weight: 900; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
+    .btn-login-main { background: #f25c27; color: #fff; border: none; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3); }
+    .btn-login-main:active { transform: scale(0.95); }
+    .btn-register-main { background: transparent; color: #333; border: none; }
+    .btn-register-main:active { color: #f25c27; }
+
+    /* SCREEN 2: LOGIN/REGISTER FORM */
+    #login-card-main {
+        transform: translate(150vw, -50%); /* Starts hidden on the right */
+        opacity: 0;
+        pointer-events: none;
+    }
+    #login-card-main.slide-in {
+        transform: translate(-50%, -50%); /* Comes to center */
+        opacity: 1;
+        pointer-events: all;
+    }
+
+    /* Back Button on Screen 2 */
+    .back-btn {
+        position: absolute; top: 20px; left: 20px; background: none; border: none;
+        color: #555; font-size: 24px; font-weight: bold; cursor: pointer;
+        transition: color 0.3s ease; z-index: 10;
+    }
+    .back-btn:active { color: #f25c27; transform: scale(0.9); }
+
     /* TYPOGRAPHY */
-    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
-    .card-container p { color: #222; font-size: 12px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px; }
+    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
+    .card-container p { color: #222; font-size: 11px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; }
 
     /* SMOOTH INPUT ANIMATIONS */
     .input-section { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
@@ -74,20 +125,11 @@
         margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease;
     }
     .phone-input-wrapper.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; padding: 0; }
-    
-    .country-code {
-        padding: 14px 10px 14px 16px; color: #333; font-weight: 800; font-size: 14px;
-        background: #f4f7f6; border-right: 1.5px solid #eaeaea;
-    }
+    .country-code { padding: 14px 10px 14px 16px; color: #333; font-weight: 800; font-size: 14px; background: #f4f7f6; border-right: 1.5px solid #eaeaea; }
     .phone-input-wrapper input { border: none; border-radius: 0; flex: 1; padding: 14px 16px; background: transparent; }
+    input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    input[type="number"]::-webkit-outer-spin-button, 
-    input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-
-    .forgot-pass {
-        display: block; text-align: right; color: #f25c27; font-size: 11px; font-weight: 800; 
-        text-decoration: none; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
-    }
+    .forgot-pass { display: block; text-align: right; color: #f25c27; font-size: 11px; font-weight: 800; text-decoration: none; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* BUTTONS */
     .primary-btn {
@@ -99,14 +141,10 @@
     }
     .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
     .danger-btn { background: #dc3545; box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3); }
-    .danger-btn:active { box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2); }
     .secondary-btn { background: #fdfdfd; color: #333; border: 1.5px solid #eaeaea; box-shadow: none; }
-    .secondary-btn:active { transform: scale(0.96); }
+    .secondary-btn:active, .danger-btn:active { transform: scale(0.96); }
 
-    .create-account { 
-        display: block; margin-top: 15px; color: #555; font-size: 12px; 
-        font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
-    }
+    .create-account { display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
     .create-account span { color: #f25c27; font-weight: 900; }
 
     /* Divider */
@@ -121,7 +159,7 @@
         border-radius: 12px; display: flex; align-items: center; justify-content: center;
         cursor: pointer; transition: all 0.3s ease; -webkit-tap-highlight-color: transparent;
     }
-    .social-btn:hover { background: #f9f9f9; border-color: #d0d0d0; transform: translateY(-2px); }
+    .social-btn:hover { background: #f9f9f9; transform: translateY(-2px); }
     .social-btn:active { transform: scale(0.92); }
     .social-btn svg { width: 20px; height: 20px; }
 
@@ -133,103 +171,129 @@
         z-index: 4000; opacity: 1; transition: opacity 0.3s ease;
     }
     .custom-modal-overlay.hidden { display: none !important; opacity: 0; pointer-events: none; }
-    .custom-modal {
-        background: #ffffff; width: 85%; max-width: 340px; padding: 35px 25px;
-        border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2);
-        text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
-    .custom-modal p { color: #111; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 0.5px; }
+    .custom-modal { background: #ffffff; width: 85%; max-width: 340px; padding: 35px 25px; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; margin-bottom: 12px; }
+    .custom-modal p { color: #111; font-size: 13px; font-weight: 800; margin-bottom: 30px; }
     .modal-actions { display: flex; gap: 12px; }
-    .modal-btn { 
-        flex: 1; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 900; 
-        cursor: pointer; text-transform: uppercase; border: none; letter-spacing: 1px; transition: all 0.2s ease;
-    }
-    .modal-btn:active { transform: scale(0.95); }
+    .modal-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 900; cursor: pointer; border: none; }
     .cancel-btn { background: #f4f7f6; color: #555; }
     .confirm-delete-btn { background: #dc3545; color: #fff; box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3); }
 
     .hidden { display: none !important; }
-    
-    /* HIDE RECAPTCHA PERMANENTLY */
     .grecaptcha-badge { visibility: hidden !important; display: none !important; }
 </style>
 </head>
 <body>
 
-    <!-- SCRIPT TO RIGIDLY LOCK BODY HEIGHT FOR MOBILE KEYBOARD -->
-    <script>
-        document.body.style.height = window.innerHeight + 'px';
-    </script>
+    <!-- RIGID BODY LOCK SCRIPT -->
+    <script> document.body.style.height = window.innerHeight + 'px'; </script>
 
     <!-- Notification Toast -->
     <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
 
-    <!-- 1. MAIN CARD -->
-    <div id="login-card-main" class="card-container">
-        <h2 id="form-title">LOGIN HERE</h2>
-        <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
-
-        <!-- EMAIL / PASSWORD SECTION -->
-        <div id="email-section" class="input-section">
-            <div class="input-group hidden-smooth" id="username-group">
-                <input type="text" id="username-input" placeholder="FULL NAME">
-            </div>
-            <div class="input-group">
-                <input type="email" id="email-input" placeholder="EMAIL ADDRESS">
-            </div>
-            <div class="input-group">
-                <input type="password" id="password-input" placeholder="PASSWORD">
-            </div>
-            
-            <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
-            <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
-            
-            <div class="create-account" id="toggle-auth-mode">
-                DON'T HAVE AN ACCOUNT? <span>REGISTER</span>
-            </div>
-        </div>
-
-        <!-- PHONE NUMBER SECTION -->
-        <div id="phone-section" class="input-section hidden">
-            <div class="phone-input-wrapper" id="phone-input-wrapper">
-                <span class="country-code">+91</span>
-                <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
-            </div>
-            <div class="input-group hidden-smooth" id="otp-input-group">
-                <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
-            </div>
-            
-            <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
-            <button id="verify-otp-btn" class="primary-btn hidden">VERIFY & LOGIN</button>
-            
-            <div class="create-account" id="back-to-email-btn">
-                USE EMAIL INSTEAD? <span>GO BACK</span>
-            </div>
-        </div>
-
-        <!-- Invisible Recaptcha Container Safely Placed Here -->
-        <div id="recaptcha-container"></div>
-
-        <div class="divider">
-            <span id="divider-text">OR CONTINUE WITH</span>
-        </div>
-
-        <!-- Social / Phone Buttons -->
-        <div class="social-login">
-            <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
-                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            </button>
-            <button class="social-btn" id="switch-to-phone-btn" title="CONTINUE WITH PHONE">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+    <!-- MAIN WRAPPER FOR SCREENS -->
+    <div id="auth-flow-wrapper">
+        
+        <!-- ==================== SCREEN 1: WELCOME ==================== -->
+        <div id="welcome-card" class="card-container">
+            <div class="illustration-wrapper">
+                <!-- Premium Abstract Illustration matching the vibe -->
+                <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="100" cy="75" r="50" fill="#fcf0ea" />
+                    <!-- Desk -->
+                    <rect x="50" y="110" width="100" height="6" fill="#333" rx="3" />
+                    <rect x="60" y="116" width="6" height="30" fill="#333" />
+                    <rect x="134" y="116" width="6" height="30" fill="#333" />
+                    <!-- Laptop -->
+                    <polygon points="90,110 120,110 130,85 105,85" fill="#555" />
+                    <rect x="90" y="108" width="30" height="4" fill="#222" />
+                    <!-- Person -->
+                    <circle cx="75" cy="55" r="14" fill="#f25c27" />
+                    <rect x="65" y="75" width="20" height="35" fill="#f25c27" rx="8" />
+                    <rect x="70" y="85" width="25" height="12" fill="#f25c27" rx="6" transform="rotate(30, 70, 85)" />
+                    <!-- Plant details -->
+                    <path d="M 160 110 Q 155 90 165 80" stroke="#f25c27" stroke-width="3" fill="none" />
+                    <circle cx="165" cy="80" r="8" fill="#f25c27" />
                 </svg>
-            </button>
+            </div>
+            
+            <h2>DISCOVER YOUR DREAM JOB HERE</h2>
+            <p>EXPLORE ALL THE EXISTING JOB ROLES, BASED ON YOUR INTEREST AND STUDY MAJOR</p>
+            
+            <div class="welcome-actions">
+                <button id="nav-login-btn" class="btn-login-main">LOGIN</button>
+                <button id="nav-register-btn" class="btn-register-main">REGISTER</button>
+            </div>
         </div>
-    </div>
 
-    <!-- 2. LOGGED IN DASHBOARD -->
-    <div id="dashboard-card" class="card-container hidden">
+        <!-- ==================== SCREEN 2: LOGIN / REGISTER ==================== -->
+        <div id="login-card-main" class="card-container">
+            <!-- Back button to return to Welcome Screen -->
+            <button id="back-to-welcome" class="back-btn">&#8592;</button>
+
+            <h2 id="form-title">LOGIN HERE</h2>
+            <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
+
+            <!-- EMAIL / PASSWORD SECTION -->
+            <div id="email-section" class="input-section">
+                <div class="input-group hidden-smooth" id="username-group">
+                    <input type="text" id="username-input" placeholder="FULL NAME">
+                </div>
+                <div class="input-group">
+                    <input type="email" id="email-input" placeholder="EMAIL ADDRESS">
+                </div>
+                <div class="input-group">
+                    <input type="password" id="password-input" placeholder="PASSWORD">
+                </div>
+                
+                <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
+                <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
+                
+                <div class="create-account" id="toggle-auth-mode">
+                    DON'T HAVE AN ACCOUNT? <span>REGISTER</span>
+                </div>
+            </div>
+
+            <!-- PHONE NUMBER SECTION -->
+            <div id="phone-section" class="input-section hidden">
+                <div class="phone-input-wrapper" id="phone-input-wrapper">
+                    <span class="country-code">+91</span>
+                    <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
+                </div>
+                <div class="input-group hidden-smooth" id="otp-input-group">
+                    <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
+                </div>
+                
+                <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
+                <button id="verify-otp-btn" class="primary-btn hidden">VERIFY & LOGIN</button>
+                
+                <div class="create-account" id="back-to-email-btn">
+                    USE EMAIL INSTEAD? <span>GO BACK</span>
+                </div>
+            </div>
+
+            <div id="recaptcha-container"></div>
+
+            <div class="divider">
+                <span id="divider-text">OR CONTINUE WITH</span>
+            </div>
+
+            <!-- Social / Phone Buttons -->
+            <div class="social-login">
+                <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                </button>
+                <button class="social-btn" id="switch-to-phone-btn" title="CONTINUE WITH PHONE">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div> <!-- End Auth Flow Wrapper -->
+
+    <!-- ==================== SCREEN 3: DASHBOARD ==================== -->
+    <div id="dashboard-card" class="card-container hidden" style="transform: translate(-50%, -50%); left: 50%;">
         <h2>PROFILE</h2>
         <p id="user-display-name">LOADING...</p>
         <button id="logout-btn" class="primary-btn secondary-btn">LOG OUT</button>
@@ -237,7 +301,7 @@
         <button id="open-delete-modal-btn" class="primary-btn danger-btn">DELETE ACCOUNT</button>
     </div>
 
-    <!-- 3. CUSTOM DELETE ACCOUNT MODAL -->
+    <!-- CUSTOM DELETE ACCOUNT MODAL -->
     <div id="delete-modal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
             <h3>WARNING</h3>
@@ -257,12 +321,57 @@
             document.getElementById('toast-message').textContent = message.toUpperCase(); 
             toast.classList.add('show');
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 1500); 
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000); 
         }
+
         let isLoginMode = true; 
+        const welcomeCard = document.getElementById('welcome-card');
+        const loginCard = document.getElementById('login-card-main');
+
+        // Function to explicitely set mode and slide
+        function openAuthScreen(modeIsLogin) {
+            isLoginMode = modeIsLogin;
+            const usernameGroup = document.getElementById('username-group');
+            
+            if (isLoginMode) {
+                document.getElementById('form-title').textContent = "LOGIN HERE";
+                document.getElementById('form-subtitle').textContent = "WELCOME BACK YOU'VE BEEN MISSED!";
+                document.getElementById('email-auth-btn').textContent = "SIGN IN";
+                document.getElementById('forgot-pass-link').style.display = "block";
+                document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
+                usernameGroup.classList.add('hidden-smooth'); 
+            } else {
+                document.getElementById('form-title').textContent = "REGISTER HERE";
+                document.getElementById('form-subtitle').textContent = "CREATE AN ACCOUNT TO SECURELY SAVE DATA";
+                document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
+                document.getElementById('forgot-pass-link').style.display = "none";
+                document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
+                usernameGroup.classList.remove('hidden-smooth'); 
+            }
+
+            // Trigger Slide Animation
+            welcomeCard.classList.add('slide-out');
+            loginCard.classList.add('slide-in');
+        }
+
+        // Screen 1 Button Listeners
+        document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
+        document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
+
+        // Back Button Logic
+        document.getElementById('back-to-welcome').addEventListener('click', () => {
+            welcomeCard.classList.remove('slide-out');
+            loginCard.classList.remove('slide-in');
+        });
+
+        // Toggle link on Screen 2
+        document.getElementById('toggle-auth-mode').addEventListener('click', () => {
+            openAuthScreen(!isLoginMode);
+        });
+
     </script>
 
-    <!-- Firebase Script -->
+     <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -286,7 +395,6 @@
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // REDIRECT LISTENER
         getRedirectResult(auth).then((result) => {
             if (result) showNotification("GOOGLE LOGIN SUCCESS!");
         }).catch((error) => {
@@ -294,28 +402,33 @@
         });
 
         // ----------------------------------------
-        // AUTHENTICATION STATE
+        // AUTHENTICATION STATE OBSERVER
         // ----------------------------------------
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
-                    document.getElementById('login-card-main').classList.remove('hidden');
+                    // Not verified - Show Auth Flow
+                    document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                     document.getElementById('dashboard-card').classList.add('hidden');
                 } else {
-                    document.getElementById('login-card-main').classList.add('hidden');
+                    // Verified - Show Dashboard
+                    document.getElementById('auth-flow-wrapper').classList.add('hidden');
                     document.getElementById('dashboard-card').classList.remove('hidden');
                     const displayInfo = user.displayName || user.email || user.phoneNumber || "VERIFIED USER";
                     document.getElementById('user-display-name').textContent = `LOGGED IN AS: ${displayInfo.toUpperCase()}`;
                 }
             } else {
-                document.getElementById('login-card-main').classList.remove('hidden');
+                // Logged Out - Show Auth Flow (Reset to Welcome Screen)
+                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                 document.getElementById('dashboard-card').classList.add('hidden');
+                welcomeCard.classList.remove('slide-out');
+                loginCard.classList.remove('slide-in');
                 resetPhoneUI();
             }
         });
 
         // ----------------------------------------
-        // UI TOGGLE: EMAIL VS PHONE
+        // PHONE AUTHENTICATION & OTHER LOGIC
         // ----------------------------------------
         document.getElementById('switch-to-phone-btn').addEventListener('click', () => {
             document.getElementById('email-section').classList.add('hidden');
@@ -327,37 +440,10 @@
         document.getElementById('back-to-email-btn').addEventListener('click', () => {
             document.getElementById('phone-section').classList.add('hidden');
             document.getElementById('email-section').classList.remove('hidden');
-            document.getElementById('form-title').textContent = isLoginMode ? "LOGIN HERE" : "REGISTER HERE";
-            document.getElementById('form-subtitle').textContent = isLoginMode ? "WELCOME BACK YOU'VE BEEN MISSED!" : "CREATE AN ACCOUNT TO SECURELY SAVE DATA";
+            openAuthScreen(isLoginMode); // Resets titles properly
             resetPhoneUI();
         });
 
-        // ----------------------------------------
-        // UI TOGGLE: LOGIN VS REGISTER
-        // ----------------------------------------
-        document.getElementById('toggle-auth-mode').addEventListener('click', () => {
-            isLoginMode = !isLoginMode;
-            const usernameGroup = document.getElementById('username-group');
-            if (isLoginMode) {
-                document.getElementById('form-title').textContent = "LOGIN HERE";
-                document.getElementById('form-subtitle').textContent = "WELCOME BACK YOU'VE BEEN MISSED!";
-                document.getElementById('email-auth-btn').textContent = "SIGN IN";
-                document.getElementById('forgot-pass-link').style.display = "block";
-                document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
-                usernameGroup.classList.add('hidden-smooth'); 
-            } else {
-                document.getElementById('form-title').textContent = "REGISTER HERE";
-                document.getElementById('form-subtitle').textContent = "CREATE AN ACCOUNT TO SECURELY SAVE DATA";
-                document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
-                document.getElementById('forgot-pass-link').style.display = "none";
-                document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
-                usernameGroup.classList.remove('hidden-smooth'); 
-            }
-        });
-
-        // ----------------------------------------
-        // PHONE AUTHENTICATION LOGIC (+91)
-        // ----------------------------------------
         let confirmationResultObj = null;
 
         function resetPhoneUI() {
@@ -410,17 +496,14 @@
             const btn = document.getElementById('verify-otp-btn');
             btn.disabled = true; btn.textContent = "VERIFYING...";
 
-            confirmationResultObj.confirm(code).then((result) => {
+            confirmationResultObj.confirm(code).then(() => {
                 showNotification("PHONE LOGIN SUCCESS!");
-            }).catch((error) => {
+            }).catch(() => {
                 showNotification("INVALID OTP. TRY AGAIN.");
                 btn.disabled = false; btn.textContent = "VERIFY & LOGIN";
             });
         });
 
-        // ----------------------------------------
-        // FORGOT PASSWORD LOGIC
-        // ----------------------------------------
         document.getElementById('forgot-pass-link').addEventListener('click', async () => {
             const email = document.getElementById('email-input').value.trim();
             if (!email) { showNotification("ENTER EMAIL FIRST"); return; }
@@ -434,9 +517,6 @@
             }
         });
 
-        // ----------------------------------------
-        // EMAIL / PASSWORD LOGIC
-        // ----------------------------------------
         document.getElementById('email-auth-btn').addEventListener('click', async () => {
             const username = document.getElementById('username-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
@@ -465,7 +545,7 @@
                     await signOut(auth);
                     
                     showNotification("LINK SENT! CHECK EMAIL.");
-                    document.getElementById('toggle-auth-mode').click();
+                    openAuthScreen(true); // Switch back to login view smoothly
                 }
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS.");
@@ -477,17 +557,11 @@
             }
         });
 
-        // ----------------------------------------
-        // GOOGLE LOGIN
-        // ----------------------------------------
         document.getElementById('google-login-btn').addEventListener('click', () => {
             showNotification("REDIRECTING...");
             signInWithRedirect(auth, provider);
         });
 
-        // ----------------------------------------
-        // LOGOUT LOGIC
-        // ----------------------------------------
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
                 showNotification("LOGGED OUT!");
@@ -495,17 +569,9 @@
             });
         });
 
-        // ----------------------------------------
-        // CUSTOM MODAL DELETE
-        // ----------------------------------------
         const deleteModal = document.getElementById('delete-modal');
-
-        document.getElementById('open-delete-modal-btn').addEventListener('click', () => {
-            deleteModal.classList.remove('hidden');
-        });
-        document.getElementById('cancel-delete-btn').addEventListener('click', () => {
-            deleteModal.classList.add('hidden');
-        });
+        document.getElementById('open-delete-modal-btn').addEventListener('click', () => deleteModal.classList.remove('hidden'));
+        document.getElementById('cancel-delete-btn').addEventListener('click', () => deleteModal.classList.add('hidden'));
         document.getElementById('confirm-delete-btn').addEventListener('click', () => {
             deleteModal.classList.add('hidden'); 
             const user = auth.currentUser;
@@ -518,7 +584,7 @@
                 });
             }
         });
-
     </script>
 </body>
 </html>
+    
