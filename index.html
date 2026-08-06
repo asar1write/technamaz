@@ -1,612 +1,247 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
-    <title>Tech Asar - Pro Tracker</title>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pro Navigation & Cloud Sync</title>
+<style>
+    /* Reset and base styles */
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    <!-- Fonts -->
-    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700;900&family=Lora:wght@700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@500;700;900&family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    
-    <style>
-        /* 🚀 THEME VARIABLES 🚀 */
-        :root {
-            --primary: #10b981;
-            --primary-dark: #059669;
-            --primary-light: #34d399;
-            --primary-rgb: 16, 185, 129;
-            --bg-dark: #0f172a;
-            --bg-card: #1e293b;
-            --app-font: 'Montserrat', sans-serif;
-        }
+    body { 
+        background: radial-gradient(circle at 50% 50%, #15202b 0%, #0f1419 100%); 
+        height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; 
+    }
 
-        /* HIDDEN SCROLLBAR & SMOOTH SCROLLING */
-        ::-webkit-scrollbar { display: none !important; }
-        * { scrollbar-width: none !important; -ms-overflow-style: none !important; -webkit-user-select: none !important; user-select: none !important; -webkit-touch-callout: none; -webkit-tap-highlight-color: transparent !important; box-sizing: border-box; font-family: var(--app-font); }
-        textarea, input { -webkit-user-select: text !important; user-select: text !important; text-transform: none !important; }
+    /* Notification Toast (Smooth UI) */
+    .toast {
+        position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
+        background: linear-gradient(135deg, #f25c27, #e04a16); color: #fff; padding: 14px 28px;
+        border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+        box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
+        opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
+        display: flex; align-items: center; gap: 10px;
+    }
+    .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-        /* ===== MAIN APP SHELL ===== */
-        html, body { background-color: var(--bg-dark); display: flex; justify-content: center; height: 100vh; height: 100dvh; width: 100vw; overflow: hidden; overscroll-behavior: none; touch-action: none; margin: 0; padding: 0; transition: background-color 0.4s; }
+    /* --- NEW LIGHT THEME LOGIN OVERLAY (Based on 8081.jpg) --- */
+    .login-overlay {
+        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+        background: rgba(10, 15, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 2500; opacity: 0; pointer-events: none;
+        transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+    }
+    .login-overlay.active { opacity: 1; pointer-events: auto; }
 
-        .app-container { width: 100%; max-width: 480px; height: 100%; background: var(--bg-dark); position: relative; box-shadow: 0 0 30px rgba(0,0,0,0.2); overflow: hidden; display: flex; flex-direction: column; padding-top: env(safe-area-inset-top); opacity: 0; transform: scale(0.98); transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); }
-        .app-container.ready { opacity: 1; transform: scale(1); }
-        .view-container { flex-grow: 1; position: relative; width: 100%; overflow: hidden; }
-        
-        /* =========================================
-           ROYAL SPLASH SCREEN 
-           ========================================= */
-        #splashScreen { position: fixed; inset: 0; background: #010810; display: flex; flex-direction: column; justify-content: center; align-items: center; z-index: 99999; transition: opacity 0.4s ease-out; }
-        .splash-glow { position: absolute; width: 350px; height: 350px; background: radial-gradient(circle, rgba(var(--primary-rgb), 0.25) 0%, transparent 70%); border-radius: 50%; animation: pulseGlow 2.5s ease-in-out infinite alternate; }
-        @keyframes pulseGlow { 0% { transform: scale(0.85); opacity: 0.6; } 100% { transform: scale(1.15); opacity: 1; } }
-        .splash-content { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; width: 100%; padding: 0 20px; }
-        .svg-icon-wrapper { width: 110px; height: 110px; margin-bottom: 18px; display: flex; justify-content: center; align-items: center; }
-        .splash-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0px 10px 20px rgba(var(--primary-rgb), 0.2)); }
-        .svg-path { stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; animation: drawLine 1s ease-out forwards, fillIcon 0.5s ease-out 0.8s forwards; }
-        .ring-spin { transform-origin: 50px 50px; animation: spinRing 12s linear infinite; }
-        @keyframes drawLine { to { stroke-dashoffset: 0; } }
-        @keyframes fillIcon { to { fill-opacity: 1; filter: drop-shadow(0px 6px 12px rgba(var(--primary-rgb), 0.35)); } }
-        @keyframes spinRing { to { transform: rotate(360deg); } }
-        
-        .text-container { display: flex; flex-direction: column; align-items: center; text-align: center; }
-        .splash-title { font-family: 'Outfit', sans-serif; font-size: 1.85em; font-weight: 900; letter-spacing: 3px; margin: 0; text-transform: uppercase; background: linear-gradient(90deg, var(--primary-light), #fff, var(--primary-light)); background-size: 200% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; opacity: 0; transform: translateY(12px); animation: popUpFade 0.5s ease-out 0.5s forwards, shineText 3s linear infinite 1s; }
-        .glowing-line { width: 0px; height: 2.5px; background: linear-gradient(90deg, transparent, var(--primary-light), transparent); margin: 8px auto; border-radius: 5px; opacity: 0; animation: expandLine 0.5s ease-out 0.8s forwards; }
-        .splash-subtitle { font-family: 'Poppins', sans-serif; color: #cbd5e1; font-size: 0.75em; font-weight: 600; letter-spacing: 5px; opacity: 0; animation: popUpFade 0.5s ease-out 0.9s forwards; }
-        @keyframes popUpFade { to { opacity: 1; transform: translateY(0); } }
-        @keyframes expandLine { to { width: 120px; opacity: 1; box-shadow: 0 0 10px var(--primary); } }
+    .login-card {
+        background: #ffffff; 
+        width: 90%; max-width: 360px; padding: 40px 30px;
+        border-radius: 30px; 
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        text-align: center; transform: translateY(40px) scale(0.9);
+        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+        position: relative; overflow: hidden;
+    }
+    .login-overlay.active .login-card { transform: translateY(0) scale(1); }
 
-        /* VIEW LOGIC */
-        .view { position: absolute; top: 0; left: 0; width: 100%; height: 100%; overflow-y: auto; overflow-x: hidden; opacity: 0; transform: translateY(10px) scale(0.98); display: none; z-index: 1; transition: opacity 0.25s cubic-bezier(0.25, 1, 0.5, 1), transform 0.25s cubic-bezier(0.25, 1, 0.5, 1); padding-bottom: 100px; }
+    .login-card h2 { 
+        color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; 
+    }
+    .login-card p { 
+        color: #333333; font-size: 13px; font-weight: 600; 
+        margin-bottom: 25px;
+    }
 
-        /* =========================================
-           TELEGRAM PILL BOTTOM NAVIGATION
-           ========================================= */
-        .bottom-nav {
-            background-color: #1d2733; 
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            width: 90%;
-            max-width: 380px; 
-            padding: 4px 6px; 
-            border-radius: 40px; 
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4);
-            position: absolute;
-            bottom: calc(15px + env(safe-area-inset-bottom));
-            left: 50%;
-            transform: translateX(-50%);
-            z-index: 50;
-        }
+    /* Input Fields */
+    .input-group {
+        position: relative; margin-bottom: 15px; text-align: left;
+    }
+    .input-group input {
+        width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
+        padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 500;
+        color: #333; outline: none; transition: all 0.3s ease;
+    }
+    .input-group input:focus { border-color: #f25c27; background: #fff5f2; }
+    .input-group input::placeholder { color: #a0a0a0; }
 
-        .nav-item {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            width: 25%;
-            padding: 6px 0;
-            border-radius: 30px; 
-            cursor: pointer;
-            -webkit-tap-highlight-color: transparent;
-            transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-            color: #ffffff;
-        }
+    .forgot-pass {
+        display: block; text-align: right; color: #f25c27; font-size: 11px;
+        font-weight: 700; text-decoration: none; margin-bottom: 20px; cursor: pointer;
+    }
 
-        .nav-item:active { transform: scale(0.92); }
-        .nav-item.active { background-color: #1a2f42; color: var(--primary-light); }
+    /* Main Action Button */
+    .primary-btn {
+        width: 100%; background: #f25c27; color: #ffffff; border: none;
+        padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 800;
+        cursor: pointer; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3);
+        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+        -webkit-tap-highlight-color: transparent;
+    }
+    .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
 
-        .icon-container {
-            position: relative;
-            margin-bottom: 2px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            width: 24px;
-            height: 24px;
-        }
+    .create-account {
+        display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 600; cursor: pointer;
+    }
+    .create-account span { color: #f25c27; font-weight: 800; }
 
-        .nav-item svg {
-            width: 22px; height: 22px;
-            fill: transparent; stroke: #ffffff;
-            stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
-            transition: all 0.3s ease;
-        }
+    /* Divider */
+    .divider {
+        display: flex; align-items: center; text-align: center; margin: 25px 0 20px 0;
+    }
+    .divider::before, .divider::after {
+        content: ''; flex: 1; border-bottom: 1px solid #eaeaea;
+    }
+    .divider span { padding: 0 10px; color: #888; font-size: 11px; font-weight: 600; }
 
-        .nav-item.active svg { stroke: var(--primary-light); fill: var(--primary-light); }
-        .nav-item:not(.active) .chats-icon path { fill: #ffffff; stroke: none; }
-        .nav-item.active .chats-icon path { fill: var(--primary-light); stroke: none; }
-        .nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2px; font-family: 'Roboto', sans-serif;}
+    /* Social Buttons */
+    .social-login {
+        display: flex; justify-content: center; gap: 15px;
+    }
+    .social-btn {
+        width: 45px; height: 45px; background: #ffffff; border: 1.5px solid #eaeaea;
+        border-radius: 12px; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.3s ease; -webkit-tap-highlight-color: transparent;
+    }
+    .social-btn:hover { background: #f9f9f9; border-color: #d0d0d0; transform: translateY(-2px); }
+    .social-btn:active { transform: scale(0.92); }
+    .social-btn svg { width: 20px; height: 20px; }
 
-        .badge {
-            position: absolute; top: -4px; right: -6px;
-            background-color: #ff5252; color: white;
-            font-size: 10px; font-weight: bold;
-            width: 15px; height: 15px; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            border: 2px solid #1d2733; z-index: 2;
-        }
+    /* Main Floating Pill Container */
+    .bottom-nav {
+        background: rgba(29, 39, 51, 0.95); backdrop-filter: blur(10px);
+        display: flex; justify-content: space-between; align-items: center;
+        width: 90%; max-width: 400px; padding: 6px 8px; border-radius: 40px; 
+        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); position: fixed; bottom: 35px;
+        border: 1px solid rgba(255, 255, 255, 0.05);
+    }
+    .nav-item {
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        width: 25%; padding: 8px 0; border-radius: 30px; cursor: pointer;
+        -webkit-tap-highlight-color: transparent; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); color: #8a96a3;
+    }
+    .nav-item:active { transform: scale(0.9); }
+    .nav-item.active { background-color: #1a2f42; color: #f25c27; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
+    .icon-container { position: relative; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
+    .nav-item svg { width: 22px; height: 22px; fill: transparent; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.3s ease; }
+    .nav-item.active svg { stroke: #f25c27; fill: #f25c27; }
+    .nav-item:not(.active) .chats-icon path { fill: currentColor; stroke: none; }
+    .nav-item.active .chats-icon path { fill: #f25c27; stroke: none; }
+    .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; transition: color 0.3s ease; }
 
-        .profile-circle {
-            width: 22px; height: 22px;
-            background-color: #5cbb5c; border-radius: 50%;
-            display: flex; align-items: center; justify-content: center;
-            color: #ffffff; font-size: 10px; font-weight: bold;
-            font-family: 'Poppins', sans-serif;
-            overflow: hidden;
-        }
-        .profile-circle img { width: 100%; height: 100%; object-fit: cover; }
-
-        /* ===== HEADER W/ SWEEPING LIGHT EFFECT ===== */
-        .tracker-container { padding: 15px; width: 100%; display: flex; flex-direction: column; align-items: center; font-family: 'Roboto', sans-serif; text-transform: uppercase; }
-        .header { position: relative; margin-bottom: 12px; background: rgba(30, 41, 59, 0.8); backdrop-filter: blur(10px); padding: 10px 15px; border-radius: 18px; color: #fff; width: 100%; max-width: 500px; box-shadow: 0 4px 15px rgba(0, 0, 0, 0.3); display: flex; align-items: center; justify-content: space-between; gap: 10px; border: 1px solid rgba(255, 255, 255, 0.05); }
-        .header-date-controls { display: flex; gap: 8px; align-items: center; z-index: 2; }
-        .header-select { background: var(--bg-dark); border: 1px solid #475569; border-radius: 10px; padding: 6px 12px; font-size: 0.85em; font-weight: 900; color: #f8fafc; cursor: pointer; transition: all 0.2s; display: flex; align-items: center; justify-content: center; gap: 4px; font-family: 'Outfit', sans-serif; }
-        .header-select:active { transform: scale(0.95); background: #334155; }
-        
-        .header h1 { 
-            font-family: 'Lora', serif; font-size: 1.3em; margin: 0; font-weight: 900; 
-            background: linear-gradient(90deg, var(--primary-dark), var(--primary-light), #ffffff, var(--primary-light), var(--primary-dark)); 
-            background-size: 300% auto; -webkit-background-clip: text; -webkit-text-fill-color: transparent; 
-            animation: textShineSweep 3.5s linear infinite; 
-        }
-        @keyframes textShineSweep { 0% { background-position: -100% center; } 100% { background-position: 200% center; } }
-
-        /* ===== 5-COLUMN DAY GRID ===== */
-        .days-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 500px; padding-top: 5px; }
-        .day-card { 
-            background: linear-gradient(135deg, var(--bg-card), var(--bg-dark)); 
-            border: 2px solid #334155; border-radius: 14px; 
-            display: flex; flex-direction: column; align-items: center; justify-content: center; 
-            padding: 8px 4px; cursor: pointer; box-shadow: 0 4px 10px rgba(0,0,0,0.2); 
-            transition: transform 0.2s cubic-bezier(0.25, 0.8, 0.25, 1), border 0.3s; 
-            position: relative; overflow: hidden;
-            height: 72px; 
-        }
-        .day-card:active { transform: scale(0.92); }
-        .day-card.disabled { opacity: 0.2; pointer-events: none; }
-        
-        .day-card.today { border-color: var(--primary); box-shadow: 0 0 12px rgba(var(--primary-rgb), 0.35); }
-        .day-card.today:not(.completed) .dc-num { color: var(--primary-light); }
-        .day-card.fri-highlight { border-color: rgba(234, 179, 8, 0.4); } 
-        .day-card.fri-highlight .dc-day { color: #facc15; text-shadow: 0 0 5px rgba(250, 204, 21, 0.5); }
-
-        .day-card.completed { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); border-color: var(--primary-light); box-shadow: 0 6px 15px rgba(var(--primary-rgb), 0.3); }
-        .day-card.completed::after {
-            content: ""; position: absolute; top: 0; left: -100%; width: 50%; height: 100%;
-            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
-            transform: skewX(-25deg); animation: cardSweep 3.5s cubic-bezier(0.4, 0, 0.2, 1) infinite;
-        }
-        @keyframes cardSweep { 0% { left: -100%; } 25% { left: 200%; } 100% { left: 200%; } }
-
-        .dc-content { display: flex; flex-direction: column; align-items: center; justify-content: center; width: 100%; position: relative; z-index: 2; }
-        .dc-num { font-size: 1.35em; font-weight: 900; color: #f8fafc; line-height: 1; font-family: var(--app-font);}
-        .dc-day { font-size: 0.55em; font-weight: 800; color: #cbd5e1; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
-        
-        .dc-dots { display: flex; gap: 3px; margin-top: 5px; }
-        .dot { width: 4.5px; height: 4.5px; border-radius: 50%; background: #475569; transition: background 0.3s; }
-        .dot.active { background: var(--primary-light); box-shadow: 0 0 4px var(--primary-light); }
-
-        .dc-lock { display: none; color: #ecfdf5; align-items: center; justify-content: center; height: 100%; position: relative; z-index: 2;}
-        .day-card.completed .dc-content { display: none; }
-        .day-card.completed .dc-lock { display: flex; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .dc-lock svg { width: 22px; height: 22px; }
-
-        /* ===== UI BUTTONS & BOXES ===== */
-        .full-card-box { background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); padding: 20px; width: 100%; border-radius: 20px; text-align: center; margin-bottom: 15px; backdrop-filter: blur(10px);}
-        .pill-header { background: linear-gradient(135deg, #334155, var(--bg-card)); border: 1px solid #475569; color: #f8fafc; padding: 6px 18px; border-radius: 50px; display: inline-block; font-size: 0.9em; font-family: 'Outfit', sans-serif; font-weight: 800; margin: 0; letter-spacing: 1px; }
-        
-        .modern-btn { width: 100%; padding: 14px; border-radius: 12px; font-family: 'Outfit', sans-serif; font-weight: 800; font-size: 1em; letter-spacing: 0.5px; display: flex; align-items: center; justify-content: center; gap: 10px; cursor: pointer; transition: all 0.2s cubic-bezier(0.25, 0.8, 0.25, 1); border: none; outline: none; margin-bottom: 12px; position: relative; overflow: hidden; }
-        .modern-btn:active { transform: scale(0.96); }
-
-        .btn-primary { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: #fff; box-shadow: 0 4px 15px rgba(var(--primary-rgb), 0.3); border: 1px solid var(--primary-light); }
-        .btn-secondary { background: var(--bg-dark); color: #e2e8f0; border: 1px solid #475569; box-shadow: 0 4px 10px rgba(0,0,0,0.2); }
-        .btn-outline { background: transparent; color: var(--primary-light); border: 1px solid var(--primary); }
-        .btn-danger { background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid #ef4444; }
-
-        .code-textarea { width: 100%; height: 120px; margin: 10px 0 15px 0; padding: 12px; border-radius: 12px; border: 1px solid #475569; background: rgba(15, 23, 42, 0.8); color:#f8fafc; font-family: monospace; font-size: 0.85em; box-sizing: border-box; resize: none; word-break: break-all; outline: none; font-weight: 500; transition: all 0.2s;}
-        .code-textarea:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2); }
-        .modal-btns { display: flex; justify-content: space-between; gap: 10px; width: 100%; }
-        .modal-btns .modern-btn { margin-bottom: 0; }
-        
-        .font-selector-btn { background: var(--bg-dark); border: 1px solid #475569; color: #fff; padding: 14px; border-radius: 10px; width: 100%; font-family: var(--app-font); outline: none; margin-bottom: 12px; font-weight: 700; display:flex; justify-content:space-between; align-items:center; cursor: pointer; transition: 0.2s;}
-        .font-selector-btn:active { transform: scale(0.96); background: #334155; }
-
-        /* ===== PRAYER MODAL ===== */
-        .modal-overlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(5px); z-index: 9999; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; }
-        .modal-overlay.show { opacity: 1; }
-        .prayer-modal-content { position: relative; background: var(--bg-card); width: 85%; max-width: 320px; border-radius: 24px; padding: 20px; display: flex; flex-direction: column; gap: 12px; border: 1px solid rgba(255,255,255,0.1); box-shadow: 0 20px 40px rgba(0,0,0,0.5); transform: scale(0.95); transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        .modal-overlay.show .prayer-modal-content { transform: scale(1); }
-        
-        .pm-header { text-align: center; margin-bottom: 5px; margin-top: 5px;}
-        .pm-date { font-size: 1.6em; font-weight: 900; color: #f8fafc; font-family: 'Lora', serif;}
-        .pm-day { font-size: 0.8em; font-weight: 600; color: var(--primary-light); letter-spacing: 2px; text-transform: uppercase; }
-        
-        .prayer-list { display: flex; flex-direction: column; gap: 8px; }
-        .prayer-row { display: flex; align-items: center; justify-content: space-between; background: var(--bg-dark); padding: 10px 14px; border-radius: 14px; border: 1px solid #334155; }
-        .pr-left { display: flex; align-items: center; gap: 12px; }
-        .pr-icon { width: 34px; height: 34px; border-radius: 10px; background: rgba(var(--primary-rgb), 0.15); color: var(--primary); display: flex; justify-content: center; align-items: center; }
-        .pr-name { font-size: 1em; font-weight: 900; color: #f8fafc; letter-spacing: 1px;}
-        
-        .pr-check input[type="checkbox"] { appearance: none; -webkit-appearance: none; width: 28px; height: 28px; border: 2px solid #475569; border-radius: 8px; background: transparent; cursor: pointer; display: flex; align-items: center; justify-content: center; transition: all 0.2s; margin: 0; }
-        .pr-check input[type="checkbox"]:active { transform: scale(0.85); }
-        .pr-check input[type="checkbox"]:checked { background: var(--primary); border-color: var(--primary); box-shadow: 0 0 10px rgba(var(--primary-rgb),0.3);}
-        .pr-check input[type="checkbox"]:checked::after { content: ""; width: 6px; height: 12px; border: solid white; border-width: 0 2.5px 2.5px 0; transform: rotate(45deg); margin-top: -2px; }
-        .close-btn { position: absolute; top: 12px; right: 12px; background: #334155; border: 1px solid #475569; color: #cbd5e1; border-radius: 50%; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; z-index: 20; }
-        .close-btn:active { background: #ef4444; color: #fff; transform: rotate(90deg) scale(0.9); border-color:#ef4444; }
-
-        /* ===== DROPDOWNS ===== */
-        .dropdown-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.8); backdrop-filter: blur(3px); z-index: 9998; opacity: 0; visibility: hidden; transition: opacity 0.25s; }
-        .dropdown-overlay.show { opacity: 1; visibility: visible; }
-        
-        .custom-options { position: fixed; top: 50%; left: 50%; transform: translate(-50%, -45%) scale(0.95); background: var(--bg-card); border: 1px solid #475569; border-radius: 20px; box-shadow: 0 20px 40px rgba(0,0,0,0.5); width: 90%; max-width: 360px; max-height: 80vh; z-index: 9999; opacity: 0; visibility: hidden; transition: opacity 0.25s, transform 0.25s, visibility 0.25s; display: flex; flex-direction: column; overflow: hidden; }
-        .custom-options.show { opacity: 1; visibility: visible; transform: translate(-50%, -50%) scale(1); }
-        
-        .dropdown-header-wrapper { background: var(--bg-card); padding: 18px 15px 12px 15px; text-align: center; border-bottom: 1px solid #334155; flex-shrink: 0; }
-        
-        .dropdown-body { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; padding: 15px; overflow-y: auto; background: var(--bg-dark); flex-grow: 1; }
-        .dropdown-body.single-col { grid-template-columns: 1fr; }
-        
-        .grid-option { background: var(--bg-card); border: 1.5px solid #334155; border-radius: 10px; padding: 12px 2px; cursor: pointer; font-size: 0.9em; color: #cbd5e1; font-weight: 800; text-align: center; transition: all 0.2s; position: relative; }
-        .grid-option:active { transform: scale(0.92); }
-        .grid-option.selected { background: linear-gradient(135deg, var(--primary-dark), var(--primary)); color: white; border-color: var(--primary-light); }
-        
-        .jamuni-blur-badge { position: absolute; top: -6px; right: -6px; background: var(--primary); border: 2px solid var(--bg-card); border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; color: #fff; animation: popIn 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
-        @keyframes popIn { 0% { transform: scale(0); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
-        .jamuni-blur-badge svg { width: 10px; height: 10px; }
-
-        /* STATS & ADMIN */
-        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 15px; width: 100%;}
-        .stat-box { background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.05); border-radius: 16px; padding: 15px; display: flex; flex-direction: column; align-items: center; justify-content: center;}
-        .stat-val { font-size: 1.6em; font-weight: 900; color: var(--primary); font-family: 'Montserrat', sans-serif;}
-        .stat-label { font-size: 0.6em; font-weight: 700; color: #94a3b8; letter-spacing: 1px; margin-top: 4px; text-transform: uppercase;}
-
-        .theme-dot { width: 36px; height: 36px; border-radius: 50%; cursor: pointer; border: 2px solid #fff; box-shadow: 0 4px 10px rgba(0,0,0,0.3); transition: transform 0.2s; }
-        .theme-dot:active { transform: scale(0.85); }
-        
-        /* CONFIRM BOX & TOAST */
-        .customConfirmOverlay { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); backdrop-filter: blur(4px); z-index: 10000; justify-content: center; align-items: center; opacity: 0; transition: opacity 0.2s; }
-        .customConfirmOverlay.show { opacity: 1; }
-        .confirm-box { background: var(--bg-card); border: 1px solid rgba(255,255,255,0.1); border-radius: 24px; padding: 25px 20px; width: 85%; max-width: 320px; text-align: center; transform: scale(0.95); transition: transform 0.2s; box-shadow: 0 20px 40px rgba(0,0,0,0.5);}
-        .customConfirmOverlay.show .confirm-box { transform: scale(1); }
-        .confirm-icon-wrapper { background: rgba(var(--primary-rgb), 0.15); width: 55px; height: 55px; border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px auto; color: var(--primary); }
-        .confirm-title { font-size: 1.3em; font-weight: 900; color: #f8fafc; margin-bottom: 8px; font-family: 'Outfit', sans-serif;}
-        .confirm-msg { font-size: 0.95em; color: #94a3b8; margin-bottom: 20px; font-weight: 500;}
-
-        .toast-popup { visibility: hidden; min-width: 200px; background: rgba(30, 41, 59, 0.95); backdrop-filter: blur(5px); border: 1px solid #475569; color: #ffffff; text-align: center; border-radius: 50px; padding: 12px 20px; position: fixed; z-index: 10000; bottom: 100px; left: 50%; transform: translateX(-50%) translateY(20px); font-size: 14px; font-weight: 800; display: flex; align-items: center; justify-content: center; gap: 10px; opacity: 0; transition: opacity 0.3s, transform 0.3s;}
-        .toast-popup.show { visibility: visible; opacity: 1; transform: translateX(-50%) translateY(0); }
-        .toast-icon { background: linear-gradient(135deg, var(--primary), var(--primary-dark)); color: white; border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; }
-
-        .auth-input { width: 100%; padding: 12px; margin-bottom: 15px; border-radius: 10px; border: 1px solid #475569; background: var(--bg-dark); color: #fff; text-align: center; font-size: 1.1em; font-weight: 700; letter-spacing: 5px; outline: none; transition: all 0.3s; }
-        .auth-input:focus { border-color: var(--primary); box-shadow: 0 0 10px rgba(var(--primary-rgb), 0.2); }
-
-        /* PDF SECTION */
-        #historyInputArea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.3s ease-in-out; padding-bottom: 110px; overflow-y: auto;}
-        .history-input-container { background: rgba(30,41,59,0.7); backdrop-filter: blur(10px); padding: 22px 18px; border-radius: 24px; border: 1px solid rgba(255,255,255,0.05); width: 90%; max-width: 400px; text-align: center; margin: 40px auto; }
-        .history-icon-top { width: 44px; height: 44px; background: rgba(var(--primary-rgb), 0.15); border-radius: 12px; display: flex; justify-content: center; align-items: center; margin: 0 auto 10px auto; color: var(--primary); animation: floatIcon 3s ease-in-out infinite alternate; }
-        @keyframes floatIcon { 0% { transform: translateY(0px); } 100% { transform: translateY(-4px); } }
-        .history-main-heading { font-family: 'Outfit', sans-serif; color: #f8fafc; font-size: 1.5em; font-weight: 800; margin-bottom: 15px; }
-        
-        #historyPreviewArea { position: absolute; top: 0; left: 0; width: 100%; height: 100%; transition: opacity 0.3s ease-in-out; opacity: 0; display: none; overflow-y: auto; padding: 75px 10px 110px 10px; background: var(--bg-dark); }
-        .preview-controls { position: fixed; top: 12px; left: 50%; transform: translateX(-50%); width: 92%; max-width: 380px; z-index: 1000; display: flex; justify-content: space-between; gap: 10px; background: rgba(30, 41, 59, 0.98); padding: 6px 10px; border-radius: 100px; box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5); border: 1px solid #475569; }
-        .print-page { width: 100%; max-width: 750px; aspect-ratio: 1 / 1.4142; padding: 8px; background: #fff; border-radius: 6px; display: flex; flex-direction: column; margin: 0 auto 20px auto; }
-        .print-table { width: 100%; height: 100%; border-collapse: collapse; table-layout: fixed; font-family: 'Poppins', sans-serif; text-transform: uppercase; }
-        .print-table th, .print-table td { border: 1.2px solid #cbd5e1; text-align: center; font-weight: 700; padding: 0; }
-        .print-table th { background: #0f172a; color: #fff; height: 30px; font-size: clamp(9px, 2vw, 13px); }
-        .print-table td { font-size: clamp(8px, 1.8vw, 11px); color: #1e293b; background: #fff;}
-        .print-checkbox-mock { width: clamp(10px, 2.5vw, 14px); height: clamp(10px, 2.5vw, 14px); border: 1.5px solid #cbd5e1; border-radius: 3px; display: inline-flex; align-items: center; justify-content: center; background: #f8fafc; margin: 0 auto; }
-        .print-checkbox-mock.checked { background: #10b981; border-color: #10b981; }
-        .print-checkbox-mock.completed { background: #059669; border-color: #059669; }
-        .print-table tr.completed-row td { background: #ecfdf5 !important; }
-
-        @media print {
-            @page { size: A4 portrait; margin: 0; }
-            body, html { background: #fff !important; margin: 0 !important; padding: 0 !important; }
-            .bottom-nav, .app-container > :not(.view-container), .view-container > :not(#history-view), #historyInputArea, .preview-controls { display: none !important; }
-            #history-view, #historyPreviewArea, #printArea { display: block !important; padding: 0 !important; opacity: 1 !important; position: static !important; background: #fff !important; height: auto !important;}
-            .print-page { width: 210mm !important; height: 297mm !important; max-width: none !important; padding: 8mm !important; margin: 0 !important; box-shadow: none !important; border-radius: 0 !important; page-break-after: always !important; }
-            * { -webkit-print-color-adjust: exact !important; print-color-adjust: exact !important; }
-        }
-    </style>
+    /* Profile Icon Circle */
+    .profile-circle {
+        width: 24px; height: 24px; background-color: #f25c27; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; color: #ffffff;
+        font-size: 11px; font-weight: 900; letter-spacing: 0.5px; transition: all 0.3s ease;
+        box-shadow: 0 2px 8px rgba(242, 92, 39, 0.4);
+    }
+</style>
 </head>
 <body>
 
-    <!-- UI THEME INJECTION -->
-    <script>
-        const themes = {
-            emerald: { p: '#10b981', pd: '#059669', pl: '#34d399', rgb: '16, 185, 129' },
-            blue: { p: '#3b82f6', pd: '#2563eb', pl: '#60a5fa', rgb: '59, 130, 246' },
-            purple: { p: '#8b5cf6', pd: '#7c3aed', pl: '#a78bfa', rgb: '139, 92, 246' },
-            rose: { p: '#f43f5e', pd: '#e11d48', pl: '#fb7185', rgb: '244, 63, 94' },
-            amber: { p: '#f59e0b', pd: '#d97706', pl: '#fbbf24', rgb: '245, 158, 11' }
-        };
-        const savedTheme = localStorage.getItem('appTheme') || 'emerald';
-        const t = themes[savedTheme] || themes['emerald'];
-        document.documentElement.style.setProperty('--primary', t.p);
-        document.documentElement.style.setProperty('--primary-dark', t.pd);
-        document.documentElement.style.setProperty('--primary-light', t.pl);
-        document.documentElement.style.setProperty('--primary-rgb', t.rgb);
+    <!-- Notification Toast -->
+    <div id="toast" class="toast">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
+            <polyline points="22 4 12 14.01 9 11.01"></polyline>
+        </svg>
+        <span id="toast-message">SUCCESS!</span>
+    </div>
 
-        const savedFont = localStorage.getItem('appFont') || "'Montserrat', sans-serif";
-        document.documentElement.style.setProperty('--app-font', savedFont);
-        
-        const isPureBlack = localStorage.getItem('pureBlackBg') === 'true';
-        if(isPureBlack) {
-            document.documentElement.style.setProperty('--bg-dark', '#000000');
-            document.documentElement.style.setProperty('--bg-card', '#0a0a0a');
+    <!-- NEW LIGHT THEME LOGIN OVERLAY -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <h2 id="form-title">Login here</h2>
+            <p id="form-subtitle">Welcome back you've been missed!</p>
+
+            <div class="input-group">
+                <input type="email" id="email-input" placeholder="Email" required>
+            </div>
+            <div class="input-group">
+                <input type="password" id="password-input" placeholder="Password" required>
+            </div>
+            
+            <a class="forgot-pass" id="forgot-pass-link">Forgot your password?</a>
+
+            <button id="main-auth-btn" class="primary-btn">Sign in</button>
+            
+            <div class="create-account" id="toggle-auth-mode">
+                Don't have an account? <span>Register</span>
+            </div>
+
+            <div class="divider">
+                <span>Or continue with</span>
+            </div>
+
+            <!-- Social Logins (Google & Phone based on Firebase Config) -->
+            <div class="social-login">
+                <!-- Google Button -->
+                <button class="social-btn" id="google-login-btn" title="Continue with Google">
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                </button>
+                <!-- Phone Button Placeholder -->
+                <button class="social-btn" id="phone-login-btn" title="Continue with Phone">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bottom App Navigation -->
+    <nav class="bottom-nav">
+        <div class="nav-item active" onclick="setActive(this)">
+            <div class="icon-container">
+                <svg class="chats-icon" viewBox="0 0 24 24"><path d="M12 3c5.5 0 10 3.58 10 8s-4.5 8-10 8c-1.24 0-2.43-.18-3.53-.5C5.55 21 2 21 2 21c1.33-2 1.67-4 1.5-5.5C2.58 14.15 2 12.63 2 11c0-4.42 4.5-8 10-8z"/></svg>
+            </div>
+            <span class="nav-label">Chats</span>
+        </div>
+        <div class="nav-item" onclick="setActive(this)">
+            <div class="icon-container">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-7 8-7s8 3 8 7"></path></svg>
+            </div>
+            <span class="nav-label">Contacts</span>
+        </div>
+        <div class="nav-item" onclick="setActive(this)">
+            <div class="icon-container">
+                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
+            </div>
+            <span class="nav-label">Settings</span>
+        </div>
+        <div class="nav-item" id="profile-tab" onclick="setActive(this)">
+            <div class="icon-container">
+                <div class="profile-circle" id="profile-initials">US</div>
+            </div>
+            <span class="nav-label">Profile</span>
+        </div>
+    </nav>
+
+    <!-- Normal UI Script -->
+    <script>
+        function setActive(clickedElement) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            clickedElement.classList.add('active');
         }
+
+        function showNotification(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message;
+            toast.classList.add('show');
+            setTimeout(() => toast.classList.remove('show'), 3500);
+        }
+        
+        let appCurrentData = {}; 
+        let isLoginMode = true; // Toggle between Login and Register
     </script>
 
-    <!-- ROYAL SPLASH SCREEN -->
-    <div id="splashScreen">
-        <div class="splash-glow"></div>
-        <div class="splash-content">
-            <div class="svg-icon-wrapper">
-                <svg class="splash-svg" viewBox="0 0 100 100">
-                    <defs>
-                        <linearGradient id="goldGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="#FDE047"></stop><stop offset="100%" stop-color="#D97706"></stop>
-                        </linearGradient>
-                        <linearGradient id="primaryGradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                            <stop offset="0%" stop-color="var(--primary-light)"></stop><stop offset="100%" stop-color="var(--primary-dark)"></stop>
-                        </linearGradient>
-                    </defs>
-                    <circle cx="50" cy="50" r="45" stroke="url(#goldGradient)" stroke-width="0.8" stroke-dasharray="3 5" fill="none" class="ring-spin"></circle>
-                    <path class="svg-path" d="M 50,15 A 35,35 0 1,0 85,50 A 30,30 0 1,1 50,15 Z" stroke="url(#goldGradient)" stroke-width="1.5" fill="url(#goldGradient)" stroke-linejoin="round"></path>
-                    <path class="svg-path" d="M 38 68 C 38 52, 44 48, 50 40 C 56 48, 62 52, 62 68 Z" stroke="url(#primaryGradient)" stroke-width="1.5" fill="url(#primaryGradient)" stroke-linejoin="round"></path>
-                    <path class="svg-path" d="M 36 68 L 64 68 Z" stroke="url(#primaryGradient)" stroke-width="2.5" stroke-linecap="round"></path>
-                    <line class="svg-path" x1="50" y1="40" x2="50" y2="25" stroke="url(#primaryGradient)" stroke-width="2" stroke-linecap="round"></line>
-                    <path class="svg-path" d="M 50 30 L 51 32.5 L 53.5 32.5 L 51.5 34 L 52.5 36.5 L 50 35 L 47.5 36.5 L 48.5 34 L 46.5 32.5 L 49 32.5 Z" fill="url(#goldGradient)" stroke="none" style="animation-delay: 0.5s; opacity: 0;"></path>
-                </svg>
-            </div>
-            <div class="text-container">
-                <h1 class="splash-title">TECH ASAR</h1>
-                <div class="glowing-line"></div>
-                <p class="splash-subtitle">TRACKER APP</p>
-            </div>
-        </div>
-    </div>
-
-    <!-- MAIN APP STRUCTURE -->
-    <div class="app-container" id="appMainContainer">
-        <div class="view-container">
-            
-            <!-- HOME VIEW -->
-            <div id="home-view" class="view" style="display: block; opacity: 1; transform: translateY(0) scale(1); z-index: 2;">
-                <div class="tracker-container">
-                    <div class="header">
-                        <div class="header-date-controls">
-                            <div class="header-select" id="selectedMonthBtn">JAN</div>
-                            <div class="header-select" id="selectedYearBtn">2026</div>
-                        </div>
-                        <div class="header-content"><h1 id="headerTitle">TECH ASAR</h1></div>
-                    </div>
-                    
-                    <div class="days-grid" id="trackerGrid"></div>
-                </div>
-            </div>
-
-            <!-- PDF VIEW -->
-            <div id="history-view" class="view">
-                <div id="historyInputArea">
-                    <div class="history-input-container">
-                        <div class="history-icon-top"><svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
-                        <h1 class="history-main-heading">PRINT REPORT</h1>
-                        <textarea id="printRestoreCode" class="code-textarea" placeholder="TAP HERE TO PASTE CODE..."></textarea>
-                        <button class="modern-btn btn-primary" onclick="processPrintCode()">GENERATE PDF</button>
-                    </div>
-                </div>
-                <div id="historyPreviewArea">
-                    <div class="preview-controls">
-                        <button class="modern-btn btn-secondary" style="border-radius:50px; margin:0;" onclick="closePrintPreview()">Cancel</button>
-                        <button class="modern-btn btn-primary" style="border-radius:50px; margin:0;" onclick="handlePdfPrint()">Print File</button>
-                    </div>
-                    <div id="printArea"></div>
-                </div>
-            </div>
-
-            <!-- BACKUP VIEW -->
-            <div id="backup-view" class="view">
-                <div class="tracker-container">
-                    <div class="header" style="justify-content: center;"><h1>DATA BACKUP</h1></div>
-                    
-                    <div class="full-card-box" id="backupMenuBlock">
-                        <div style="margin-bottom: 20px;"><span class="pill-header">OFFLINE BACKUP</span></div>
-                        <button class="modern-btn btn-secondary" onclick="showBackupAction('export')">GENERATE BACKUP CODE</button>
-                        <button class="modern-btn btn-secondary" onclick="showBackupAction('import')">RESTORE FROM CODE</button>
-                        <button class="modern-btn btn-danger" style="margin-bottom:0; margin-top:10px;" onclick="confirmClearData()">CLEAR ALL DATA</button>
-                    </div>
-
-                    <div class="full-card-box" id="backupActionBlock" style="display: none;">
-                        <div style="margin-bottom: 15px;"><span class="pill-header" id="backupActionTitle">CODE</span></div>
-                        <textarea id="modalTextData" class="code-textarea"></textarea>
-                        <div class="modal-btns">
-                            <button class="modern-btn btn-secondary" onclick="hideBackupAction()">CANCEL</button>
-                            <button class="modern-btn btn-primary" id="modalActionBtn">ACTION</button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-
-            <!-- ADMIN VIEW (WITH GOOGLE LOGIN INTEGRATED) -->
-            <div id="admin-view" class="view">
-                <div class="tracker-container">
-                    <div class="header" style="justify-content: center;"><h1>ADMIN DASHBOARD</h1></div>
-                    
-                    <!-- GOOGLE LOGIN SECTION (INTEGRATED & SMOOTH UI) -->
-                    <div class="full-card-box" style="text-align: center;">
-                        <span class="pill-header" style="margin-bottom: 12px; display: inline-block;">GOOGLE ACCOUNT</span>
-                        <div id="googleAuthContainer">
-                            <button class="modern-btn btn-primary" id="googleLoginBtn" style="background: #4285F4; border-color: #60a5fa; margin-bottom: 5px;">
-                                <svg width="18" height="18" viewBox="0 0 24 24"><path fill="#fff" d="M12.24 10.28V14h5.51c-.24 1.46-1.68 4.28-5.51 4.28-3.32 0-6.03-2.75-6.03-6.14s2.71-6.14 6.03-6.14c1.89 0 3.16.81 3.89 1.51l2.95-2.86C17.33 3.15 15.02 2 12.24 2 7.03 2 2.8 6.22 2.8 11.43s4.23 9.43 9.44 9.43c5.45 0 9.06-3.83 9.06-9.22 0-.64-.07-1.12-.16-1.58H12.24z"/></svg>
-                                Continue with Google
-                            </button>
-                            <div id="userInfoDisplay" style="display: none; flex-direction: column; align-items: center; gap: 8px;">
-                                <img id="userAvatar" src="" alt="User" style="width: 50px; height: 50px; border-radius: 50%; border: 2px solid var(--primary);">
-                                <div id="userNameDisplay" style="color: #fff; font-weight: 700; font-size: 0.95em;"></div>
-                                <div id="userEmailDisplay" style="color: #94a3b8; font-size: 0.8em; margin-bottom: 8px;"></div>
-                                <button class="modern-btn btn-danger" id="googleLogoutBtn" style="padding: 10px; font-size: 0.9em; margin-bottom: 0;">LOGOUT GOOGLE</button>
-                            </div>
-                        </div>
-                    </div>
-
-                    <div class="stats-grid">
-                        <div class="stat-box"><div class="stat-val" id="statTotalDays">0</div><div class="stat-label">Days Logged</div></div>
-                        <div class="stat-box"><div class="stat-val" id="statTotalPrayers">0</div><div class="stat-label">Namaz Tracked</div></div>
-                    </div>
-
-                    <!-- THEME CONTROLLER -->
-                    <div class="full-card-box" style="padding: 15px;">
-                        <span class="pill-header">UI DESIGN CONTROLS</span>
-                        <div style="display:flex; gap:12px; justify-content:center; margin-top:20px; margin-bottom:15px;">
-                            <div class="theme-dot" style="background:#10b981;" onclick="changeTheme('emerald')"></div>
-                            <div class="theme-dot" style="background:#3b82f6;" onclick="changeTheme('blue')"></div>
-                            <div class="theme-dot" style="background:#8b5cf6;" onclick="changeTheme('purple')"></div>
-                            <div class="theme-dot" style="background:#f43f5e;" onclick="changeTheme('rose')"></div>
-                            <div class="theme-dot" style="background:#f59e0b;" onclick="changeTheme('amber')"></div>
-                        </div>
-                        
-                        <div style="border-top: 1px solid rgba(255,255,255,0.05); margin-top:15px; padding-top:15px;">
-                            <div class="font-selector-btn" id="selectedFontBtn" onclick="openFontDropdown()">
-                                <span>FONT: MONTSERRAT</span>
-                                <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                            </div>
-                            <button class="modern-btn btn-secondary" onclick="togglePureBlack()" style="margin-bottom:0;">TOGGLE PURE BLACK BG</button>
-                        </div>
-                    </div>
-
-                    <!-- Cloud Sync -->
-                    <div class="full-card-box">
-                        <div style="margin-bottom: 15px;"><span class="pill-header">CLOUD SYNC</span></div>
-                        <button class="modern-btn btn-primary" onclick="pushToCloud()" id="btnPushCloud">PUSH TO CLOUD</button>
-                        <button class="modern-btn btn-outline" onclick="pullFromCloud()" id="btnPullCloud" style="margin-bottom: 0;">PULL FROM CLOUD</button>
-                    </div>
-
-                </div>
-            </div>
-            
-        </div>
-
-        <!-- TELEGRAM STYLE BOTTOM NAV -->
-        <nav class="bottom-nav">
-            <div class="nav-item active" onclick="switchTab('home', 0)">
-                <div class="icon-container">
-                    <svg class="chats-icon" viewBox="0 0 24 24">
-                        <path d="M12 3c5.5 0 10 3.58 10 8s-4.5 8-10 8c-1.24 0-2.43-.18-3.53-.5C5.55 21 2 21 2 21c1.33-2 1.67-4 1.5-5.5C2.58 14.15 2 12.63 2 11c0-4.42 4.5-8 10-8z"/>
-                    </svg>
-                </div>
-                <span class="nav-label">Chats</span>
-            </div>
-    
-            <div class="nav-item" onclick="switchTab('history', 1)">
-                <div class="icon-container">
-                    <div class="badge">!</div>
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="12" cy="8" r="4"></circle>
-                        <path d="M4 20c0-4 4-7 8-7s8 3 8 7"></path>
-                    </svg>
-                </div>
-                <span class="nav-label">Contacts</span>
-            </div>
-    
-            <div class="nav-item" onclick="switchTab('backup', 2)">
-                <div class="icon-container">
-                    <svg viewBox="0 0 24 24">
-                        <circle cx="12" cy="12" r="3"></circle>
-                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06-.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-                    </svg>
-                </div>
-                <span class="nav-label">Settings</span>
-            </div>
-    
-            <div class="nav-item" onclick="checkAdminAccess(3)">
-                <div class="icon-container">
-                    <div class="profile-circle" id="navProfileBadge">AS</div>
-                </div>
-                <span class="nav-label">Profile</span>
-            </div>
-        </nav>
-    </div>
-
-    <!-- SHARED PRAYER MODAL -->
-    <div class="modal-overlay" id="prayerModalOverlay">
-        <div class="prayer-modal-content">
-            <button class="close-btn" onclick="closePrayerModal()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-            <div class="pm-header"><div class="pm-date" id="pmDateText">12 JAN</div><div class="pm-day" id="pmDayText">MONDAY</div></div>
-            <div class="prayer-list" id="prayerModalList">
-                <div class="prayer-row">
-                    <div class="pr-left"><div class="pr-icon"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="2"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line><polyline points="8 6 12 2 16 6"></polyline></svg></div><div class="pr-name">FAJR</div></div>
-                    <div class="pr-check"><input type="checkbox" id="modalCbFajr" data-prayer="fajr"></div>
-                </div>
-                <div class="prayer-row">
-                    <div class="pr-left"><div class="pr-icon"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg></div><div class="pr-name">DHUHR</div></div>
-                    <div class="pr-check"><input type="checkbox" id="modalCbDhuhr" data-prayer="dhuhr"></div>
-                </div>
-                <div class="prayer-row">
-                    <div class="pr-left"><div class="pr-icon"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17.5 19a4.5 4.5 0 1 0-8.62-1.74 3.5 3.5 0 1 0 7.37 3.52z"></path><path d="M12 9a4 4 0 1 1-5.66 5.66"></path></svg></div><div class="pr-name">ASR</div></div>
-                    <div class="pr-check"><input type="checkbox" id="modalCbAsr" data-prayer="asr"></div>
-                </div>
-                <div class="prayer-row">
-                    <div class="pr-left"><div class="pr-icon"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M17 18a5 5 0 0 0-10 0"></path><line x1="12" y1="9" x2="12" y2="2"></line><line x1="4.22" y1="10.22" x2="5.64" y2="11.64"></line><line x1="1" y1="18" x2="3" y2="18"></line><line x1="21" y1="18" x2="23" y2="18"></line><line x1="18.36" y1="11.64" x2="19.78" y2="10.22"></line><line x1="23" y1="22" x2="1" y2="22"></line><polyline points="16 5 12 9 8 5"></polyline></svg></div><div class="pr-name">MAGHRIB</div></div>
-                    <div class="pr-check"><input type="checkbox" id="modalCbMaghrib" data-prayer="maghrib"></div>
-                </div>
-                <div class="prayer-row">
-                    <div class="pr-left"><div class="pr-icon"><svg viewBox="0 0 24 24" width="20" height="20" stroke="currentColor" stroke-width="2" fill="none"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg></div><div class="pr-name">ISHA</div></div>
-                    <div class="pr-check"><input type="checkbox" id="modalCbIsha" data-prayer="isha"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- ADMIN PASSWORD MODAL -->
-    <div class="modal-overlay" id="adminAuthModal">
-        <div class="prayer-modal-content" style="text-align: center;">
-            <button class="close-btn" onclick="closeAdminAuth()"><svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>
-            <div class="confirm-icon-wrapper" style="margin-top: 10px;"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg></div>
-            <div class="confirm-title">RESTRICTED</div>
-            <input type="password" id="adminPasswordInput" class="auth-input" placeholder="••••">
-            <button class="modern-btn btn-primary" onclick="verifyAdminPassword()">UNLOCK</button>
-        </div>
-    </div>
-
-    <!-- DROPDOWNS -->
-    <div class="dropdown-overlay" id="dropdownOverlay"></div>
-    <div class="custom-options" id="yearOptionsList"></div>
-    <div class="custom-options" id="monthOptionsList"></div>
-    <div class="custom-options" id="fontOptionsList"></div>
-    
-    <div id="toast" class="toast-popup">
-        <div class="toast-icon" id="toastIcon"><svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
-        <div id="toastMessage">SAVED!</div>
-    </div>
-    
-    <!-- CONFIRM BOX -->
-    <div id="customConfirmOverlay" class="customConfirmOverlay">
-        <div class="confirm-box">
-            <div class="confirm-icon-wrapper" id="confirmIcon"><svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0"></path></svg></div>
-            <div class="confirm-title" id="customConfirmTitle">UNLOCK DAY</div>
-            <div class="confirm-msg" id="customConfirmMsg"></div>
-            <div class="modal-btns">
-                <button class="modern-btn btn-secondary" onclick="resolveConfirm(false)">CANCEL</button>
-                <button class="modern-btn btn-primary" id="confirmOkBtn" onclick="resolveConfirm(true)">CONFIRM</button>
-            </div>
-        </div>
-    </div>
-
-    <!-- FIREBASE MODULE (AUTH + FIRESTORE SYNC) -->
+    <!-- Firebase Script (Auth + Firestore) -->
     <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-        import { 
-            getAuth, 
-            GoogleAuthProvider, 
-            signInWithRedirect, 
-            getRedirectResult, 
-            onAuthStateChanged,
-            signOut,
-            setPersistence,
-            browserLocalPersistence
-        } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        // Added Email/Password Auth Imports
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCQKH9j93yz_q6fGAZ4HCW9XZxcXELtRPg",
@@ -616,459 +251,106 @@
             messagingSenderId: "868194462025",
             appId: "1:868194462025:web:56ef9b77e36aef1c365298"
         };
+
         const app = initializeApp(firebaseConfig);
-        const db = getFirestore(app);
         const auth = getAuth(app);
+        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        // Fix White Screen Error with Local Storage Persistence
-        setPersistence(auth, browserLocalPersistence).then(() => {
-            onAuthStateChanged(auth, (user) => {
-                const loginBtn = document.getElementById('googleLoginBtn');
-                const userInfo = document.getElementById('userInfoDisplay');
-                const avatar = document.getElementById('userAvatar');
-                const nameDisplay = document.getElementById('userNameDisplay');
-                const emailDisplay = document.getElementById('userEmailDisplay');
-                const navBadge = document.getElementById('navProfileBadge');
+        const loginOverlay = document.getElementById('login-overlay');
 
-                if (user) {
-                    if(loginBtn) loginBtn.style.display = 'none';
-                    if(userInfo) userInfo.style.display = 'flex';
-                    if(avatar) avatar.src = user.photoURL || '';
-                    if(nameDisplay) nameDisplay.innerText = user.displayName || 'User';
-                    if(emailDisplay) emailDisplay.innerText = user.email || '';
-                    if(navBadge) {
-                        if(user.photoURL) {
-                            navBadge.innerHTML = `<img src="${user.photoURL}" alt="Profile">`;
-                        } else {
-                            let initials = (user.displayName || 'AS').split(' ').map(n => n[0]).join('').substring(0,2).toUpperCase();
-                            navBadge.innerText = initials;
-                        }
-                    }
-                } else {
-                    if(loginBtn) loginBtn.style.display = 'flex';
-                    if(userInfo) userInfo.style.display = 'none';
-                    if(navBadge) navBadge.innerText = 'AS';
+        // --- UI TOGGLE (LOGIN VS REGISTER) ---
+        document.getElementById('toggle-auth-mode').addEventListener('click', () => {
+            isLoginMode = !isLoginMode;
+            document.getElementById('form-title').textContent = isLoginMode ? "Login here" : "Register here";
+            document.getElementById('form-subtitle').textContent = isLoginMode ? "Welcome back you've been missed!" : "Create an account to securely save your data";
+            document.getElementById('main-auth-btn').textContent = isLoginMode ? "Sign in" : "Sign up";
+            document.getElementById('forgot-pass-link').style.display = isLoginMode ? "block" : "none";
+            document.getElementById('toggle-auth-mode').innerHTML = isLoginMode ? 
+                `Don't have an account? <span>Register</span>` : 
+                `Already have an account? <span>Login</span>`;
+        });
+
+        // --- CLOUD SYNC FUNCTIONS ---
+        async function loadDataFromCloud(uid) {
+            try {
+                const userDocRef = doc(db, "users", uid);
+                const docSnap = await getDoc(userDocRef);
+                if (docSnap.exists()) {
+                    appCurrentData = docSnap.data();
+                    showNotification("DATA RESTORED");
                 }
-            });
-        }).catch((err) => console.error("Persistence error:", err));
+            } catch (error) { console.error("Error loading data:", error); }
+        }
 
-        // Handle Redirect Result
-        getRedirectResult(auth).catch((error) => console.error("Redirect error:", error));
+        function updateProfileUI(user) {
+            // Display Initials for Email users or Google users
+            const name = user.displayName || user.email || "User";
+            const nameParts = name.split(/[@ ]/); // Split by space or @ symbol
+            let initials = nameParts[0].charAt(0);
+            if (nameParts.length > 1 && !user.email.startsWith(nameParts[1])) {
+                initials += nameParts[1].charAt(0);
+            }
+            document.getElementById('profile-initials').textContent = initials.toUpperCase();
+        }
 
-        // Bind Google Login Button
-        document.addEventListener('DOMContentLoaded', () => {
-            const loginBtn = document.getElementById('googleLoginBtn');
-            if(loginBtn) {
-                loginBtn.addEventListener('click', () => {
-                    signInWithRedirect(auth, provider);
-                });
+        // --- AUTHENTICATION STATE OBSERVER ---
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginOverlay.classList.remove('active');
+                updateProfileUI(user);
+                loadDataFromCloud(user.uid);
+            } else {
+                loginOverlay.classList.add('active');
+            }
+        });
+
+        // --- EMAIL & PASSWORD LOGIN / SIGNUP ---
+        document.getElementById('main-auth-btn').addEventListener('click', () => {
+            const email = document.getElementById('email-input').value;
+            const password = document.getElementById('password-input').value;
+
+            if (!email || !password) {
+                showNotification("PLEASE ENTER EMAIL & PASSWORD");
+                return;
             }
 
-            const logoutBtn = document.getElementById('googleLogoutBtn');
-            if(logoutBtn) {
-                logoutBtn.addEventListener('click', () => {
-                    signOut(auth).then(() => {
-                        window.showToast("Logged out successfully!");
+            if (isLoginMode) {
+                // Login
+                signInWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => showNotification("LOGIN SUCCESSFUL!"))
+                    .catch((error) => showNotification("LOGIN FAILED. CHECK DETAILS."));
+            } else {
+                // Register
+                createUserWithEmailAndPassword(auth, email, password)
+                    .then((userCredential) => showNotification("ACCOUNT CREATED!"))
+                    .catch((error) => {
+                        if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS");
+                        else showNotification("REGISTRATION FAILED");
                     });
-                });
-            }
-        });
-        
-        window.pushToCloud = async function() {
-            if (!(await window.askConfirm("CLOUD SYNC", "OVERWRITE cloud data with your local data?"))) return;
-            const btn = document.getElementById('btnPushCloud');
-            const originalText = btn.innerHTML; btn.innerHTML = "UPLOADING...";
-            try {
-                const code = window.generateBackupCode();
-                if (!code) { window.showToast("Local data empty!", true); btn.innerHTML = originalText; return; }
-                const user = auth.currentUser;
-                const docId = user ? user.uid : "global_backup";
-                await setDoc(doc(db, "sync", docId), { data: code, email: user ? user.email : "anonymous" });
-                window.showToast("UPLOAD SUCCESS!");
-            } catch (e) { window.showToast("FAILED! Fix Rules.", true); }
-            btn.innerHTML = originalText;
-        };
-
-        window.pullFromCloud = async function() {
-            if (!(await window.askConfirm("CLOUD SYNC", "OVERWRITE local data with cloud data?"))) return;
-            const btn = document.getElementById('btnPullCloud');
-            const originalText = btn.innerHTML; btn.innerHTML = "DOWNLOADING...";
-            try {
-                const user = auth.currentUser;
-                const docId = user ? user.uid : "global_backup";
-                let snap = await getDoc(doc(db, "sync", docId));
-                if (!snap.exists() && user) {
-                    snap = await getDoc(doc(db, "sync", "global_backup"));
-                }
-                if (snap.exists() && snap.data().data) {
-                    if(window.processImport(snap.data().data, true)) window.showToast("DOWNLOAD SUCCESS!");
-                } else window.showToast("NO CLOUD DATA!", true);
-            } catch (e) { window.showToast("FAILED! Fix Rules.", true); }
-            btn.innerHTML = originalText;
-        };
-    </script>
-
-    <!-- MAIN APP SCRIPTS -->
-    <script>
-        window.togglePureBlack = function() {
-            const isCurrentlyBlack = localStorage.getItem('pureBlackBg') === 'true';
-            if(isCurrentlyBlack) {
-                document.documentElement.style.setProperty('--bg-dark', '#0f172a');
-                document.documentElement.style.setProperty('--bg-card', '#1e293b');
-                localStorage.setItem('pureBlackBg', 'false');
-                showToast("NAVY THEME APPLIED!");
-            } else {
-                document.documentElement.style.setProperty('--bg-dark', '#000000');
-                document.documentElement.style.setProperty('--bg-card', '#0a0a0a');
-                localStorage.setItem('pureBlackBg', 'true');
-                showToast("PURE BLACK APPLIED!");
-            }
-        }
-
-        window.confirmClearData = async function() {
-            if(await window.askConfirm("WARNING", "Are you sure you want to delete ALL saved tracker data? This action cannot be undone.", true)) {
-                let keysToRemove = [];
-                for(let i=0; i<localStorage.length; i++) {
-                    if(localStorage.key(i).startsWith('namazTracker_')) keysToRemove.push(localStorage.key(i));
-                }
-                keysToRemove.forEach(k => localStorage.removeItem(k));
-                showToast("DATA CLEARED!", true);
-                generateTracker(); calculateStats();
-            }
-        }
-        
-        window.changeAppFont = function(fontStr, fontName) {
-            document.documentElement.style.setProperty('--app-font', fontStr);
-            localStorage.setItem('appFont', fontStr);
-            localStorage.setItem('appFontName', fontName);
-            document.getElementById('selectedFontBtn').querySelector('span').innerText = `FONT: ${fontName.toUpperCase()}`;
-            closeAllDropdowns();
-            showToast("FONT UPDATED!");
-        }
-
-        document.addEventListener("DOMContentLoaded", () => {
-            const fName = localStorage.getItem('appFontName') || "MONTSERRAT";
-            document.getElementById('selectedFontBtn').querySelector('span').innerText = `FONT: ${fName.toUpperCase()}`;
-        });
-
-        window.changeTheme = function(themeName) {
-            const t = themes[themeName];
-            document.documentElement.style.setProperty('--primary', t.p);
-            document.documentElement.style.setProperty('--primary-dark', t.pd);
-            document.documentElement.style.setProperty('--primary-light', t.pl);
-            document.documentElement.style.setProperty('--primary-rgb', t.rgb);
-            localStorage.setItem('appTheme', themeName);
-            showToast("THEME UPDATED!");
-        }
-
-        window.addEventListener('load', () => { setTimeout(() => { const splash = document.getElementById('splashScreen'); const mainApp = document.getElementById('appMainContainer'); splash.style.opacity = '0'; setTimeout(() => { splash.style.display = 'none'; mainApp.classList.add('ready'); calculateStats(); }, 400); }, 2200); });
-
-        const navItems = document.querySelectorAll('.nav-item');
-        let currentTabId = 'home';
-        let isSwitching = false;
-
-        function switchTab(tab, index) {
-            if (isSwitching || currentTabId === tab) return;
-            isSwitching = true;
-            navItems.forEach((item, i) => { if(i === index) item.classList.add('active'); else item.classList.remove('active'); });
-            const currentView = document.getElementById(currentTabId + '-view');
-            const nextView = document.getElementById(tab + '-view');
-            if(currentView) { currentView.style.opacity = '0'; currentView.style.transform = 'translateY(10px) scale(0.98)'; currentView.style.zIndex = '1'; }
-            setTimeout(() => {
-                if(currentView) currentView.style.display = 'none'; 
-                if(nextView) { nextView.style.display = 'block'; nextView.style.zIndex = '2'; void nextView.offsetWidth; nextView.style.opacity = '1'; nextView.style.transform = 'translateY(0) scale(1)'; }
-                currentTabId = tab; isSwitching = false;
-            }, 250); 
-        }
-
-        function checkAdminAccess(index) {
-            if (sessionStorage.getItem('adminUnlocked') === 'true') { calculateStats(); switchTab('admin', index); } 
-            else {
-                const overlay = document.getElementById('adminAuthModal');
-                overlay.style.display = 'flex'; setTimeout(() => overlay.classList.add('show'), 10);
-                document.getElementById('adminPasswordInput').value = '';
-                document.getElementById('adminPasswordInput').focus();
-            }
-        }
-        function closeAdminAuth() { const overlay = document.getElementById('adminAuthModal'); overlay.classList.remove('show'); setTimeout(() => overlay.style.display = 'none', 300); }
-        window.verifyAdminPassword = function() {
-            if (document.getElementById('adminPasswordInput').value === '123') { sessionStorage.setItem('adminUnlocked', 'true'); calculateStats(); closeAdminAuth(); switchTab('admin', 3); } 
-            else { showToast("Wrong Password!", true); }
-        }
-
-        function calculateStats() {
-            let dCount = 0, pCount = 0;
-            for (let i = 0; i < localStorage.length; i++) {
-                let key = localStorage.key(i);
-                if (key.startsWith('namazTracker_')) {
-                    try {
-                        let data = JSON.parse(localStorage.getItem(key));
-                        for (let d in data) {
-                            let p = 0; if (data[d].fajr) p++; if (data[d].dhuhr) p++; if (data[d].asr) p++; if (data[d].maghrib) p++; if (data[d].isha) p++;
-                            pCount += p; if (p > 0) dCount++;
-                        }
-                    } catch (e) {}
-                }
-            }
-            document.getElementById('statTotalDays').innerText = dCount;
-            document.getElementById('statTotalPrayers').innerText = pCount;
-        }
-
-        window.showBackupAction = function(type) {
-            document.getElementById('backupMenuBlock').style.display = 'none'; document.getElementById('backupActionBlock').style.display = 'block';
-            const ta = document.getElementById('modalTextData'), btn = document.getElementById('modalActionBtn'), title = document.getElementById('backupActionTitle');
-            if(type === 'export') {
-                title.innerText = 'COPY BACKUP CODE'; const code = generateBackupCode();
-                if(!code) { showToast("NO DATA TO BACKUP!", true); hideBackupAction(); return; }
-                ta.value = code; ta.readOnly = true; btn.innerHTML = 'COPY CODE';
-                btn.onclick = function() { ta.select(); document.execCommand("copy"); showToast("CODE COPIED!"); hideBackupAction(); };
-            } else {
-                title.innerText = 'PASTE RESTORE CODE'; ta.value = ''; ta.readOnly = false; btn.innerHTML = 'RESTORE DATA';
-                btn.onclick = function() { processImport(ta.value.trim()); };
-            }
-        }
-        window.hideBackupAction = function() { document.getElementById('backupActionBlock').style.display = 'none'; document.getElementById('backupMenuBlock').style.display = 'block'; }
-
-        const monthsArray = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        const rightTickSvg = `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="4"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-        let currentActiveDay = 1, currentYear = parseInt(localStorage.getItem('lastYear')) || new Date().getFullYear(), currentMonth = parseInt(localStorage.getItem('lastMonth')) || new Date().getMonth();
-        if(currentYear < 2019) currentYear = 2019; if(currentYear > 2100) currentYear = 2100;
-        let currentMonthData = {}; 
-
-        window.closePrayerModal = function() { const o = document.getElementById('prayerModalOverlay'); o.classList.remove('show'); setTimeout(() => o.style.display = 'none', 300); }
-        function openPrayerModal(day) {
-            currentActiveDay = day;
-            document.getElementById('pmDateText').innerText = `${String(day).padStart(2, '0')} ${monthsArray[currentMonth]}`;
-            document.getElementById('pmDayText').innerText = new Date(currentYear, currentMonth, day).toLocaleDateString('en-US', { weekday: 'long' }).toUpperCase();
-            const d = currentMonthData[`day_${day}`] || {};
-            document.getElementById('modalCbFajr').checked = !!d.fajr; document.getElementById('modalCbDhuhr').checked = !!d.dhuhr; document.getElementById('modalCbAsr').checked = !!d.asr; document.getElementById('modalCbMaghrib').checked = !!d.maghrib; document.getElementById('modalCbIsha').checked = !!d.isha;
-            const o = document.getElementById('prayerModalOverlay'); o.style.display = 'flex'; setTimeout(() => o.classList.add('show'), 10);
-        }
-
-        document.getElementById('prayerModalList').addEventListener('change', (e) => {
-            if (e.target.type === 'checkbox') {
-                autoSaveMemory(currentActiveDay, e.target.dataset.prayer, e.target.checked);
-                let d = currentMonthData[`day_${currentActiveDay}`], isDone = d.fajr && d.dhuhr && d.asr && d.maghrib && d.isha;
-                updateDayCardDots(currentActiveDay, d, isDone);
-                if (isDone) { showToast("DAY COMPLETED!"); setTimeout(() => closePrayerModal(), 450); } else showToast("SAVED!");
             }
         });
 
-        function updateDayCardDots(day, d, isDone) {
-            const c = document.getElementById(`dayCard_${day}`);
-            if(c) {
-                const dots = c.querySelectorAll('.dot');
-                if(dots.length === 5) { dots[0].className=`dot ${d.fajr?'active':''}`; dots[1].className=`dot ${d.dhuhr?'active':''}`; dots[2].className=`dot ${d.asr?'active':''}`; dots[3].className=`dot ${d.maghrib?'active':''}`; dots[4].className=`dot ${d.isha?'active':''}`; }
-                if(isDone) { c.classList.add('completed'); c.onclick = () => handleDayClick(day, true, false); } 
-                else { c.classList.remove('completed'); c.onclick = () => handleDayClick(day, false, false); }
-            }
-            updateDropdownUI();
-        }
-
-        async function handleDayClick(day, isDone, isDis) {
-            if(isDis) return;
-            if(isDone) { if(await window.askConfirm('UNLOCK DAY', 'Edit this completed day?')) openPrayerModal(day); } 
-            else openPrayerModal(day);
-        }
-
-        const yList = document.getElementById('yearOptionsList'), mList = document.getElementById('monthOptionsList'), fList = document.getElementById('fontOptionsList'), dOver = document.getElementById('dropdownOverlay'), btnY = document.getElementById('selectedYearBtn'), btnM = document.getElementById('selectedMonthBtn');
-        const cSvg = `<button class="close-btn" style="position: absolute; top: 12px; right: 12px;" onclick="closeAllDropdowns()"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2.5"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></button>`;
+        // --- GOOGLE LOGIN ---
+        document.getElementById('google-login-btn').addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => showNotification(`WELCOME, ${result.user.displayName.toUpperCase()}!`))
+                .catch((error) => showNotification("GOOGLE LOGIN FAILED."));
+        });
         
-        yList.innerHTML = `<div class="dropdown-header-wrapper">${cSvg}<span class="pill-header">SELECT YEAR</span></div>`; 
-        const yGrid = document.createElement('div'); yGrid.className = 'dropdown-body';
-        for (let y = 2019; y <= 2100; y++) { let div = document.createElement('div'); div.className = 'grid-option'; div.innerText = y; div.onclick = () => selectYear(y); yGrid.appendChild(div); } yList.appendChild(yGrid);
-        
-        mList.innerHTML = `<div class="dropdown-header-wrapper">${cSvg}<span class="pill-header">SELECT MONTH</span></div>`; 
-        const mGrid = document.createElement('div'); mGrid.className = 'dropdown-body';
-        monthsArray.forEach((m, i) => { let div = document.createElement('div'); div.className = 'grid-option'; div.innerText = m; div.onclick = () => selectMonth(i); mGrid.appendChild(div); }); mList.appendChild(mGrid);
+        // --- PHONE LOGIN UI PLACEHOLDER ---
+        document.getElementById('phone-login-btn').addEventListener('click', () => {
+             showNotification("PHONE AUTH CLICKED (Requires Setup)");
+        });
 
-        fList.innerHTML = `<div class="dropdown-header-wrapper">${cSvg}<span class="pill-header">APP FONT</span></div>`;
-        const fGrid = document.createElement('div'); fGrid.className = 'dropdown-body single-col';
-        const fontOptions = [
-            { name: "Montserrat", val: "'Montserrat', sans-serif" },
-            { name: "Poppins", val: "'Poppins', sans-serif" },
-            { name: "Outfit", val: "'Outfit', sans-serif" }
-        ];
-        fontOptions.forEach(f => {
-            let div = document.createElement('div'); div.className = 'grid-option'; div.innerText = f.name; div.onclick = () => changeAppFont(f.val, f.name); fGrid.appendChild(div);
-        }); fList.appendChild(fGrid);
-
-        function isMonthCompleted(y, m) {
-            const data = JSON.parse(localStorage.getItem(`namazTracker_${y}_${m}`)) || {};
-            const days = new Date(y, m + 1, 0).getDate(); let hasReq = false;
-            for(let i = 1; i <= days; i++) {
-                if (y === 2019 && m === 0 && i <= 13) continue; 
-                hasReq = true; const d = data[`day_${i}`];
-                if(!d || !d.fajr || !d.dhuhr || !d.asr || !d.maghrib || !d.isha) return false;
-            }
-            return hasReq || (y === 2019 && m === 0);
-        }
-
-        function updateDropdownUI() {
-            btnY.innerText = currentYear; 
-            btnM.innerHTML = `${monthsArray[currentMonth]}` + (isMonthCompleted(currentYear, currentMonth) ? ` <span style="color:var(--primary-light); margin-left:2px; display:inline-flex; align-items:center;">${rightTickSvg}</span>` : ``);
-            document.querySelectorAll('#yearOptionsList .grid-option').forEach(opt => opt.classList.toggle('selected', parseInt(opt.innerText) === currentYear));
-            document.querySelectorAll('#monthOptionsList .grid-option').forEach((opt, idx) => {
-               opt.classList.toggle('selected', idx === currentMonth);
-               let b = opt.querySelector('.jamuni-blur-badge');
-               if(isMonthCompleted(currentYear, idx)) { if(!b) { b = document.createElement('div'); b.className = 'jamuni-blur-badge'; b.innerHTML = rightTickSvg; opt.appendChild(b); } } else { if(b) b.remove(); }
-            });
-            const savedF = localStorage.getItem('appFontName') || "Montserrat";
-            document.querySelectorAll('#fontOptionsList .grid-option').forEach(opt => opt.classList.toggle('selected', opt.innerText === savedF));
-        }
-
-        function selectYear(y) { currentYear = y; localStorage.setItem('lastYear', y); closeAllDropdowns(); generateTracker(); scrollTodayIntoView(); }
-        function selectMonth(mIndex) { currentMonth = mIndex; localStorage.setItem('lastMonth', mIndex); closeAllDropdowns(); generateTracker(); scrollTodayIntoView(); }
-        btnY.onclick = function(e) { e.stopPropagation(); closeAllDropdowns(); dOver.classList.add('show'); yList.classList.add('show'); }
-        btnM.onclick = function(e) { e.stopPropagation(); closeAllDropdowns(); dOver.classList.add('show'); mList.classList.add('show'); }
-        window.openFontDropdown = function(e) { if(e) e.stopPropagation(); closeAllDropdowns(); updateDropdownUI(); dOver.classList.add('show'); fList.classList.add('show'); }
-        window.closeAllDropdowns = function() { dOver.classList.remove('show'); yList.classList.remove('show'); mList.classList.remove('show'); fList.classList.remove('show'); }
-        dOver.onclick = closeAllDropdowns;
-
-        function generateTracker() {
-            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
-            currentMonthData = JSON.parse(localStorage.getItem(`namazTracker_${currentYear}_${currentMonth}`)) || {}; 
-            const today = new Date(), grid = document.getElementById('trackerGrid'), fragment = document.createDocumentFragment();
-            grid.innerHTML = '';
-            for (let day = 1; day <= daysInMonth; day++) {
-                const date = new Date(currentYear, currentMonth, day), dayKey = `day_${day}`;
-                let f, d, a, m, i, allCompleted, lockClass = '';
-                let isToday = (currentYear === today.getFullYear() && currentMonth === today.getMonth() && day === today.getDate());
-                let isFri = (date.getDay() === 5);
-                if (currentYear === 2019 && currentMonth === 0 && day <= 13) { allCompleted = false; lockClass = 'disabled'; f=d=a=m=i=false; } 
-                else {
-                    f = currentMonthData[dayKey]?.fajr; d = currentMonthData[dayKey]?.dhuhr; a = currentMonthData[dayKey]?.asr; m = currentMonthData[dayKey]?.maghrib; i = currentMonthData[dayKey]?.isha;
-                    allCompleted = f && d && a && m && i; if (allCompleted) lockClass = 'completed';
-                }
-                const card = document.createElement('div');
-                card.className = `day-card ${lockClass} ${isToday ? 'today' : ''} ${isFri ? 'fri-highlight' : ''}`;
-                card.id = `dayCard_${day}`; card.onclick = () => handleDayClick(day, allCompleted, lockClass === 'disabled');
-                card.innerHTML = `<div class="dc-content"><div class="dc-num">${String(date.getDate()).padStart(2, '0')}</div><div class="dc-day">${date.toLocaleDateString('en-US', { weekday: 'short' })}</div>${lockClass === 'disabled' ? '' : `<div class="dc-dots"><div class="dot ${f ? 'active' : ''}"></div><div class="dot ${d ? 'active' : ''}"></div><div class="dot ${a ? 'active' : ''}"></div><div class="dot ${m ? 'active' : ''}"></div><div class="dot ${i ? 'active' : ''}"></div></div>`}</div><div class="dc-lock"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0"></path></svg></div>`;
-                fragment.appendChild(card);
-            }
-            grid.appendChild(fragment); updateDropdownUI(); 
-        }
-
-        function autoSaveMemory(day, prayer, isChecked) {
-            if (!currentMonthData[`day_${day}`]) currentMonthData[`day_${day}`] = {};
-            currentMonthData[`day_${day}`][prayer] = isChecked;
-            localStorage.setItem(`namazTracker_${currentYear}_${currentMonth}`, JSON.stringify(currentMonthData));
-        }
-
-        window.showToast = function(msg = "SAVED!", err = false) {
-            const t = document.getElementById("toast"), iBox = document.getElementById("toastIcon"); 
-            document.getElementById("toastMessage").innerText = msg;
-            iBox.innerHTML = err ? `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>` : `<svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="3"><polyline points="20 6 9 17 4 12"></polyline></svg>`;
-            iBox.style.background = err ? 'linear-gradient(135deg, #ef4444, #b91c1c)' : 'linear-gradient(135deg, var(--primary), var(--primary-dark))';
-            t.className = "toast-popup show"; setTimeout(() => t.className = t.className.replace("show", ""), 1500);
-        }
-
-        let cRes = null;
-        window.askConfirm = function(title, msg, isDanger = false) { 
-            document.getElementById('customConfirmTitle').innerText = title; 
-            document.getElementById('customConfirmMsg').innerText = msg; 
-            
-            const btn = document.getElementById('confirmOkBtn');
-            const icon = document.getElementById('confirmIcon');
-            if(isDanger) {
-                btn.className = "modern-btn btn-danger";
-                icon.style.color = "#ef4444";
-                icon.style.background = "rgba(239, 68, 68, 0.15)";
-                icon.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"></path><line x1="12" y1="9" x2="12" y2="13"></line><line x1="12" y1="17" x2="12.01" y2="17"></line></svg>`;
+        // Allow manual profile click to show login screen if logged out
+        document.getElementById('profile-tab').addEventListener('click', () => {
+            if (auth.currentUser) {
+                showNotification(`LOGGED IN`);
             } else {
-                btn.className = "modern-btn btn-primary";
-                icon.style.color = "var(--primary)";
-                icon.style.background = "rgba(var(--primary-rgb), 0.15)";
-                icon.innerHTML = `<svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0"></path></svg>`;
+                loginOverlay.classList.add('active');
             }
-            
-            const o = document.getElementById('customConfirmOverlay'); o.style.display = 'flex'; setTimeout(() => o.classList.add('show'), 10); return new Promise((res) => { cRes = res; }); 
-        }
-        window.resolveConfirm = function(res) { const o = document.getElementById('customConfirmOverlay'); o.classList.remove('show'); setTimeout(() => { o.style.display = 'none'; if(cRes) cRes(res); }, 200); }
-
-        window.generateBackupCode = function() {
-            const exp = {}; let has = false;
-            for (let y = 2019; y <= 2100; y++) {
-                for (let m = 0; m < 12; m++) {
-                    const raw = JSON.parse(localStorage.getItem(`namazTracker_${y}_${m}`)) || {};
-                    let cDays = [], hMonth = false, days = new Date(y, m + 1, 0).getDate();
-                    for (let d = 1; d <= days; d++) { 
-                        let v = 0; 
-                        if (y === 2019 && m === 0 && d <= 13) v = 0; 
-                        else if (raw[`day_${d}`]) { const dd = raw[`day_${d}`]; if(dd.fajr) v+=1; if(dd.dhuhr) v+=2; if(dd.asr) v+=4; if(dd.maghrib) v+=8; if(dd.isha) v+=16; }
-                        if(v > 0) hMonth = true; cDays.push(v); 
-                    }
-                    if (hMonth || (y === 2019 && m === 0)) {
-                        while(cDays.length > 0 && cDays[cDays.length - 1] === 0) cDays.pop(); 
-                        if (cDays.length > 0) { exp[`${y}_${m}`] = cDays.map(v => v.toString(36)).join(''); has = true; }
-                    }
-                }
-            }
-            return has ? btoa(JSON.stringify(exp)) : "";
-        }
-
-        window.processImport = function(pasted, isCloud = false) {
-            if (!pasted) { if(!isCloud) showToast("PLEASE PASTE CODE!", true); return false; }
-            try { 
-                const imp = JSON.parse(atob(pasted.startsWith('E') ? 'e' + pasted.substring(1) : pasted)); let count = 0, lY = 0, lM = 0;
-                Object.keys(imp).forEach(k => { 
-                    const [y, m] = k.split('_').map(Number);
-                    if (y >= 2019 && y <= 2100) {
-                        const days = imp[k], data = {}; 
-                        for (let i = 0; i < days.length; i++) { 
-                            const v = parseInt(days[i], 36); 
-                            if (v > 0) data[`day_${i+1}`] = { fajr: !!(v&1), dhuhr: !!(v&2), asr: !!(v&4), maghrib: !!(v&8), isha: !!(v&16) }; 
-                        } 
-                        localStorage.setItem(`namazTracker_${k}`, JSON.stringify(data)); count++; 
-                        if (y > lY || (y === lY && m > lM)) { lY = y; lM = m; }
-                    }
-                });
-                if (count > 0) { 
-                    currentYear = lY; currentMonth = lM; localStorage.setItem('lastYear', lY); localStorage.setItem('lastMonth', lM); 
-                    generateTracker(); hideBackupAction(); calculateStats();
-                    if(!isCloud) showToast('DATA RESTORED!'); return true;
-                } else { if(!isCloud) showToast('NO VALID DATA!', true); return false; }
-            } catch (err) { if(!isCloud) showToast('INVALID CODE!', true); return false; }
-        }
-
-        function scrollTodayIntoView() { setTimeout(() => { const tEl = document.querySelector('#home-view .day-card.today'); if (tEl) tEl.scrollIntoView({ behavior: 'smooth', block: 'center' }); }, 400); }
-        generateTracker(); window.addEventListener('load', scrollTodayIntoView);
-
-        /* ===== HISTORY VIEW LOGIC (PDF) ===== */
-        const pShort = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
-        window.processPrintCode = function() {
-            const p = document.getElementById('printRestoreCode').value.trim();
-            if (!p) { showToast("Please paste code!", true); return; }
-            try {
-                const imp = JSON.parse(atob(p.startsWith('E') ? 'e' + p.substring(1) : p));
-                const sKeys = Object.keys(imp).sort((a, b) => { const [yA, mA] = a.split('_').map(Number), [yB, mB] = b.split('_').map(Number); return yA !== yB ? yA - yB : mA - mB; });
-                if (sKeys.length === 0) { showToast("No data found!", true); return; }
-                document.getElementById('printRestoreCode').blur(); document.getElementById('historyInputArea').style.opacity = '0';
-                setTimeout(() => {
-                    document.getElementById('historyInputArea').style.display = 'none'; document.getElementById('printArea').innerHTML = '';
-                    sKeys.forEach((key) => {
-                        const [y, m] = key.split('_').map(Number), dStr = imp[key], dMonth = new Date(y, m + 1, 0).getDate();
-                        const page = document.createElement('div'); page.className = 'print-page';
-                        const tab = document.createElement('table'); tab.className = 'print-table';
-                        tab.innerHTML = `<thead><tr><th style="width:23%;">DATE</th><th style="width:15.4%;">FAJR</th><th style="width:15.4%;">DHUHR</th><th style="width:15.4%;">ASR</th><th style="width:15.4%;">MAGHRIB</th><th style="width:15.4%;">ISHA</th></tr></thead><tbody></tbody>`;
-                        const tbody = tab.querySelector('tbody');
-                        for (let d = 1; d <= dMonth; d++) {
-                            let v = (d - 1 < dStr.length) ? parseInt(dStr[d - 1], 36) || 0 : 0;
-                            const f = !!(v & 1), dh = !!(v & 2), a = !!(v & 4), ma = !!(v & 8), i = !!(v & 16), aComp = f && dh && a && ma && i;
-                            const row = document.createElement('tr'); if (aComp) row.className = 'completed-row';
-                            const cBox = (c) => `<div class="print-checkbox-mock ${c ? (aComp ? 'completed' : 'checked') : ''}">${c ? `<svg viewBox="0 0 24 24" width="100%" height="100%" fill="none" stroke="#ffffff" stroke-width="4"><polyline points="20 6 9 17 4 12"/></svg>` : ''}</div>`;
-                            row.innerHTML = `<td>${String(d).padStart(2, '0')} ${pShort[m]} ${y}</td><td>${cBox(f)}</td><td>${cBox(dh)}</td><td>${cBox(a)}</td><td>${cBox(ma)}</td><td>${cBox(i)}</td>`;
-                            tbody.appendChild(row);
-                        }
-                        page.appendChild(tab); document.getElementById('printArea').appendChild(page);
-                    });
-                    document.getElementById('historyPreviewArea').style.display = 'block'; void document.getElementById('historyPreviewArea').offsetWidth; document.getElementById('historyPreviewArea').scrollTop = 0; document.getElementById('historyPreviewArea').style.opacity = '1';
-                }, 300); 
-            } catch (err) { showToast("Invalid Code!", true); document.getElementById('historyInputArea').style.opacity = '1'; }
-        }
-        window.closePrintPreview = function() { document.getElementById('historyPreviewArea').style.opacity = '0'; setTimeout(() => { document.getElementById('historyPreviewArea').style.display = 'none'; document.getElementById('historyInputArea').style.display = 'block'; void document.getElementById('historyInputArea').offsetWidth; document.getElementById('historyInputArea').style.opacity = '1'; }, 300); }
-        window.handlePdfPrint = function() { setTimeout(() => { try { window.print(); } catch (err) { showToast("Print blocked.", true); } }, 150); }
+        });
     </script>
 </body>
 </html>
