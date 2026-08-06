@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login Page - Firebase Auth</title>
+<title>Login & Account Management</title>
 <style>
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
     body { 
-        background: #f4f7f6; /* Clean light background */
+        background: #f4f7f6; 
         height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; 
     }
 
@@ -20,12 +20,12 @@
         border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
         box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
         opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
-        display: flex; align-items: center; gap: 10px;
+        display: flex; align-items: center; gap: 10px; text-align: center;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* Login Card Container */
-    .login-card {
+    /* Cards Container */
+    .card-container {
         background: #ffffff; 
         width: 90%; max-width: 380px; padding: 40px 30px;
         border-radius: 30px; 
@@ -34,10 +34,10 @@
         position: relative; overflow: hidden;
     }
 
-    .login-card h2 { color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
-    .login-card p { color: #555555; font-size: 13px; font-weight: 600; margin-bottom: 25px; }
+    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+    .card-container p { color: #555555; font-size: 13px; font-weight: 600; margin-bottom: 25px; }
 
-    /* Input Fields */
+    /* Standard Input Fields */
     .input-group { position: relative; margin-bottom: 15px; text-align: left; }
     .input-group input {
         width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
@@ -45,16 +45,37 @@
         color: #333; outline: none; transition: all 0.3s ease;
     }
     .input-group input:focus { border-color: #f25c27; background: #fff5f2; }
-    .input-group input::placeholder { color: #a0a0a0; }
+
+    /* --- NEW SMOOTH PHONE INPUT (Fixed +91) --- */
+    .phone-input-wrapper {
+        display: flex; align-items: center; background: #fdfdfd;
+        border: 1.5px solid #eaeaea; border-radius: 12px;
+        margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease;
+    }
+    .phone-input-wrapper:focus-within { border-color: #f25c27; background: #fff5f2; }
+    
+    .country-code {
+        padding: 14px 10px 14px 16px; color: #333; font-weight: 700; font-size: 14px;
+        background: #f4f7f6; border-right: 1.5px solid #eaeaea;
+    }
+    
+    .phone-input-wrapper input {
+        flex: 1; border: none; background: transparent; padding: 14px 16px;
+        font-size: 15px; font-weight: 600; color: #333; outline: none; letter-spacing: 1px;
+    }
+    /* Hide arrows from number input */
+    .phone-input-wrapper input::-webkit-outer-spin-button, 
+    .phone-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+    /* ------------------------------------------- */
 
     .forgot-pass {
         display: block; text-align: right; color: #f25c27; font-size: 11px;
         font-weight: 700; text-decoration: none; margin-bottom: 20px; cursor: pointer;
     }
 
-    /* Main Action Button */
+    /* Buttons */
     .primary-btn {
-        width: 100%; background: #f25c27; color: #ffffff; border: none;
+        width: 100%; background: #f25c27; color: #ffffff; border: none; margin-bottom: 10px;
         padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 800;
         cursor: pointer; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3);
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
@@ -63,9 +84,14 @@
     .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
     .primary-btn:disabled { background: #cccccc; box-shadow: none; cursor: not-allowed; }
 
-    .create-account {
-        display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 600; cursor: pointer;
-    }
+    /* Danger Button for Delete */
+    .danger-btn { background: #dc3545; box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3); }
+    .danger-btn:active { box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2); }
+
+    .secondary-btn { background: #fdfdfd; color: #333; border: 1.5px solid #eaeaea; box-shadow: none; }
+    .secondary-btn:active { transform: scale(0.96); }
+
+    .create-account { display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 600; cursor: pointer; }
     .create-account span { color: #f25c27; font-weight: 800; }
 
     /* Divider */
@@ -86,6 +112,9 @@
 
     /* Hidden Sections */
     .hidden { display: none !important; }
+
+    /* HIDE RECAPTCHA BADGE PERMANENTLY */
+    .grecaptcha-badge { visibility: hidden !important; display: none !important; }
 </style>
 </head>
 <body>
@@ -95,8 +124,8 @@
         <span id="toast-message">Action Successful!</span>
     </div>
 
-    <!-- Login Card -->
-    <div class="login-card">
+    <!-- 1. LOGIN CARD -->
+    <div id="login-card-main" class="card-container">
         <h2 id="form-title">Login here</h2>
         <p id="form-subtitle">Welcome back you've been missed!</p>
 
@@ -115,13 +144,18 @@
             </div>
         </div>
 
-        <!-- PHONE NUMBER SECTION (Hidden by default) -->
+        <!-- PHONE NUMBER SECTION -->
         <div id="phone-section" class="hidden">
-            <div class="input-group" id="phone-input-group">
-                <input type="tel" id="phone-input" placeholder="+91 9876543210 (Country Code must)">
+            
+            <!-- Beautiful +91 Input Field -->
+            <div class="phone-input-wrapper" id="phone-input-group">
+                <span class="country-code">+91</span>
+                <!-- type="number" with maxlength logic in JS for best mobile keypad -->
+                <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
             </div>
+
             <div class="input-group hidden" id="otp-input-group">
-                <input type="number" id="otp-input" placeholder="Enter 6-digit OTP">
+                <input type="number" id="otp-input" placeholder="Enter 6-digit OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
             </div>
             
             <button id="send-otp-btn" class="primary-btn">Send OTP</button>
@@ -132,7 +166,7 @@
             </div>
         </div>
 
-        <!-- Invisible Recaptcha for Phone Auth -->
+        <!-- Invisible Recaptcha Container -->
         <div id="recaptcha-container"></div>
 
         <div class="divider">
@@ -141,11 +175,9 @@
 
         <!-- Social Logins -->
         <div class="social-login">
-            <!-- Google Button -->
             <button class="social-btn" id="google-login-btn" title="Continue with Google">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             </button>
-            <!-- Switch to Phone Auth Button -->
             <button class="social-btn" id="switch-to-phone-btn" title="Continue with Phone">
                 <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -154,25 +186,38 @@
         </div>
     </div>
 
+    <!-- 2. LOGGED IN DASHBOARD -->
+    <div id="dashboard-card" class="card-container hidden">
+        <h2>Profile</h2>
+        <p id="user-display-name">Loading...</p>
+
+        <button id="logout-btn" class="primary-btn secondary-btn">Log Out</button>
+        
+        <div class="divider">
+            <span>Danger Zone</span>
+        </div>
+        
+        <button id="delete-account-btn" class="primary-btn danger-btn">Delete Account</button>
+    </div>
+
     <!-- UI Scripts -->
     <script>
         function showNotification(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = message;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 3500);
+            setTimeout(() => toast.classList.remove('show'), 4000);
         }
-
         let isLoginMode = true; 
     </script>
 
-    <!-- Firebase Script (Auth Only) -->
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
             getAuth, signInWithPopup, GoogleAuthProvider, 
             signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-            RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut
+            RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut, deleteUser 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -187,6 +232,26 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
+
+        // ----------------------------------------
+        // AUTHENTICATION STATE OBSERVER
+        // ----------------------------------------
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                document.getElementById('login-card-main').classList.add('hidden');
+                document.getElementById('dashboard-card').classList.remove('hidden');
+                
+                const displayInfo = user.displayName || user.email || user.phoneNumber || "Verified User";
+                document.getElementById('user-display-name').textContent = `Logged in as: ${displayInfo}`;
+            } else {
+                document.getElementById('login-card-main').classList.remove('hidden');
+                document.getElementById('dashboard-card').classList.add('hidden');
+                // Reset inputs when logged out
+                document.getElementById('phone-input').value = "";
+                document.getElementById('otp-input').value = "";
+                resetPhoneUI();
+            }
+        });
 
         // ----------------------------------------
         // 1. EMAIL & PASSWORD LOGIC
@@ -204,50 +269,47 @@
         document.getElementById('email-auth-btn').addEventListener('click', () => {
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
-
-            if (!email || !password) {
-                showNotification("PLEASE ENTER EMAIL & PASSWORD");
-                return;
-            }
+            if (!email || !password) { showNotification("PLEASE ENTER EMAIL & PASSWORD"); return; }
 
             if (isLoginMode) {
                 signInWithEmailAndPassword(auth, email, password)
                     .then(() => showNotification("LOGIN SUCCESSFUL!"))
-                    .catch((error) => {
-                        if (error.code === 'auth/invalid-credential') showNotification("INCORRECT EMAIL OR PASSWORD");
-                        else showNotification(error.message);
-                    });
+                    .catch((error) => showNotification(error.message));
             } else {
                 createUserWithEmailAndPassword(auth, email, password)
                     .then(() => showNotification("ACCOUNT CREATED SUCCESSFULLY!"))
-                    .catch((error) => {
-                        if (error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS");
-                        else if (error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
-                        else showNotification(error.message);
-                    });
+                    .catch((error) => showNotification(error.message));
             }
         });
 
         // ----------------------------------------
-        // 2. GOOGLE LOGIN LOGIC
+        // 2. GOOGLE LOGIN
         // ----------------------------------------
         document.getElementById('google-login-btn').addEventListener('click', () => {
             signInWithPopup(auth, provider)
-                .then((result) => showNotification(`WELCOME, ${result.user.displayName.toUpperCase()}!`))
+                .then((result) => showNotification("GOOGLE LOGIN SUCCESSFUL!"))
                 .catch((error) => showNotification("GOOGLE LOGIN FAILED."));
         });
 
         // ----------------------------------------
-        // 3. PHONE AUTHENTICATION LOGIC (NEW)
+        // 3. PHONE AUTHENTICATION LOGIC (+91 FIXED)
         // ----------------------------------------
         let confirmationResultObj = null;
 
-        // Toggle Views Between Email & Phone
+        function resetPhoneUI() {
+            document.getElementById('phone-input-group').classList.remove('hidden');
+            document.getElementById('send-otp-btn').classList.remove('hidden');
+            document.getElementById('otp-input-group').classList.add('hidden');
+            document.getElementById('verify-otp-btn').classList.add('hidden');
+            document.getElementById('send-otp-btn').disabled = false;
+            document.getElementById('send-otp-btn').textContent = "Send OTP";
+        }
+
         document.getElementById('switch-to-phone-btn').addEventListener('click', () => {
             document.getElementById('email-section').classList.add('hidden');
             document.getElementById('phone-section').classList.remove('hidden');
             document.getElementById('form-title').textContent = "Phone Login";
-            document.getElementById('form-subtitle').textContent = "We will send you an OTP";
+            document.getElementById('form-subtitle').textContent = "We will send you a 6-digit OTP";
         });
 
         document.getElementById('back-to-email').addEventListener('click', () => {
@@ -255,67 +317,87 @@
             document.getElementById('email-section').classList.remove('hidden');
             document.getElementById('form-title').textContent = "Login here";
             document.getElementById('form-subtitle').textContent = "Welcome back you've been missed!";
+            resetPhoneUI(); // Reset UI if user goes back
         });
 
-        // Initialize Recaptcha (Required for Phone Auth)
-        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-            'size': 'invisible'
-        });
+        function setupRecaptcha() {
+            if (!window.recaptchaVerifier) {
+                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible'
+                });
+            }
+        }
 
-        // Send OTP
         document.getElementById('send-otp-btn').addEventListener('click', () => {
-            const phoneNumber = document.getElementById('phone-input').value;
-            // Phone number MUST contain country code, e.g., +91 for India
-            if (phoneNumber.length < 10) {
-                showNotification("ENTER VALID PHONE NUMBER WITH COUNTRY CODE (e.g. +91)");
+            const rawNumber = document.getElementById('phone-input').value;
+            
+            // Checking if user typed exactly 10 digits
+            if (rawNumber.length !== 10) {
+                showNotification("PLEASE ENTER A VALID 10-DIGIT NUMBER");
                 return;
             }
+
+            // AUTO APPENDING +91 HERE
+            const fullPhoneNumber = "+91" + rawNumber;
+
+            setupRecaptcha();
 
             document.getElementById('send-otp-btn').disabled = true;
             document.getElementById('send-otp-btn').textContent = "Sending...";
 
-            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+            // Sending to Firebase with +91 attached
+            signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier)
                 .then((confirmationResult) => {
                     confirmationResultObj = confirmationResult;
-                    showNotification("OTP SENT SUCCESSFULLY");
+                    showNotification("OTP SENT TO " + fullPhoneNumber);
                     
-                    // Hide Phone Input, Show OTP Input
                     document.getElementById('phone-input-group').classList.add('hidden');
                     document.getElementById('send-otp-btn').classList.add('hidden');
-                    
                     document.getElementById('otp-input-group').classList.remove('hidden');
                     document.getElementById('verify-otp-btn').classList.remove('hidden');
                 }).catch((error) => {
-                    console.error(error);
-                    showNotification("FAILED TO SEND OTP. TRY AGAIN.");
+                    console.error("OTP Error:", error);
+                    showNotification("OTP FAILED. TRY LATER.");
                     document.getElementById('send-otp-btn').disabled = false;
                     document.getElementById('send-otp-btn').textContent = "Send OTP";
                 });
         });
 
-        // Verify OTP
         document.getElementById('verify-otp-btn').addEventListener('click', () => {
             const code = document.getElementById('otp-input').value;
-            if (code.length !== 6) {
-                showNotification("PLEASE ENTER 6-DIGIT OTP");
-                return;
-            }
+            if (code.length < 6) { showNotification("ENTER 6-DIGIT OTP"); return; }
 
             confirmationResultObj.confirm(code).then((result) => {
                 showNotification("PHONE LOGIN SUCCESSFUL!");
             }).catch((error) => {
-                showNotification("INVALID OTP. PLEASE CHECK.");
+                showNotification("INVALID OTP. TRY AGAIN.");
             });
         });
 
         // ----------------------------------------
-        // CHECK IF ALREADY LOGGED IN
+        // 4. LOGOUT & ACCOUNT DELETION
         // ----------------------------------------
-        onAuthStateChanged(auth, (user) => {
+        document.getElementById('logout-btn').addEventListener('click', () => {
+            signOut(auth).then(() => {
+                showNotification("LOGGED OUT SUCCESSFULLY");
+            });
+        });
+
+        document.getElementById('delete-account-btn').addEventListener('click', () => {
+            const user = auth.currentUser;
             if (user) {
-                console.log("User is currently logged in:", user.uid);
-                // IF you want to log them out automatically for testing, uncomment below:
-                // signOut(auth);
+                const confirmDelete = confirm("WARNING: This will permanently delete your account and all data. Are you sure?");
+                if (confirmDelete) {
+                    deleteUser(user).then(() => {
+                        showNotification("ACCOUNT DELETED PERMANENTLY");
+                    }).catch((error) => {
+                        if (error.code === 'auth/requires-recent-login') {
+                            showNotification("SECURITY ALERT: PLEASE LOG OUT AND LOG IN AGAIN TO DELETE");
+                        } else {
+                            showNotification("ERROR DELETING ACCOUNT");
+                        }
+                    });
+                }
             }
         });
 
