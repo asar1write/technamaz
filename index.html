@@ -3,13 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Pro Navigation & Cloud Sync</title>
+<title>Login Page - Firebase Auth</title>
 <style>
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
     body { 
-        background: radial-gradient(circle at 50% 50%, #15202b 0%, #0f1419 100%); 
+        background: #f4f7f6; /* Clean light background */
         height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; 
     }
 
@@ -24,39 +24,21 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* --- LIGHT THEME LOGIN OVERLAY --- */
-    .login-overlay {
-        position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(10, 15, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
-        display: flex; align-items: center; justify-content: center;
-        z-index: 2500; opacity: 0; pointer-events: none;
-        transition: opacity 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
-    }
-    .login-overlay.active { opacity: 1; pointer-events: auto; }
-
+    /* Login Card Container */
     .login-card {
         background: #ffffff; 
-        width: 90%; max-width: 360px; padding: 40px 30px;
+        width: 90%; max-width: 380px; padding: 40px 30px;
         border-radius: 30px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
-        text-align: center; transform: translateY(40px) scale(0.9);
-        transition: transform 0.5s cubic-bezier(0.25, 0.8, 0.25, 1);
+        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
+        text-align: center;
         position: relative; overflow: hidden;
     }
-    .login-overlay.active .login-card { transform: translateY(0) scale(1); }
 
-    .login-card h2 { 
-        color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; 
-    }
-    .login-card p { 
-        color: #333333; font-size: 13px; font-weight: 600; 
-        margin-bottom: 25px;
-    }
+    .login-card h2 { color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
+    .login-card p { color: #555555; font-size: 13px; font-weight: 600; margin-bottom: 25px; }
 
     /* Input Fields */
-    .input-group {
-        position: relative; margin-bottom: 15px; text-align: left;
-    }
+    .input-group { position: relative; margin-bottom: 15px; text-align: left; }
     .input-group input {
         width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
         padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 500;
@@ -79,6 +61,7 @@
         -webkit-tap-highlight-color: transparent;
     }
     .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
+    .primary-btn:disabled { background: #cccccc; box-shadow: none; cursor: not-allowed; }
 
     .create-account {
         display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 600; cursor: pointer;
@@ -86,18 +69,12 @@
     .create-account span { color: #f25c27; font-weight: 800; }
 
     /* Divider */
-    .divider {
-        display: flex; align-items: center; text-align: center; margin: 25px 0 20px 0;
-    }
-    .divider::before, .divider::after {
-        content: ''; flex: 1; border-bottom: 1px solid #eaeaea;
-    }
+    .divider { display: flex; align-items: center; text-align: center; margin: 25px 0 20px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eaeaea; }
     .divider span { padding: 0 10px; color: #888; font-size: 11px; font-weight: 600; }
 
     /* Social Buttons */
-    .social-login {
-        display: flex; justify-content: center; gap: 15px;
-    }
+    .social-login { display: flex; justify-content: center; gap: 15px; }
     .social-btn {
         width: 45px; height: 45px; background: #ffffff; border: 1.5px solid #eaeaea;
         border-radius: 12px; display: flex; align-items: center; justify-content: center;
@@ -107,141 +84,96 @@
     .social-btn:active { transform: scale(0.92); }
     .social-btn svg { width: 20px; height: 20px; }
 
-    /* Main Floating Pill Container */
-    .bottom-nav {
-        background: rgba(29, 39, 51, 0.95); backdrop-filter: blur(10px);
-        display: flex; justify-content: space-between; align-items: center;
-        width: 90%; max-width: 400px; padding: 6px 8px; border-radius: 40px; 
-        box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6); position: fixed; bottom: 35px;
-        border: 1px solid rgba(255, 255, 255, 0.05);
-    }
-    .nav-item {
-        display: flex; flex-direction: column; align-items: center; justify-content: center;
-        width: 25%; padding: 8px 0; border-radius: 30px; cursor: pointer;
-        -webkit-tap-highlight-color: transparent; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); color: #8a96a3;
-    }
-    .nav-item:active { transform: scale(0.9); }
-    .nav-item.active { background-color: #1a2f42; color: #f25c27; box-shadow: inset 0 2px 5px rgba(0,0,0,0.2); }
-    .icon-container { position: relative; margin-bottom: 4px; display: flex; align-items: center; justify-content: center; width: 26px; height: 26px; }
-    .nav-item svg { width: 22px; height: 22px; fill: transparent; stroke: currentColor; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.3s ease; }
-    .nav-item.active svg { stroke: #f25c27; fill: #f25c27; }
-    .nav-item:not(.active) .chats-icon path { fill: currentColor; stroke: none; }
-    .nav-item.active .chats-icon path { fill: #f25c27; stroke: none; }
-    .nav-label { font-size: 10px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.8px; transition: color 0.3s ease; }
-
-    /* Profile Icon Circle */
-    .profile-circle {
-        width: 24px; height: 24px; background-color: #f25c27; border-radius: 50%;
-        display: flex; align-items: center; justify-content: center; color: #ffffff;
-        font-size: 11px; font-weight: 900; letter-spacing: 0.5px; transition: all 0.3s ease;
-        box-shadow: 0 2px 8px rgba(242, 92, 39, 0.4);
-    }
+    /* Hidden Sections */
+    .hidden { display: none !important; }
 </style>
 </head>
 <body>
 
     <!-- Notification Toast -->
     <div id="toast" class="toast">
-        <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"></path>
-            <polyline points="22 4 12 14.01 9 11.01"></polyline>
-        </svg>
-        <span id="toast-message">SUCCESS!</span>
+        <span id="toast-message">Action Successful!</span>
     </div>
 
-    <!-- NEW LIGHT THEME LOGIN OVERLAY -->
-    <div id="login-overlay" class="login-overlay">
-        <div class="login-card">
-            <h2 id="form-title">Login here</h2>
-            <p id="form-subtitle">Welcome back you've been missed!</p>
+    <!-- Login Card -->
+    <div class="login-card">
+        <h2 id="form-title">Login here</h2>
+        <p id="form-subtitle">Welcome back you've been missed!</p>
 
+        <!-- EMAIL / PASSWORD SECTION -->
+        <div id="email-section">
             <div class="input-group">
-                <input type="email" id="email-input" placeholder="Email" required>
+                <input type="email" id="email-input" placeholder="Email Address">
             </div>
             <div class="input-group">
-                <input type="password" id="password-input" placeholder="Password" required>
+                <input type="password" id="password-input" placeholder="Password">
             </div>
-            
             <a class="forgot-pass" id="forgot-pass-link">Forgot your password?</a>
-
-            <button id="main-auth-btn" class="primary-btn">Sign in</button>
-            
+            <button id="email-auth-btn" class="primary-btn">Sign in</button>
             <div class="create-account" id="toggle-auth-mode">
                 Don't have an account? <span>Register</span>
             </div>
+        </div>
 
-            <div class="divider">
-                <span>Or continue with</span>
+        <!-- PHONE NUMBER SECTION (Hidden by default) -->
+        <div id="phone-section" class="hidden">
+            <div class="input-group" id="phone-input-group">
+                <input type="tel" id="phone-input" placeholder="+91 9876543210 (Country Code must)">
             </div>
+            <div class="input-group hidden" id="otp-input-group">
+                <input type="number" id="otp-input" placeholder="Enter 6-digit OTP">
+            </div>
+            
+            <button id="send-otp-btn" class="primary-btn">Send OTP</button>
+            <button id="verify-otp-btn" class="primary-btn hidden">Verify & Login</button>
+            
+            <div class="create-account" id="back-to-email">
+                Use Email instead? <span>Go Back</span>
+            </div>
+        </div>
 
-            <!-- Social Logins -->
-            <div class="social-login">
-                <!-- Google Button -->
-                <button class="social-btn" id="google-login-btn" title="Continue with Google">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                </button>
-                <!-- Phone Button -->
-                <button class="social-btn" id="phone-login-btn" title="Continue with Phone">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                    </svg>
-                </button>
-            </div>
+        <!-- Invisible Recaptcha for Phone Auth -->
+        <div id="recaptcha-container"></div>
+
+        <div class="divider">
+            <span>Or continue with</span>
+        </div>
+
+        <!-- Social Logins -->
+        <div class="social-login">
+            <!-- Google Button -->
+            <button class="social-btn" id="google-login-btn" title="Continue with Google">
+                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+            </button>
+            <!-- Switch to Phone Auth Button -->
+            <button class="social-btn" id="switch-to-phone-btn" title="Continue with Phone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                </svg>
+            </button>
         </div>
     </div>
 
-    <!-- Bottom App Navigation -->
-    <nav class="bottom-nav">
-        <div class="nav-item active" onclick="setActive(this)">
-            <div class="icon-container">
-                <svg class="chats-icon" viewBox="0 0 24 24"><path d="M12 3c5.5 0 10 3.58 10 8s-4.5 8-10 8c-1.24 0-2.43-.18-3.53-.5C5.55 21 2 21 2 21c1.33-2 1.67-4 1.5-5.5C2.58 14.15 2 12.63 2 11c0-4.42 4.5-8 10-8z"/></svg>
-            </div>
-            <span class="nav-label">Chats</span>
-        </div>
-        <div class="nav-item" onclick="setActive(this)">
-            <div class="icon-container">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 20c0-4 4-7 8-7s8 3 8 7"></path></svg>
-            </div>
-            <span class="nav-label">Contacts</span>
-        </div>
-        <div class="nav-item" onclick="setActive(this)">
-            <div class="icon-container">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path></svg>
-            </div>
-            <span class="nav-label">Settings</span>
-        </div>
-        <div class="nav-item" id="profile-tab" onclick="setActive(this)">
-            <div class="icon-container">
-                <div class="profile-circle" id="profile-initials">US</div>
-            </div>
-            <span class="nav-label">Profile</span>
-        </div>
-    </nav>
-
-    <!-- Normal UI Script -->
+    <!-- UI Scripts -->
     <script>
-        function setActive(clickedElement) {
-            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
-            clickedElement.classList.add('active');
-        }
-
         function showNotification(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = message;
             toast.classList.add('show');
             setTimeout(() => toast.classList.remove('show'), 3500);
         }
-        
-        let appCurrentData = {}; 
-        let isLoginMode = true;
+
+        let isLoginMode = true; 
     </script>
 
-    <!-- Firebase Script (Auth + Firestore) -->
+    <!-- Firebase Script (Auth Only) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // IMPORT SIGN OUT FUNCTION HERE
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+        import { 
+            getAuth, signInWithPopup, GoogleAuthProvider, 
+            signInWithEmailAndPassword, createUserWithEmailAndPassword, 
+            RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut
+        } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
             apiKey: "AIzaSyCQKH9j93yz_q6fGAZ4HCW9XZxcXELtRPg",
@@ -254,58 +186,22 @@
 
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
-        const db = getFirestore(app);
         const provider = new GoogleAuthProvider();
 
-        const loginOverlay = document.getElementById('login-overlay');
-
-        // --- UI TOGGLE (LOGIN VS REGISTER) ---
+        // ----------------------------------------
+        // 1. EMAIL & PASSWORD LOGIC
+        // ----------------------------------------
         document.getElementById('toggle-auth-mode').addEventListener('click', () => {
             isLoginMode = !isLoginMode;
             document.getElementById('form-title').textContent = isLoginMode ? "Login here" : "Register here";
-            document.getElementById('form-subtitle').textContent = isLoginMode ? "Welcome back you've been missed!" : "Create an account to securely save your data";
-            document.getElementById('main-auth-btn').textContent = isLoginMode ? "Sign in" : "Sign up";
+            document.getElementById('form-subtitle').textContent = isLoginMode ? "Welcome back you've been missed!" : "Create an account to securely save data";
+            document.getElementById('email-auth-btn').textContent = isLoginMode ? "Sign in" : "Sign up";
             document.getElementById('forgot-pass-link').style.display = isLoginMode ? "block" : "none";
             document.getElementById('toggle-auth-mode').innerHTML = isLoginMode ? 
-                `Don't have an account? <span>Register</span>` : 
-                `Already have an account? <span>Login</span>`;
+                `Don't have an account? <span>Register</span>` : `Already have an account? <span>Login</span>`;
         });
 
-        // --- CLOUD SYNC FUNCTIONS ---
-        async function loadDataFromCloud(uid) {
-            try {
-                const userDocRef = doc(db, "users", uid);
-                const docSnap = await getDoc(userDocRef);
-                if (docSnap.exists()) {
-                    appCurrentData = docSnap.data();
-                    showNotification("DATA RESTORED");
-                }
-            } catch (error) { console.error("Error loading data:", error); }
-        }
-
-        function updateProfileUI(user) {
-            const name = user.displayName || user.email || "User";
-            const nameParts = name.split(/[@ ]/); 
-            let initials = nameParts[0].charAt(0);
-            if (nameParts.length > 1 && !user.email.startsWith(nameParts[1])) {
-                initials += nameParts[1].charAt(0);
-            }
-            document.getElementById('profile-initials').textContent = initials.toUpperCase();
-        }
-
-        // --- AUTHENTICATION STATE OBSERVER ---
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginOverlay.classList.remove('active');
-                updateProfileUI(user);
-                loadDataFromCloud(user.uid);
-            } else {
-                loginOverlay.classList.add('active');
-            }
-        });
-
-        // --- EMAIL & PASSWORD LOGIN / SIGNUP ---
-        document.getElementById('main-auth-btn').addEventListener('click', () => {
+        document.getElementById('email-auth-btn').addEventListener('click', () => {
             const email = document.getElementById('email-input').value;
             const password = document.getElementById('password-input').value;
 
@@ -316,51 +212,113 @@
 
             if (isLoginMode) {
                 signInWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => showNotification("LOGIN SUCCESSFUL!"))
-                    .catch((error) => showNotification("LOGIN FAILED. CHECK DETAILS."));
+                    .then(() => showNotification("LOGIN SUCCESSFUL!"))
+                    .catch((error) => {
+                        if (error.code === 'auth/invalid-credential') showNotification("INCORRECT EMAIL OR PASSWORD");
+                        else showNotification(error.message);
+                    });
             } else {
                 createUserWithEmailAndPassword(auth, email, password)
-                    .then((userCredential) => showNotification("ACCOUNT CREATED!"))
+                    .then(() => showNotification("ACCOUNT CREATED SUCCESSFULLY!"))
                     .catch((error) => {
-                        if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS");
-                        else showNotification("REGISTRATION FAILED");
+                        if (error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS");
+                        else if (error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
+                        else showNotification(error.message);
                     });
             }
         });
 
-        // --- GOOGLE LOGIN ---
+        // ----------------------------------------
+        // 2. GOOGLE LOGIN LOGIC
+        // ----------------------------------------
         document.getElementById('google-login-btn').addEventListener('click', () => {
             signInWithPopup(auth, provider)
                 .then((result) => showNotification(`WELCOME, ${result.user.displayName.toUpperCase()}!`))
                 .catch((error) => showNotification("GOOGLE LOGIN FAILED."));
         });
-        
-        document.getElementById('phone-login-btn').addEventListener('click', () => {
-             showNotification("PHONE AUTH CLICKED (Requires Setup)");
+
+        // ----------------------------------------
+        // 3. PHONE AUTHENTICATION LOGIC (NEW)
+        // ----------------------------------------
+        let confirmationResultObj = null;
+
+        // Toggle Views Between Email & Phone
+        document.getElementById('switch-to-phone-btn').addEventListener('click', () => {
+            document.getElementById('email-section').classList.add('hidden');
+            document.getElementById('phone-section').classList.remove('hidden');
+            document.getElementById('form-title').textContent = "Phone Login";
+            document.getElementById('form-subtitle').textContent = "We will send you an OTP";
         });
 
-        // --- LOGOUT LOGIC ADDED HERE ---
-        document.getElementById('profile-tab').addEventListener('click', () => {
-            if (auth.currentUser) {
-                // Confirm box added so accidental clicks don't log user out
-                const confirmLogout = confirm("Are you sure you want to log out?");
-                if (confirmLogout) {
-                    signOut(auth).then(() => {
-                        showNotification("LOGGED OUT SUCCESSFULLY");
-                        // Reset the UI icon and data
-                        document.getElementById('profile-initials').textContent = "US";
-                        appCurrentData = {}; 
-                        // Note: onAuthStateChanged will automatically show the login overlay now
-                    }).catch((error) => {
-                        console.error("Logout Error:", error);
-                        showNotification("ERROR LOGGING OUT");
-                    });
-                }
-            } else {
-                // If not logged in, just open the modal
-                loginOverlay.classList.add('active');
+        document.getElementById('back-to-email').addEventListener('click', () => {
+            document.getElementById('phone-section').classList.add('hidden');
+            document.getElementById('email-section').classList.remove('hidden');
+            document.getElementById('form-title').textContent = "Login here";
+            document.getElementById('form-subtitle').textContent = "Welcome back you've been missed!";
+        });
+
+        // Initialize Recaptcha (Required for Phone Auth)
+        window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+            'size': 'invisible'
+        });
+
+        // Send OTP
+        document.getElementById('send-otp-btn').addEventListener('click', () => {
+            const phoneNumber = document.getElementById('phone-input').value;
+            // Phone number MUST contain country code, e.g., +91 for India
+            if (phoneNumber.length < 10) {
+                showNotification("ENTER VALID PHONE NUMBER WITH COUNTRY CODE (e.g. +91)");
+                return;
+            }
+
+            document.getElementById('send-otp-btn').disabled = true;
+            document.getElementById('send-otp-btn').textContent = "Sending...";
+
+            signInWithPhoneNumber(auth, phoneNumber, window.recaptchaVerifier)
+                .then((confirmationResult) => {
+                    confirmationResultObj = confirmationResult;
+                    showNotification("OTP SENT SUCCESSFULLY");
+                    
+                    // Hide Phone Input, Show OTP Input
+                    document.getElementById('phone-input-group').classList.add('hidden');
+                    document.getElementById('send-otp-btn').classList.add('hidden');
+                    
+                    document.getElementById('otp-input-group').classList.remove('hidden');
+                    document.getElementById('verify-otp-btn').classList.remove('hidden');
+                }).catch((error) => {
+                    console.error(error);
+                    showNotification("FAILED TO SEND OTP. TRY AGAIN.");
+                    document.getElementById('send-otp-btn').disabled = false;
+                    document.getElementById('send-otp-btn').textContent = "Send OTP";
+                });
+        });
+
+        // Verify OTP
+        document.getElementById('verify-otp-btn').addEventListener('click', () => {
+            const code = document.getElementById('otp-input').value;
+            if (code.length !== 6) {
+                showNotification("PLEASE ENTER 6-DIGIT OTP");
+                return;
+            }
+
+            confirmationResultObj.confirm(code).then((result) => {
+                showNotification("PHONE LOGIN SUCCESSFUL!");
+            }).catch((error) => {
+                showNotification("INVALID OTP. PLEASE CHECK.");
+            });
+        });
+
+        // ----------------------------------------
+        // CHECK IF ALREADY LOGGED IN
+        // ----------------------------------------
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                console.log("User is currently logged in:", user.uid);
+                // IF you want to log them out automatically for testing, uncomment below:
+                // signOut(auth);
             }
         });
+
     </script>
 </body>
 </html>
