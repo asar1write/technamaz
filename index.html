@@ -24,7 +24,7 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* --- NEW LIGHT THEME LOGIN OVERLAY (Based on 8081.jpg) --- */
+    /* --- LIGHT THEME LOGIN OVERLAY --- */
     .login-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(10, 15, 20, 0.85); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
@@ -174,13 +174,13 @@
                 <span>Or continue with</span>
             </div>
 
-            <!-- Social Logins (Google & Phone based on Firebase Config) -->
+            <!-- Social Logins -->
             <div class="social-login">
                 <!-- Google Button -->
                 <button class="social-btn" id="google-login-btn" title="Continue with Google">
                     <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
                 </button>
-                <!-- Phone Button Placeholder -->
+                <!-- Phone Button -->
                 <button class="social-btn" id="phone-login-btn" title="Continue with Phone">
                     <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                         <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
@@ -233,14 +233,14 @@
         }
         
         let appCurrentData = {}; 
-        let isLoginMode = true; // Toggle between Login and Register
+        let isLoginMode = true;
     </script>
 
     <!-- Firebase Script (Auth + Firestore) -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        // Added Email/Password Auth Imports
-        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        // IMPORT SIGN OUT FUNCTION HERE
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -284,9 +284,8 @@
         }
 
         function updateProfileUI(user) {
-            // Display Initials for Email users or Google users
             const name = user.displayName || user.email || "User";
-            const nameParts = name.split(/[@ ]/); // Split by space or @ symbol
+            const nameParts = name.split(/[@ ]/); 
             let initials = nameParts[0].charAt(0);
             if (nameParts.length > 1 && !user.email.startsWith(nameParts[1])) {
                 initials += nameParts[1].charAt(0);
@@ -316,12 +315,10 @@
             }
 
             if (isLoginMode) {
-                // Login
                 signInWithEmailAndPassword(auth, email, password)
                     .then((userCredential) => showNotification("LOGIN SUCCESSFUL!"))
                     .catch((error) => showNotification("LOGIN FAILED. CHECK DETAILS."));
             } else {
-                // Register
                 createUserWithEmailAndPassword(auth, email, password)
                     .then((userCredential) => showNotification("ACCOUNT CREATED!"))
                     .catch((error) => {
@@ -338,16 +335,29 @@
                 .catch((error) => showNotification("GOOGLE LOGIN FAILED."));
         });
         
-        // --- PHONE LOGIN UI PLACEHOLDER ---
         document.getElementById('phone-login-btn').addEventListener('click', () => {
              showNotification("PHONE AUTH CLICKED (Requires Setup)");
         });
 
-        // Allow manual profile click to show login screen if logged out
+        // --- LOGOUT LOGIC ADDED HERE ---
         document.getElementById('profile-tab').addEventListener('click', () => {
             if (auth.currentUser) {
-                showNotification(`LOGGED IN`);
+                // Confirm box added so accidental clicks don't log user out
+                const confirmLogout = confirm("Are you sure you want to log out?");
+                if (confirmLogout) {
+                    signOut(auth).then(() => {
+                        showNotification("LOGGED OUT SUCCESSFULLY");
+                        // Reset the UI icon and data
+                        document.getElementById('profile-initials').textContent = "US";
+                        appCurrentData = {}; 
+                        // Note: onAuthStateChanged will automatically show the login overlay now
+                    }).catch((error) => {
+                        console.error("Logout Error:", error);
+                        showNotification("ERROR LOGGING OUT");
+                    });
+                }
             } else {
+                // If not logged in, just open the modal
                 loginOverlay.classList.add('active');
             }
         });
