@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Telegram Pill-Shape Navigation with Firebase Auth</title>
+<title>Asar Namaz Tracker - Login</title>
 <style>
     /* Reset and base styles */
     * {
@@ -22,7 +22,103 @@
         overflow: hidden;
     }
 
-    /* Notification Toast (Smooth UI) */
+    /* ---------------- LOGIN OVERLAY ---------------- */
+    .login-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background-color: #0f1419;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        z-index: 2000;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+
+    /* Hide class when user is logged in */
+    .login-overlay.hidden {
+        opacity: 0;
+        visibility: hidden;
+    }
+
+    .login-card {
+        background-color: #1d2733;
+        padding: 40px 30px;
+        border-radius: 24px;
+        width: 85%;
+        max-width: 360px;
+        text-align: center;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.6);
+        transform: translateY(0);
+        transition: transform 0.3s ease;
+    }
+
+    .login-icon {
+        background-color: #1a2f42;
+        width: 70px;
+        height: 70px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto 20px auto;
+        color: #40a7e3;
+    }
+
+    .login-icon svg {
+        width: 35px;
+        height: 35px;
+        stroke: currentColor;
+        stroke-width: 1.5;
+        fill: none;
+    }
+
+    .login-title {
+        color: #ffffff;
+        font-size: 24px;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
+
+    .login-subtitle {
+        color: #8899a6;
+        font-size: 14px;
+        margin-bottom: 35px;
+        line-height: 1.4;
+    }
+
+    .google-btn {
+        background-color: #ffffff;
+        color: #3c4043;
+        border: none;
+        border-radius: 30px;
+        padding: 14px 20px;
+        width: 100%;
+        font-size: 15px;
+        font-weight: 600;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 12px;
+        cursor: pointer;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        transition: background-color 0.2s, transform 0.1s;
+    }
+
+    .google-btn:active {
+        background-color: #f1f3f4;
+        transform: scale(0.97);
+    }
+
+    .google-btn svg {
+        width: 20px;
+        height: 20px;
+    }
+
+    /* ---------------- MAIN APP UI ---------------- */
+    /* Notification Toast */
     .toast {
         position: fixed;
         top: 20px;
@@ -48,7 +144,7 @@
         opacity: 1;
     }
 
-    /* Main Floating Pill Container */
+    /* Bottom Nav */
     .bottom-nav {
         background-color: #1d2733; 
         display: flex;
@@ -63,7 +159,6 @@
         bottom: 30px;
     }
 
-    /* Individual Navigation Items */
     .nav-item {
         display: flex;
         flex-direction: column;
@@ -78,79 +173,60 @@
         color: #ffffff;
     }
 
-    /* Click Animation */
-    .nav-item:active {
-        transform: scale(0.92);
-    }
-
-    /* Active State Styling */
-    .nav-item.active {
-        background-color: #1a2f42; 
-        color: #40a7e3; 
-    }
-
-    /* Icon Container */
+    .nav-item:active { transform: scale(0.92); }
+    .nav-item.active { background-color: #1a2f42; color: #40a7e3; }
+    
     .icon-container {
-        position: relative;
-        margin-bottom: 2px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        width: 24px;
-        height: 24px;
+        position: relative; margin-bottom: 2px; display: flex;
+        align-items: center; justify-content: center; width: 24px; height: 24px;
     }
 
-    /* SVGs Styling */
     .nav-item svg {
-        width: 22px; 
-        height: 22px;
-        fill: transparent;
-        stroke: #ffffff;
-        stroke-width: 1.8;
-        stroke-linecap: round;
-        stroke-linejoin: round;
+        width: 22px; height: 22px; fill: transparent; stroke: #ffffff;
+        stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round;
         transition: all 0.3s ease;
     }
 
-    .nav-item.active svg {
-        stroke: #40a7e3;
-        fill: #40a7e3;
-    }
+    .nav-item.active svg { stroke: #40a7e3; fill: #40a7e3; }
+    .nav-item:not(.active) .chats-icon path { fill: #ffffff; stroke: none; }
+    .nav-item.active .chats-icon path { fill: #40a7e3; stroke: none; }
+    
+    .nav-label { font-size: 11px; font-weight: 600; letter-spacing: 0.2px; }
 
-    /* Specific Chats Icon Adjustment */
-    .nav-item:not(.active) .chats-icon path {
-        fill: #ffffff;
-        stroke: none;
-    }
-    .nav-item.active .chats-icon path {
-        fill: #40a7e3;
-        stroke: none;
-    }
-
-    /* Text Label */
-    .nav-label {
-        font-size: 11px; 
-        font-weight: 600;
-        letter-spacing: 0.2px;
-    }
-
-    /* Profile Icon Circle */
     .profile-circle {
-        width: 22px;
-        height: 22px;
-        background-color: #5cbb5c;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: #ffffff;
-        font-size: 10px;
-        font-weight: bold;
-        transition: all 0.3s ease;
+        width: 22px; height: 22px; background-color: #5cbb5c;
+        border-radius: 50%; display: flex; align-items: center;
+        justify-content: center; color: #ffffff; font-size: 10px;
+        font-weight: bold; transition: all 0.3s ease;
     }
 </style>
 </head>
 <body>
+
+    <!-- Startup Login Screen Overlay -->
+    <div id="login-overlay" class="login-overlay">
+        <div class="login-card">
+            <div class="login-icon">
+                <svg viewBox="0 0 24 24" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M12 2L2 7l10 5 10-5-10-5z"></path>
+                    <path d="M2 17l10 5 10-5M2 12l10 5 10-5"></path>
+                </svg>
+            </div>
+            <h1 class="login-title">Welcome Back</h1>
+            <p class="login-subtitle">Sign in to continue to your Tracker.</p>
+            
+            <button id="google-login-btn" class="google-btn">
+                <svg viewBox="0 0 48 48">
+                    <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                    <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                    <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                    <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+                    <path fill="none" d="M0 0h48v48H0z"></path>
+                </svg>
+                Continue with Google
+            </button>
+        </div>
+    </div>
 
     <!-- Notification Toast -->
     <div id="toast" class="toast">
@@ -161,8 +237,8 @@
         <span id="toast-message">Login Successful!</span>
     </div>
 
+    <!-- Main Navigation UI -->
     <nav class="bottom-nav">
-        <!-- Chats -->
         <div class="nav-item active" onclick="setActive(this)">
             <div class="icon-container">
                 <svg class="chats-icon" viewBox="0 0 24 24">
@@ -172,7 +248,6 @@
             <span class="nav-label">Chats</span>
         </div>
 
-        <!-- Contacts (Badge Removed) -->
         <div class="nav-item" onclick="setActive(this)">
             <div class="icon-container">
                 <svg viewBox="0 0 24 24">
@@ -183,7 +258,6 @@
             <span class="nav-label">Contacts</span>
         </div>
 
-        <!-- Settings -->
         <div class="nav-item" onclick="setActive(this)">
             <div class="icon-container">
                 <svg viewBox="0 0 24 24">
@@ -194,10 +268,9 @@
             <span class="nav-label">Settings</span>
         </div>
 
-        <!-- Profile (Click to Login) -->
         <div class="nav-item" id="profile-tab" onclick="setActive(this)">
             <div class="icon-container">
-                <div class="profile-circle" id="profile-initials">GO</div>
+                <div class="profile-circle" id="profile-initials">--</div>
             </div>
             <span class="nav-label">Profile</span>
         </div>
@@ -207,32 +280,23 @@
     <script>
         function setActive(clickedElement) {
             const items = document.querySelectorAll('.nav-item');
-            items.forEach(item => {
-                item.classList.remove('active');
-            });
+            items.forEach(item => item.classList.remove('active'));
             clickedElement.classList.add('active');
         }
 
         function showNotification(message) {
             const toast = document.getElementById('toast');
-            const toastMessage = document.getElementById('toast-message');
-            
-            toastMessage.textContent = message;
+            document.getElementById('toast-message').textContent = message;
             toast.classList.add('show');
-
-            // Hide after 3.5 seconds
-            setTimeout(() => {
-                toast.classList.remove('show');
-            }, 3500);
+            setTimeout(() => { toast.classList.remove('show'); }, 3500);
         }
     </script>
 
-    <!-- Firebase Script (Updated with New Project Details) -->
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithPopup, GoogleAuthProvider } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithPopup, GoogleAuthProvider, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
-        // Aapka naya Asar Namaz Tracker Firebase configuration
         const firebaseConfig = {
             apiKey: "AIzaSyCQKH9j93yz_q6fGAZ4HCW9XZxcXELtRPg",
             authDomain: "asar-namaztracker.firebaseapp.com",
@@ -242,39 +306,53 @@
             appId: "1:868194462025:web:56ef9b77e36aef1c365298"
         };
 
-        // Initialize Firebase
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const provider = new GoogleAuthProvider();
 
-        // Handle Google Login on Profile Click
-        const profileTab = document.getElementById('profile-tab');
-        
-        profileTab.addEventListener('click', () => {
-            // Only trigger login if user is not already logged in
-            if (!auth.currentUser) {
-                signInWithPopup(auth, provider)
-                    .then((result) => {
-                        const user = result.user;
-                        
-                        // Extract first 2 letters of name for Profile circle
-                        const nameParts = user.displayName ? user.displayName.split(" ") : ["User"];
-                        let initials = nameParts[0].charAt(0);
-                        if (nameParts.length > 1) {
-                            initials += nameParts[1].charAt(0);
-                        }
-                        
-                        document.getElementById('profile-initials').textContent = initials.toUpperCase();
-                        
-                        // Show Smooth UI Notification
-                        showNotification(`Welcome, ${user.displayName}!`);
-                    }).catch((error) => {
-                        console.error("Error signing in: ", error);
-                        showNotification("Login Failed. Please try again.");
-                    });
+        const loginOverlay = document.getElementById('login-overlay');
+        const googleLoginBtn = document.getElementById('google-login-btn');
+
+        // Function to update Profile Initials
+        function updateProfile(user) {
+            const nameParts = user.displayName ? user.displayName.split(" ") : ["User"];
+            let initials = nameParts[0].charAt(0);
+            if (nameParts.length > 1) {
+                initials += nameParts[1].charAt(0);
+            }
+            document.getElementById('profile-initials').textContent = initials.toUpperCase();
+        }
+
+        // Listen for Authentication State (Auto Login check)
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                // User is already logged in, hide overlay immediately
+                loginOverlay.classList.add('hidden');
+                updateProfile(user);
             } else {
-                // If already logged in, just show a welcome back toast
-                showNotification(`Welcome back, ${auth.currentUser.displayName}!`);
+                // Not logged in, show overlay
+                loginOverlay.classList.remove('hidden');
+            }
+        });
+
+        // Trigger Login Popup when user clicks "Continue with Google"
+        googleLoginBtn.addEventListener('click', () => {
+            signInWithPopup(auth, provider)
+                .then((result) => {
+                    const user = result.user;
+                    updateProfile(user);
+                    loginOverlay.classList.add('hidden'); // Hide overlay after success
+                    showNotification(`Welcome, ${user.displayName}!`);
+                }).catch((error) => {
+                    console.error("Error signing in: ", error);
+                    showNotification("Login Failed. Please try again.");
+                });
+        });
+
+        // Optional: Profile tab click shows account info in toast
+        document.getElementById('profile-tab').addEventListener('click', () => {
+            if (auth.currentUser) {
+                showNotification(`Logged in as: ${auth.currentUser.email}`);
             }
         });
     </script>
