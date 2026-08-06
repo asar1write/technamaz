@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Login & Account Management</title>
+<title>Secure Email Login</title>
 <style>
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
@@ -13,14 +13,14 @@
         height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; 
     }
 
-    /* Notification Toast (Smooth UI) */
+    /* Notification Toast */
     .toast {
         position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
         background: linear-gradient(135deg, #f25c27, #e04a16); color: #fff; padding: 14px 28px;
         border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
         box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
         opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
-        display: flex; align-items: center; gap: 10px; text-align: center;
+        display: flex; align-items: center; gap: 10px; text-align: center; max-width: 90%; line-height: 1.4;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
@@ -37,36 +37,20 @@
     .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
     .card-container p { color: #555555; font-size: 13px; font-weight: 600; margin-bottom: 25px; }
 
-    /* Standard Input Fields */
-    .input-group { position: relative; margin-bottom: 15px; text-align: left; }
+    /* Input Fields */
+    .input-group { 
+        position: relative; margin-bottom: 15px; text-align: left; 
+        max-height: 100px; opacity: 1; transition: all 0.4s ease; overflow: hidden;
+    }
+    .input-group.hidden-smooth {
+        max-height: 0; margin-bottom: 0; opacity: 0; border: none;
+    }
     .input-group input {
         width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
         padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 500;
         color: #333; outline: none; transition: all 0.3s ease;
     }
     .input-group input:focus { border-color: #f25c27; background: #fff5f2; }
-
-    /* --- NEW SMOOTH PHONE INPUT (Fixed +91) --- */
-    .phone-input-wrapper {
-        display: flex; align-items: center; background: #fdfdfd;
-        border: 1.5px solid #eaeaea; border-radius: 12px;
-        margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease;
-    }
-    .phone-input-wrapper:focus-within { border-color: #f25c27; background: #fff5f2; }
-    
-    .country-code {
-        padding: 14px 10px 14px 16px; color: #333; font-weight: 700; font-size: 14px;
-        background: #f4f7f6; border-right: 1.5px solid #eaeaea;
-    }
-    
-    .phone-input-wrapper input {
-        flex: 1; border: none; background: transparent; padding: 14px 16px;
-        font-size: 15px; font-weight: 600; color: #333; outline: none; letter-spacing: 1px;
-    }
-    /* Hide arrows from number input */
-    .phone-input-wrapper input::-webkit-outer-spin-button, 
-    .phone-input-wrapper input::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
-    /* ------------------------------------------- */
 
     .forgot-pass {
         display: block; text-align: right; color: #f25c27; font-size: 11px;
@@ -82,9 +66,7 @@
         -webkit-tap-highlight-color: transparent;
     }
     .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
-    .primary-btn:disabled { background: #cccccc; box-shadow: none; cursor: not-allowed; }
-
-    /* Danger Button for Delete */
+    
     .danger-btn { background: #dc3545; box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3); }
     .danger-btn:active { box-shadow: 0 4px 10px rgba(220, 53, 69, 0.2); }
 
@@ -110,11 +92,7 @@
     .social-btn:active { transform: scale(0.92); }
     .social-btn svg { width: 20px; height: 20px; }
 
-    /* Hidden Sections */
     .hidden { display: none !important; }
-
-    /* HIDE RECAPTCHA BADGE PERMANENTLY */
-    .grecaptcha-badge { visibility: hidden !important; display: none !important; }
 </style>
 </head>
 <body>
@@ -124,64 +102,42 @@
         <span id="toast-message">Action Successful!</span>
     </div>
 
-    <!-- 1. LOGIN CARD -->
+    <!-- 1. LOGIN / REGISTER CARD -->
     <div id="login-card-main" class="card-container">
         <h2 id="form-title">Login here</h2>
         <p id="form-subtitle">Welcome back you've been missed!</p>
 
         <!-- EMAIL / PASSWORD SECTION -->
         <div id="email-section">
+            
+            <!-- USERNAME INPUT (Hidden during Login, Visible during Register) -->
+            <div class="input-group hidden-smooth" id="username-group">
+                <input type="text" id="username-input" placeholder="Full Name">
+            </div>
+
             <div class="input-group">
                 <input type="email" id="email-input" placeholder="Email Address">
             </div>
             <div class="input-group">
                 <input type="password" id="password-input" placeholder="Password">
             </div>
+            
             <a class="forgot-pass" id="forgot-pass-link">Forgot your password?</a>
             <button id="email-auth-btn" class="primary-btn">Sign in</button>
+            
             <div class="create-account" id="toggle-auth-mode">
                 Don't have an account? <span>Register</span>
             </div>
         </div>
 
-        <!-- PHONE NUMBER SECTION -->
-        <div id="phone-section" class="hidden">
-            
-            <!-- Beautiful +91 Input Field -->
-            <div class="phone-input-wrapper" id="phone-input-group">
-                <span class="country-code">+91</span>
-                <!-- type="number" with maxlength logic in JS for best mobile keypad -->
-                <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
-            </div>
-
-            <div class="input-group hidden" id="otp-input-group">
-                <input type="number" id="otp-input" placeholder="Enter 6-digit OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
-            </div>
-            
-            <button id="send-otp-btn" class="primary-btn">Send OTP</button>
-            <button id="verify-otp-btn" class="primary-btn hidden">Verify & Login</button>
-            
-            <div class="create-account" id="back-to-email">
-                Use Email instead? <span>Go Back</span>
-            </div>
-        </div>
-
-        <!-- Invisible Recaptcha Container -->
-        <div id="recaptcha-container"></div>
-
         <div class="divider">
             <span>Or continue with</span>
         </div>
 
-        <!-- Social Logins -->
+        <!-- Google Login Only -->
         <div class="social-login">
             <button class="social-btn" id="google-login-btn" title="Continue with Google">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-            </button>
-            <button class="social-btn" id="switch-to-phone-btn" title="Continue with Phone">
-                <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
-                </svg>
             </button>
         </div>
     </div>
@@ -202,11 +158,14 @@
 
     <!-- UI Scripts -->
     <script>
+        let toastTimeout;
         function showNotification(message) {
             const toast = document.getElementById('toast');
             document.getElementById('toast-message').textContent = message;
             toast.classList.add('show');
-            setTimeout(() => toast.classList.remove('show'), 4000);
+            
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 5000); // 5 seconds for longer messages
         }
         let isLoginMode = true; 
     </script>
@@ -217,7 +176,8 @@
         import { 
             getAuth, signInWithPopup, GoogleAuthProvider, 
             signInWithEmailAndPassword, createUserWithEmailAndPassword, 
-            RecaptchaVerifier, signInWithPhoneNumber, onAuthStateChanged, signOut, deleteUser 
+            onAuthStateChanged, signOut, deleteUser,
+            updateProfile, sendEmailVerification 
         } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
 
         const firebaseConfig = {
@@ -238,52 +198,110 @@
         // ----------------------------------------
         onAuthStateChanged(auth, (user) => {
             if (user) {
-                document.getElementById('login-card-main').classList.add('hidden');
-                document.getElementById('dashboard-card').classList.remove('hidden');
-                
-                const displayInfo = user.displayName || user.email || user.phoneNumber || "Verified User";
-                document.getElementById('user-display-name').textContent = `Logged in as: ${displayInfo}`;
+                // VERY IMPORTANT: Check if email is verified
+                if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
+                    // Stay on login screen if not verified
+                    document.getElementById('login-card-main').classList.remove('hidden');
+                    document.getElementById('dashboard-card').classList.add('hidden');
+                } else {
+                    // User is verified and logged in -> Show Dashboard
+                    document.getElementById('login-card-main').classList.add('hidden');
+                    document.getElementById('dashboard-card').classList.remove('hidden');
+                    
+                    const displayInfo = user.displayName || user.email || "Verified User";
+                    document.getElementById('user-display-name').textContent = `Logged in as: ${displayInfo}`;
+                }
             } else {
                 document.getElementById('login-card-main').classList.remove('hidden');
                 document.getElementById('dashboard-card').classList.add('hidden');
-                // Reset inputs when logged out
-                document.getElementById('phone-input').value = "";
-                document.getElementById('otp-input').value = "";
-                resetPhoneUI();
             }
         });
 
         // ----------------------------------------
-        // 1. EMAIL & PASSWORD LOGIC
+        // UI TOGGLE LOGIC
         // ----------------------------------------
         document.getElementById('toggle-auth-mode').addEventListener('click', () => {
             isLoginMode = !isLoginMode;
-            document.getElementById('form-title').textContent = isLoginMode ? "Login here" : "Register here";
-            document.getElementById('form-subtitle').textContent = isLoginMode ? "Welcome back you've been missed!" : "Create an account to securely save data";
-            document.getElementById('email-auth-btn').textContent = isLoginMode ? "Sign in" : "Sign up";
-            document.getElementById('forgot-pass-link').style.display = isLoginMode ? "block" : "none";
-            document.getElementById('toggle-auth-mode').innerHTML = isLoginMode ? 
-                `Don't have an account? <span>Register</span>` : `Already have an account? <span>Login</span>`;
-        });
-
-        document.getElementById('email-auth-btn').addEventListener('click', () => {
-            const email = document.getElementById('email-input').value;
-            const password = document.getElementById('password-input').value;
-            if (!email || !password) { showNotification("PLEASE ENTER EMAIL & PASSWORD"); return; }
-
+            
+            const usernameGroup = document.getElementById('username-group');
             if (isLoginMode) {
-                signInWithEmailAndPassword(auth, email, password)
-                    .then(() => showNotification("LOGIN SUCCESSFUL!"))
-                    .catch((error) => showNotification(error.message));
+                document.getElementById('form-title').textContent = "Login here";
+                document.getElementById('form-subtitle').textContent = "Welcome back you've been missed!";
+                document.getElementById('email-auth-btn').textContent = "Sign in";
+                document.getElementById('forgot-pass-link').style.display = "block";
+                document.getElementById('toggle-auth-mode').innerHTML = `Don't have an account? <span>Register</span>`;
+                usernameGroup.classList.add('hidden-smooth'); // Hide Username
             } else {
-                createUserWithEmailAndPassword(auth, email, password)
-                    .then(() => showNotification("ACCOUNT CREATED SUCCESSFULLY!"))
-                    .catch((error) => showNotification(error.message));
+                document.getElementById('form-title').textContent = "Register here";
+                document.getElementById('form-subtitle').textContent = "Create an account to securely save data";
+                document.getElementById('email-auth-btn').textContent = "Create Account";
+                document.getElementById('forgot-pass-link').style.display = "none";
+                document.getElementById('toggle-auth-mode').innerHTML = `Already have an account? <span>Login</span>`;
+                usernameGroup.classList.remove('hidden-smooth'); // Show Username
             }
         });
 
         // ----------------------------------------
-        // 2. GOOGLE LOGIN
+        // EMAIL / PASSWORD / USERNAME LOGIC
+        // ----------------------------------------
+        document.getElementById('email-auth-btn').addEventListener('click', async () => {
+            const username = document.getElementById('username-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+            const password = document.getElementById('password-input').value.trim();
+            
+            const btn = document.getElementById('email-auth-btn');
+
+            if (!isLoginMode && !username) { showNotification("PLEASE ENTER YOUR FULL NAME"); return; }
+            if (!email || !password) { showNotification("PLEASE ENTER EMAIL & PASSWORD"); return; }
+
+            btn.disabled = true;
+            btn.textContent = "Processing...";
+
+            try {
+                if (isLoginMode) {
+                    // LOGIN PROCESS
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    
+                    // Check Verification Status
+                    if (!userCredential.user.emailVerified) {
+                        // Sign them out immediately if not verified
+                        await signOut(auth);
+                        showNotification("EMAIL NOT VERIFIED! PLEASE CHECK YOUR INBOX AND CLICK THE LINK.");
+                    } else {
+                        showNotification("LOGIN SUCCESSFUL!");
+                    }
+                } else {
+                    // REGISTRATION PROCESS
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    const user = userCredential.user;
+
+                    // 1. Save Username to Firebase Profile
+                    await updateProfile(user, { displayName: username });
+
+                    // 2. Send Verification Email
+                    await sendEmailVerification(user);
+
+                    // 3. Sign them out immediately so they are forced to verify
+                    await signOut(auth);
+                    
+                    showNotification(`REGISTRATION SUCCESSFUL! A verification link has been sent to ${email}. Please check your inbox.`);
+                    
+                    // Switch UI back to login mode automatically
+                    document.getElementById('toggle-auth-mode').click();
+                }
+            } catch (error) {
+                if (error.code === 'auth/email-already-in-use') showNotification("EMAIL IS ALREADY REGISTERED.");
+                else if (error.code === 'auth/invalid-credential') showNotification("INCORRECT EMAIL OR PASSWORD.");
+                else if (error.code === 'auth/weak-password') showNotification("PASSWORD MUST BE AT LEAST 6 CHARACTERS.");
+                else showNotification(error.message);
+            } finally {
+                btn.disabled = false;
+                btn.textContent = isLoginMode ? "Sign in" : "Create Account";
+            }
+        });
+
+        // ----------------------------------------
+        // GOOGLE LOGIN
         // ----------------------------------------
         document.getElementById('google-login-btn').addEventListener('click', () => {
             signInWithPopup(auth, provider)
@@ -292,94 +310,12 @@
         });
 
         // ----------------------------------------
-        // 3. PHONE AUTHENTICATION LOGIC (+91 FIXED)
-        // ----------------------------------------
-        let confirmationResultObj = null;
-
-        function resetPhoneUI() {
-            document.getElementById('phone-input-group').classList.remove('hidden');
-            document.getElementById('send-otp-btn').classList.remove('hidden');
-            document.getElementById('otp-input-group').classList.add('hidden');
-            document.getElementById('verify-otp-btn').classList.add('hidden');
-            document.getElementById('send-otp-btn').disabled = false;
-            document.getElementById('send-otp-btn').textContent = "Send OTP";
-        }
-
-        document.getElementById('switch-to-phone-btn').addEventListener('click', () => {
-            document.getElementById('email-section').classList.add('hidden');
-            document.getElementById('phone-section').classList.remove('hidden');
-            document.getElementById('form-title').textContent = "Phone Login";
-            document.getElementById('form-subtitle').textContent = "We will send you a 6-digit OTP";
-        });
-
-        document.getElementById('back-to-email').addEventListener('click', () => {
-            document.getElementById('phone-section').classList.add('hidden');
-            document.getElementById('email-section').classList.remove('hidden');
-            document.getElementById('form-title').textContent = "Login here";
-            document.getElementById('form-subtitle').textContent = "Welcome back you've been missed!";
-            resetPhoneUI(); // Reset UI if user goes back
-        });
-
-        function setupRecaptcha() {
-            if (!window.recaptchaVerifier) {
-                window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                    'size': 'invisible'
-                });
-            }
-        }
-
-        document.getElementById('send-otp-btn').addEventListener('click', () => {
-            const rawNumber = document.getElementById('phone-input').value;
-            
-            // Checking if user typed exactly 10 digits
-            if (rawNumber.length !== 10) {
-                showNotification("PLEASE ENTER A VALID 10-DIGIT NUMBER");
-                return;
-            }
-
-            // AUTO APPENDING +91 HERE
-            const fullPhoneNumber = "+91" + rawNumber;
-
-            setupRecaptcha();
-
-            document.getElementById('send-otp-btn').disabled = true;
-            document.getElementById('send-otp-btn').textContent = "Sending...";
-
-            // Sending to Firebase with +91 attached
-            signInWithPhoneNumber(auth, fullPhoneNumber, window.recaptchaVerifier)
-                .then((confirmationResult) => {
-                    confirmationResultObj = confirmationResult;
-                    showNotification("OTP SENT TO " + fullPhoneNumber);
-                    
-                    document.getElementById('phone-input-group').classList.add('hidden');
-                    document.getElementById('send-otp-btn').classList.add('hidden');
-                    document.getElementById('otp-input-group').classList.remove('hidden');
-                    document.getElementById('verify-otp-btn').classList.remove('hidden');
-                }).catch((error) => {
-                    console.error("OTP Error:", error);
-                    showNotification("OTP FAILED. TRY LATER.");
-                    document.getElementById('send-otp-btn').disabled = false;
-                    document.getElementById('send-otp-btn').textContent = "Send OTP";
-                });
-        });
-
-        document.getElementById('verify-otp-btn').addEventListener('click', () => {
-            const code = document.getElementById('otp-input').value;
-            if (code.length < 6) { showNotification("ENTER 6-DIGIT OTP"); return; }
-
-            confirmationResultObj.confirm(code).then((result) => {
-                showNotification("PHONE LOGIN SUCCESSFUL!");
-            }).catch((error) => {
-                showNotification("INVALID OTP. TRY AGAIN.");
-            });
-        });
-
-        // ----------------------------------------
-        // 4. LOGOUT & ACCOUNT DELETION
+        // LOGOUT & ACCOUNT DELETION
         // ----------------------------------------
         document.getElementById('logout-btn').addEventListener('click', () => {
             signOut(auth).then(() => {
                 showNotification("LOGGED OUT SUCCESSFULLY");
+                document.getElementById('password-input').value = ""; // Clear password for security
             });
         });
 
