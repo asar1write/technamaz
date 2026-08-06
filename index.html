@@ -8,15 +8,15 @@
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* 1. KEYBOARD JUMP FIX - Rigid Body Lock */
+    /* 1. BODY LOCK FIX (No Flexbox, No jump) */
     body { 
         background: #f4f7f6; 
         width: 100vw; 
-        /* Height will be locked via JS, default to 100vh for desktop */
-        height: 100vh; 
-        position: fixed; top: 0; left: 0; 
+        height: 100vh; /* Locked by JS below */
+        position: fixed; 
+        top: 0; 
+        left: 0; 
         overflow: hidden; 
-        display: flex; align-items: center; justify-content: center;
     }
 
     /* Notification Toast */
@@ -31,15 +31,18 @@
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* CARD CONTAINER */
+    /* 2. CARD ABSOLUTE CENTERING (Fixes the left-shift issue) */
     .card-container {
         background: #ffffff; 
         width: 90%; max-width: 380px; padding: 40px 30px;
         border-radius: 30px; 
         box-shadow: 0 20px 40px rgba(0, 0, 0, 0.08);
         text-align: center;
-        /* No absolute positioning needed anymore due to flex body */
-        position: relative; overflow: hidden;
+        position: absolute; 
+        top: 50%; 
+        left: 50%;
+        transform: translate(-50%, -50%);
+        overflow: hidden;
     }
 
     /* TYPOGRAPHY */
@@ -78,7 +81,6 @@
     }
     .phone-input-wrapper input { border: none; border-radius: 0; flex: 1; padding: 14px 16px; background: transparent; }
 
-    /* Hide arrows from number input */
     input[type="number"]::-webkit-outer-spin-button, 
     input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
@@ -206,7 +208,7 @@
             </div>
         </div>
 
-        <!-- Invisible Recaptcha Container -->
+        <!-- Invisible Recaptcha Container Safely Placed Here -->
         <div id="recaptcha-container"></div>
 
         <div class="divider">
@@ -308,7 +310,6 @@
             } else {
                 document.getElementById('login-card-main').classList.remove('hidden');
                 document.getElementById('dashboard-card').classList.add('hidden');
-                // Reset Phone UI on logout
                 resetPhoneUI();
             }
         });
@@ -332,7 +333,7 @@
         });
 
         // ----------------------------------------
-        // UI TOGGLE: LOGIN VS REGISTER (Email)
+        // UI TOGGLE: LOGIN VS REGISTER
         // ----------------------------------------
         document.getElementById('toggle-auth-mode').addEventListener('click', () => {
             isLoginMode = !isLoginMode;
@@ -354,7 +355,8 @@
             }
         });
 
-        // --------------// PHONE AUTHENTICATION LOGIC (+91)
+        // ----------------------------------------
+        // PHONE AUTHENTICATION LOGIC (+91)
         // ----------------------------------------
         let confirmationResultObj = null;
 
@@ -519,5 +521,4 @@
 
     </script>
 </body>
-</html>--------------------------
-        
+</html>
