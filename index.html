@@ -3,16 +3,16 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-<title>Secure Login & Phone Auth</title>
+<title>Namaz Tracker App</title>
 <style>
     /* Reset and base styles */
     * { margin: 0; padding: 0; box-sizing: border-box; font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; }
     
-    /* BODY LOCK FIX - Changed background to match image warm tone */
+    /* BODY LOCK FIX - Full clean white background for a native app feel */
     body { 
-        background: #fdf6f2; 
+        background: #ffffff; 
         width: 100vw; 
-        height: 100vh; /* Locked by JS below */
+        height: 100vh; /* Locked by JS */
         position: fixed; 
         top: 0; 
         left: 0; 
@@ -25,159 +25,155 @@
         background: linear-gradient(135deg, #f25c27, #e04a16); color: #fff; padding: 14px 28px;
         border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
         box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
-        opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
+        opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 5000;
         display: flex; align-items: center; justify-content: center; gap: 10px; text-align: center; 
         white-space: nowrap; width: max-content; max-width: 90vw; overflow: hidden; text-overflow: ellipsis;
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
-    /* AUTH WRAPPER - Holds both screens */
+    /* AUTH WRAPPER - Holds full screens */
     #auth-flow-wrapper {
         width: 100%; height: 100%;
         position: relative;
+        overflow: hidden;
     }
 
-    /* CARD ABSOLUTE CENTERING & SLIDE ANIMATIONS */
-    .card-container {
-        background: #ffffff; 
-        width: 90%; max-width: 380px; padding: 40px 30px;
-        border-radius: 30px; 
-        box-shadow: 0 20px 40px rgba(0, 0, 0, 0.05);
-        text-align: center;
+    /* FULL SCREEN LAYOUT (No Cards) */
+    .app-screen {
+        width: 100%; height: 100%;
         position: absolute; 
-        top: 50%; 
-        left: 50%;
-        transition: all 0.6s cubic-bezier(0.25, 1, 0.35, 1); /* Ultra smooth slide */
+        top: 0; left: 0;
+        display: flex; flex-direction: column; 
+        align-items: center; justify-content: center;
+        background: #ffffff;
+        /* Using Transform X only for ZERO lag/jitter */
+        transition: transform 0.45s cubic-bezier(0.25, 1, 0.35, 1);
+        will-change: transform;
+    }
+
+    /* Content Wrapper inside screens */
+    .screen-content {
+        width: 90%; max-width: 400px;
+        text-align: center;
+        position: relative;
     }
 
     /* SCREEN 1: WELCOME SCREEN */
-    #welcome-card {
-        transform: translate(-50%, -50%);
-        opacity: 1;
-        pointer-events: all;
-    }
-    #welcome-card.slide-out {
-        transform: translate(-150vw, -50%); /* Slides left */
-        opacity: 0;
-        pointer-events: none;
-    }
-
-    .illustration-wrapper {
-        width: 100%; height: 180px; background: #fffcfb; 
-        border-radius: 20px; margin-bottom: 25px; display: flex; 
-        align-items: center; justify-content: center;
-    }
-    .illustration-wrapper svg { width: 140px; height: auto; }
-
-    .welcome-actions { display: flex; align-items: center; gap: 15px; margin-top: 35px; }
-    .welcome-actions button { flex: 1; padding: 15px; font-size: 14px; font-weight: 900; border-radius: 12px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.3s ease; }
-    .btn-login-main { background: #f25c27; color: #fff; border: none; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3); }
-    .btn-login-main:active { transform: scale(0.95); }
-    .btn-register-main { background: transparent; color: #333; border: none; }
-    .btn-register-main:active { color: #f25c27; }
+    #welcome-screen { transform: translateX(0); z-index: 2; }
+    #welcome-screen.slide-left { transform: translateX(-100%); pointer-events: none; }
 
     /* SCREEN 2: LOGIN/REGISTER FORM */
-    #login-card-main {
-        transform: translate(150vw, -50%); /* Starts hidden on the right */
-        opacity: 0;
-        pointer-events: none;
-    }
-    #login-card-main.slide-in {
-        transform: translate(-50%, -50%); /* Comes to center */
-        opacity: 1;
-        pointer-events: all;
-    }
+    #auth-screen { transform: translateX(100%); z-index: 3; }
+    #auth-screen.slide-in { transform: translateX(0); }
 
-    /* Back Button on Screen 2 */
-    .back-btn {
-        position: absolute; top: 20px; left: 20px; background: none; border: none;
-        color: #555; font-size: 24px; font-weight: bold; cursor: pointer;
-        transition: color 0.3s ease; z-index: 10;
+    /* ILLUSTRATION - Customized for Namaz Tracker */
+    .illustration-wrapper {
+        width: 100%; height: 190px; background: #fcf4f0; 
+        border-radius: 24px; margin-bottom: 30px; display: flex; 
+        align-items: center; justify-content: center;
     }
-    .back-btn:active { color: #f25c27; transform: scale(0.9); }
+    .illustration-wrapper svg { width: 130px; height: auto; }
 
     /* TYPOGRAPHY */
-    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
-    .card-container p { color: #222; font-size: 11px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.5; }
+    h2 { color: #f25c27; font-size: 28px; font-weight: 900; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 1px; line-height: 1.2; }
+    p { color: #444; font-size: 12px; font-weight: 700; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.6; }
+
+    /* WELCOME BUTTONS */
+    .welcome-actions { display: flex; align-items: center; gap: 15px; margin-top: 20px; }
+    .welcome-actions button { flex: 1; padding: 16px; font-size: 14px; font-weight: 900; border-radius: 14px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s ease; }
+    .btn-login-main { background: #f25c27; color: #fff; border: none; box-shadow: 0 8px 25px rgba(242, 92, 39, 0.35); }
+    .btn-login-main:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(242, 92, 39, 0.2); }
+    .btn-register-main { background: #fdfdfd; color: #333; border: 1.5px solid #eaeaea; }
+    .btn-register-main:active { transform: scale(0.96); border-color: #d0d0d0; }
+
+    /* GOAL BOX (BACK BUTTON) */
+    .goal-box-back {
+        position: absolute; top: 25px; left: 20px;
+        width: 44px; height: 44px; background: #ffffff;
+        border: 1.5px solid #eaeaea; border-radius: 14px;
+        display: flex; align-items: center; justify-content: center;
+        cursor: pointer; box-shadow: 0 4px 15px rgba(0,0,0,0.04);
+        transition: all 0.2s ease; z-index: 100;
+        -webkit-tap-highlight-color: transparent;
+    }
+    .goal-box-back svg { width: 20px; height: 20px; stroke: #333; transition: stroke 0.2s; }
+    .goal-box-back:active { transform: scale(0.9); background: #f9f9f9; border-color: #d0d0d0; }
+    .goal-box-back:active svg { stroke: #f25c27; }
 
     /* SMOOTH INPUT ANIMATIONS */
-    .input-section { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+    .input-section { transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); margin-top: 10px; }
     .input-group { 
-        position: relative; text-align: left; max-height: 60px; margin-bottom: 15px; opacity: 1; 
+        position: relative; text-align: left; max-height: 60px; margin-bottom: 16px; opacity: 1; 
         transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden;
     }
     .input-group.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; }
     
     .input-group input, .phone-input-wrapper input {
         width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
-        padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 700;
+        padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700;
         color: #333; outline: none; transition: all 0.3s ease; letter-spacing: 0.5px;
     }
-    .input-group input:focus, .phone-input-wrapper:focus-within { border-color: #f25c27; background: #fff5f2; }
-    .input-group input::placeholder, .phone-input-wrapper input::placeholder {
-        text-transform: uppercase; font-weight: 800; color: #aaa; font-size: 12px; letter-spacing: 0.5px;
-    }
+    .input-group input:focus, .phone-input-wrapper:focus-within { border-color: #f25c27; background: #fffcfb; box-shadow: 0 0 0 3px rgba(242, 92, 39, 0.1); }
+    .input-group input::placeholder, .phone-input-wrapper input::placeholder { text-transform: uppercase; font-weight: 800; color: #aaa; font-size: 12px; letter-spacing: 0.5px; }
 
-    /* PHONE INPUT STYLING */
+    /* PHONE INPUT */
     .phone-input-wrapper {
         display: flex; align-items: center; background: #fdfdfd;
-        border: 1.5px solid #eaeaea; border-radius: 12px;
-        margin-bottom: 15px; overflow: hidden; transition: all 0.3s ease;
+        border: 1.5px solid #eaeaea; border-radius: 14px;
+        margin-bottom: 16px; overflow: hidden; transition: all 0.3s ease;
     }
     .phone-input-wrapper.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; padding: 0; }
-    .country-code { padding: 14px 10px 14px 16px; color: #333; font-weight: 800; font-size: 14px; background: #f4f7f6; border-right: 1.5px solid #eaeaea; }
-    .phone-input-wrapper input { border: none; border-radius: 0; flex: 1; padding: 14px 16px; background: transparent; }
+    .country-code { padding: 16px 12px 16px 18px; color: #333; font-weight: 900; font-size: 14px; background: #f9f9f9; border-right: 1.5px solid #eaeaea; }
+    .phone-input-wrapper input { border: none; border-radius: 0; flex: 1; padding: 16px 18px; background: transparent; }
     input[type="number"]::-webkit-outer-spin-button, input[type="number"]::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
 
-    .forgot-pass { display: block; text-align: right; color: #f25c27; font-size: 11px; font-weight: 800; text-decoration: none; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+    .forgot-pass { display: block; text-align: right; color: #f25c27; font-size: 11px; font-weight: 800; text-decoration: none; margin-bottom: 25px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* BUTTONS */
     .primary-btn {
-        width: 100%; background: #f25c27; color: #ffffff; border: none; margin-bottom: 10px;
-        padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 900;
-        cursor: pointer; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3);
-        transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        -webkit-tap-highlight-color: transparent; text-transform: uppercase; letter-spacing: 1px;
+        width: 100%; background: #f25c27; color: #ffffff; border: none; margin-bottom: 12px;
+        padding: 16px; border-radius: 14px; font-size: 14px; font-weight: 900;
+        cursor: pointer; box-shadow: 0 8px 25px rgba(242, 92, 39, 0.35);
+        transition: all 0.2s ease; text-transform: uppercase; letter-spacing: 1px;
     }
-    .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
-    .danger-btn { background: #dc3545; box-shadow: 0 8px 20px rgba(220, 53, 69, 0.3); }
+    .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 12px rgba(242, 92, 39, 0.2); }
+    .danger-btn { background: #dc3545; box-shadow: 0 8px 25px rgba(220, 53, 69, 0.3); }
     .secondary-btn { background: #fdfdfd; color: #333; border: 1.5px solid #eaeaea; box-shadow: none; }
     .secondary-btn:active, .danger-btn:active { transform: scale(0.96); }
 
-    .create-account { display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
+    .create-account { display: block; margin-top: 10px; color: #555; font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; }
     .create-account span { color: #f25c27; font-weight: 900; }
 
     /* Divider */
-    .divider { display: flex; align-items: center; text-align: center; margin: 25px 0 20px 0; }
+    .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; }
     .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eaeaea; }
-    .divider span { padding: 0 10px; color: #777; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
+    .divider span { padding: 0 12px; color: #999; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
     /* SOCIAL LOGINS */
     .social-login { display: flex; justify-content: center; gap: 15px; }
     .social-btn {
-        width: 45px; height: 45px; background: #ffffff; border: 1.5px solid #eaeaea;
-        border-radius: 12px; display: flex; align-items: center; justify-content: center;
-        cursor: pointer; transition: all 0.3s ease; -webkit-tap-highlight-color: transparent;
+        width: 50px; height: 50px; background: #ffffff; border: 1.5px solid #eaeaea;
+        border-radius: 14px; display: flex; align-items: center; justify-content: center;
+        cursor: pointer; transition: all 0.2s ease; -webkit-tap-highlight-color: transparent;
     }
-    .social-btn:hover { background: #f9f9f9; transform: translateY(-2px); }
-    .social-btn:active { transform: scale(0.92); }
-    .social-btn svg { width: 20px; height: 20px; }
+    .social-btn:active { transform: scale(0.92); background: #f9f9f9; border-color: #d0d0d0; }
+    .social-btn svg { width: 22px; height: 22px; }
 
-    /* DELETE MODAL */
+    /* MODAL */
     .custom-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-        background: rgba(10, 15, 20, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
+        background: rgba(10, 15, 20, 0.7); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
         display: flex; align-items: center; justify-content: center;
-        z-index: 4000; opacity: 1; transition: opacity 0.3s ease;
+        z-index: 6000; opacity: 1; transition: opacity 0.3s ease;
     }
     .custom-modal-overlay.hidden { display: none !important; opacity: 0; pointer-events: none; }
-    .custom-modal { background: #ffffff; width: 85%; max-width: 340px; padding: 35px 25px; border-radius: 28px; box-shadow: 0 20px 40px rgba(0,0,0,0.2); text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
+    .custom-modal { background: #ffffff; width: 85%; max-width: 340px; padding: 35px 25px; border-radius: 28px; text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); }
     .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; margin-bottom: 12px; }
-    .custom-modal p { color: #111; font-size: 13px; font-weight: 800; margin-bottom: 30px; }
+    .custom-modal p { color: #333; font-size: 13px; font-weight: 800; margin-bottom: 30px; }
     .modal-actions { display: flex; gap: 12px; }
     .modal-btn { flex: 1; padding: 14px; border-radius: 12px; font-size: 13px; font-weight: 900; cursor: pointer; border: none; }
     .cancel-btn { background: #f4f7f6; color: #555; }
-    .confirm-delete-btn { background: #dc3545; color: #fff; box-shadow: 0 6px 15px rgba(220, 53, 69, 0.3); }
+    .confirm-delete-btn { background: #dc3545; color: #fff; }
 
     .hidden { display: none !important; }
     .grecaptcha-badge { visibility: hidden !important; display: none !important; }
@@ -194,111 +190,121 @@
     <!-- MAIN WRAPPER FOR SCREENS -->
     <div id="auth-flow-wrapper">
         
-        <!-- ==================== SCREEN 1: WELCOME ==================== -->
-        <div id="welcome-card" class="card-container">
-            <div class="illustration-wrapper">
-                <!-- Premium Abstract Illustration matching the vibe -->
-                <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
-                    <circle cx="100" cy="75" r="50" fill="#fcf0ea" />
-                    <!-- Desk -->
-                    <rect x="50" y="110" width="100" height="6" fill="#333" rx="3" />
-                    <rect x="60" y="116" width="6" height="30" fill="#333" />
-                    <rect x="134" y="116" width="6" height="30" fill="#333" />
-                    <!-- Laptop -->
-                    <polygon points="90,110 120,110 130,85 105,85" fill="#555" />
-                    <rect x="90" y="108" width="30" height="4" fill="#222" />
-                    <!-- Person -->
-                    <circle cx="75" cy="55" r="14" fill="#f25c27" />
-                    <rect x="65" y="75" width="20" height="35" fill="#f25c27" rx="8" />
-                    <rect x="70" y="85" width="25" height="12" fill="#f25c27" rx="6" transform="rotate(30, 70, 85)" />
-                    <!-- Plant details -->
-                    <path d="M 160 110 Q 155 90 165 80" stroke="#f25c27" stroke-width="3" fill="none" />
-                    <circle cx="165" cy="80" r="8" fill="#f25c27" />
-                </svg>
-            </div>
-            
-            <h2>DISCOVER YOUR DREAM JOB HERE</h2>
-            <p>EXPLORE ALL THE EXISTING JOB ROLES, BASED ON YOUR INTEREST AND STUDY MAJOR</p>
-            
-            <div class="welcome-actions">
-                <button id="nav-login-btn" class="btn-login-main">LOGIN</button>
-                <button id="nav-register-btn" class="btn-register-main">REGISTER</button>
-            </div>
-        </div>
-
-        <!-- ==================== SCREEN 2: LOGIN / REGISTER ==================== -->
-        <div id="login-card-main" class="card-container">
-            <!-- Back button to return to Welcome Screen -->
-            <button id="back-to-welcome" class="back-btn">&#8592;</button>
-
-            <h2 id="form-title">LOGIN HERE</h2>
-            <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
-
-            <!-- EMAIL / PASSWORD SECTION -->
-            <div id="email-section" class="input-section">
-                <div class="input-group hidden-smooth" id="username-group">
-                    <input type="text" id="username-input" placeholder="FULL NAME">
-                </div>
-                <div class="input-group">
-                    <input type="email" id="email-input" placeholder="EMAIL ADDRESS">
-                </div>
-                <div class="input-group">
-                    <input type="password" id="password-input" placeholder="PASSWORD">
-                </div>
+        <!-- ==================== SCREEN 1: WELCOME (FULL SCREEN) ==================== -->
+        <div id="welcome-screen" class="app-screen">
+            <div class="screen-content">
                 
-                <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
-                <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
-                
-                <div class="create-account" id="toggle-auth-mode">
-                    DON'T HAVE AN ACCOUNT? <span>REGISTER</span>
-                </div>
-            </div>
-
-            <!-- PHONE NUMBER SECTION -->
-            <div id="phone-section" class="input-section hidden">
-                <div class="phone-input-wrapper" id="phone-input-wrapper">
-                    <span class="country-code">+91</span>
-                    <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
-                </div>
-                <div class="input-group hidden-smooth" id="otp-input-group">
-                    <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
-                </div>
-                
-                <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
-                <button id="verify-otp-btn" class="primary-btn hidden">VERIFY & LOGIN</button>
-                
-                <div class="create-account" id="back-to-email-btn">
-                    USE EMAIL INSTEAD? <span>GO BACK</span>
-                </div>
-            </div>
-
-            <div id="recaptcha-container"></div>
-
-            <div class="divider">
-                <span id="divider-text">OR CONTINUE WITH</span>
-            </div>
-
-            <!-- Social / Phone Buttons -->
-            <div class="social-login">
-                <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
-                </button>
-                <button class="social-btn" id="switch-to-phone-btn" title="CONTINUE WITH PHONE">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                        <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                <!-- NAMAZ TRACKER ILLUSTRATION -->
+                <div class="illustration-wrapper">
+                    <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg">
+                        <circle cx="100" cy="75" r="50" fill="#fcf0ea" />
+                        <!-- Moon Shape -->
+                        <path d="M85,40 A 32 32 0 1 0 120,75 A 42 42 0 0 1 85,40 Z" fill="#f25c27"/>
+                        <!-- Stars -->
+                        <circle cx="120" cy="40" r="4" fill="#f25c27" />
+                        <circle cx="138" cy="52" r="3" fill="#f25c27" />
+                        <!-- Tracker Graph -->
+                        <rect x="65" y="98" width="12" height="12" rx="3" fill="#333" />
+                        <rect x="85" y="98" width="12" height="12" rx="3" fill="#f25c27" />
+                        <rect x="105" y="98" width="12" height="12" rx="3" fill="#f25c27" />
+                        <rect x="125" y="98" width="12" height="12" rx="3" fill="#333" />
                     </svg>
-                </button>
+                </div>
+                
+                <!-- UPDATED TEXT FOR NAMAZ TRACKER -->
+                <h2>NAMAZ TRACKER</h2>
+                <p>STAY CONSISTENT WITH YOUR DAILY PRAYERS AND BUILD A STRONGER CONNECTION.</p>
+                
+                <div class="welcome-actions">
+                    <button id="nav-login-btn" class="btn-login-main">LOGIN</button>
+                    <button id="nav-register-btn" class="btn-register-main">REGISTER</button>
+                </div>
             </div>
         </div>
-    </div> <!-- End Auth Flow Wrapper -->
+
+        <!-- ==================== SCREEN 2: LOGIN / REGISTER (FULL SCREEN) ==================== -->
+        <div id="auth-screen" class="app-screen">
+            
+            <!-- GOAL BOX BACK BUTTON WITH SVG -->
+            <button id="back-to-welcome" class="goal-box-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                    <line x1="19" y1="12" x2="5" y2="12"></line>
+                    <polyline points="12 19 5 12 12 5"></polyline>
+                </svg>
+            </button>
+
+            <div class="screen-content">
+                <h2 id="form-title">LOGIN HERE</h2>
+                <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
+
+                <!-- EMAIL / PASSWORD SECTION -->
+                <div id="email-section" class="input-section">
+                    <div class="input-group hidden-smooth" id="username-group">
+                        <input type="text" id="username-input" placeholder="FULL NAME">
+                    </div>
+                    <div class="input-group">
+                        <input type="email" id="email-input" placeholder="EMAIL ADDRESS">
+                    </div>
+                    <div class="input-group">
+                        <input type="password" id="password-input" placeholder="PASSWORD">
+                    </div>
+                    
+                    <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
+                    <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
+                    
+                    <div class="create-account" id="toggle-auth-mode">
+                        DON'T HAVE AN ACCOUNT? <span>REGISTER</span>
+                    </div>
+                </div>
+
+                <!-- PHONE NUMBER SECTION -->
+                <div id="phone-section" class="input-section hidden">
+                    <div class="phone-input-wrapper" id="phone-input-wrapper">
+                        <span class="country-code">+91</span>
+                        <input type="number" id="phone-input" placeholder="98765 43210" oninput="if(this.value.length > 10) this.value = this.value.slice(0, 10);">
+                    </div>
+                    <div class="input-group hidden-smooth" id="otp-input-group">
+                        <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" oninput="if(this.value.length > 6) this.value = this.value.slice(0, 6);">
+                    </div>
+                    
+                    <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
+                    <button id="verify-otp-btn" class="primary-btn hidden">VERIFY & LOGIN</button>
+                    
+                    <div class="create-account" id="back-to-email-btn">
+                        USE EMAIL INSTEAD? <span>GO BACK</span>
+                    </div>
+                </div>
+
+                <div id="recaptcha-container"></div>
+
+                <div class="divider">
+                    <span id="divider-text">OR CONTINUE WITH</span>
+                </div>
+
+                <!-- Social / Phone Buttons -->
+                <div class="social-login">
+                    <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
+                        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
+                    </button>
+                    <button class="social-btn" id="switch-to-phone-btn" title="CONTINUE WITH PHONE">
+                        <svg viewBox="0 0 24 24" fill="none" stroke="#555" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                            <path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path>
+                        </svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div> 
 
     <!-- ==================== SCREEN 3: DASHBOARD ==================== -->
-    <div id="dashboard-card" class="card-container hidden" style="transform: translate(-50%, -50%); left: 50%;">
-        <h2>PROFILE</h2>
-        <p id="user-display-name">LOADING...</p>
-        <button id="logout-btn" class="primary-btn secondary-btn">LOG OUT</button>
-        <div class="divider"><span>DANGER ZONE</span></div>
-        <button id="open-delete-modal-btn" class="primary-btn danger-btn">DELETE ACCOUNT</button>
+    <div id="dashboard-screen" class="app-screen hidden">
+        <div class="screen-content">
+            <h2>PROFILE</h2>
+            <p id="user-display-name">LOADING...</p>
+            <button id="logout-btn" class="primary-btn secondary-btn">LOG OUT</button>
+            <div class="divider"><span>DANGER ZONE</span></div>
+            <button id="open-delete-modal-btn" class="primary-btn danger-btn">DELETE ACCOUNT</button>
+        </div>
     </div>
 
     <!-- CUSTOM DELETE ACCOUNT MODAL -->
@@ -321,14 +327,14 @@
             document.getElementById('toast-message').textContent = message.toUpperCase(); 
             toast.classList.add('show');
             clearTimeout(toastTimeout);
-            toastTimeout = setTimeout(() => toast.classList.remove('show'), 4000); 
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 3000); 
         }
 
         let isLoginMode = true; 
-        const welcomeCard = document.getElementById('welcome-card');
-        const loginCard = document.getElementById('login-card-main');
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const authScreen = document.getElementById('auth-screen');
 
-        // Function to explicitely set mode and slide
+        // Function to explicitly set mode and SLIDE (No Lag Method)
         function openAuthScreen(modeIsLogin) {
             isLoginMode = modeIsLogin;
             const usernameGroup = document.getElementById('username-group');
@@ -342,26 +348,26 @@
                 usernameGroup.classList.add('hidden-smooth'); 
             } else {
                 document.getElementById('form-title').textContent = "REGISTER HERE";
-                document.getElementById('form-subtitle').textContent = "CREATE AN ACCOUNT TO SECURELY SAVE DATA";
+                document.getElementById('form-subtitle').textContent = "CREATE ACCOUNT TO SAVE PROGRESS";
                 document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
                 document.getElementById('forgot-pass-link').style.display = "none";
                 document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
                 usernameGroup.classList.remove('hidden-smooth'); 
             }
 
-            // Trigger Slide Animation
-            welcomeCard.classList.add('slide-out');
-            loginCard.classList.add('slide-in');
+            // Trigger Smooth Slide Animation
+            welcomeScreen.classList.add('slide-left');
+            authScreen.classList.add('slide-in');
         }
 
         // Screen 1 Button Listeners
         document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
         document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
 
-        // Back Button Logic
+        // Goal Box Back Button Logic
         document.getElementById('back-to-welcome').addEventListener('click', () => {
-            welcomeCard.classList.remove('slide-out');
-            loginCard.classList.remove('slide-in');
+            welcomeScreen.classList.remove('slide-left');
+            authScreen.classList.remove('slide-in');
         });
 
         // Toggle link on Screen 2
@@ -371,7 +377,7 @@
 
     </script>
 
-     <!-- Firebase Script -->
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { 
@@ -407,22 +413,19 @@
         onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
-                    // Not verified - Show Auth Flow
                     document.getElementById('auth-flow-wrapper').classList.remove('hidden');
-                    document.getElementById('dashboard-card').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.add('hidden');
                 } else {
-                    // Verified - Show Dashboard
                     document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                    document.getElementById('dashboard-card').classList.remove('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
                     const displayInfo = user.displayName || user.email || user.phoneNumber || "VERIFIED USER";
                     document.getElementById('user-display-name').textContent = `LOGGED IN AS: ${displayInfo.toUpperCase()}`;
                 }
             } else {
-                // Logged Out - Show Auth Flow (Reset to Welcome Screen)
                 document.getElementById('auth-flow-wrapper').classList.remove('hidden');
-                document.getElementById('dashboard-card').classList.add('hidden');
-                welcomeCard.classList.remove('slide-out');
-                loginCard.classList.remove('slide-in');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                welcomeScreen.classList.remove('slide-left');
+                authScreen.classList.remove('slide-in');
                 resetPhoneUI();
             }
         });
@@ -440,7 +443,7 @@
         document.getElementById('back-to-email-btn').addEventListener('click', () => {
             document.getElementById('phone-section').classList.add('hidden');
             document.getElementById('email-section').classList.remove('hidden');
-            openAuthScreen(isLoginMode); // Resets titles properly
+            openAuthScreen(isLoginMode); 
             resetPhoneUI();
         });
 
@@ -545,7 +548,7 @@
                     await signOut(auth);
                     
                     showNotification("LINK SENT! CHECK EMAIL.");
-                    openAuthScreen(true); // Switch back to login view smoothly
+                    openAuthScreen(true); 
                 }
             } catch (error) {
                 if (error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY EXISTS.");
@@ -587,4 +590,3 @@
     </script>
 </body>
 </html>
-    
