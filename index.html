@@ -13,14 +13,16 @@
         height: 100vh; display: flex; align-items: center; justify-content: center; overflow: hidden; 
     }
 
-    /* Notification Toast */
+    /* Notification Toast - FIXED TO 1 LINE */
     .toast {
         position: fixed; top: 20px; left: 50%; transform: translateX(-50%) translateY(-100px);
         background: linear-gradient(135deg, #f25c27, #e04a16); color: #fff; padding: 14px 28px;
         border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
         box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
         opacity: 0; transition: all 0.5s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 3000;
-        display: flex; align-items: center; gap: 10px; text-align: center; max-width: 90%; line-height: 1.4;
+        display: flex; align-items: center; justify-content: center; gap: 10px; text-align: center; 
+        white-space: nowrap; /* Forces text to stay on one line */
+        width: max-content; /* Adjusts width exactly to the text */
     }
     .toast.show { transform: translateX(-50%) translateY(0); opacity: 1; }
 
@@ -34,8 +36,9 @@
         position: relative; overflow: hidden;
     }
 
-    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 800; margin-bottom: 8px; }
-    .card-container p { color: #555555; font-size: 13px; font-weight: 600; margin-bottom: 25px; }
+    /* BOLD & CAPITALIZED TYPOGRAPHY */
+    .card-container h2 { color: #f25c27; font-size: 26px; font-weight: 900; margin-bottom: 8px; text-transform: uppercase; letter-spacing: 1px; }
+    .card-container p { color: #222; font-size: 12px; font-weight: 800; margin-bottom: 25px; text-transform: uppercase; letter-spacing: 0.5px; }
 
     /* Input Fields */
     .input-group { 
@@ -47,23 +50,29 @@
     }
     .input-group input {
         width: 100%; background: #fdfdfd; border: 1.5px solid #eaeaea;
-        padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 500;
-        color: #333; outline: none; transition: all 0.3s ease;
+        padding: 14px 16px; border-radius: 12px; font-size: 14px; font-weight: 700;
+        color: #333; outline: none; transition: all 0.3s ease; letter-spacing: 0.5px;
     }
     .input-group input:focus { border-color: #f25c27; background: #fff5f2; }
+    
+    /* BOLD CAPITAL PLACEHOLDERS */
+    .input-group input::placeholder {
+        text-transform: uppercase; font-weight: 800; color: #aaa; font-size: 12px; letter-spacing: 0.5px;
+    }
 
     .forgot-pass {
         display: block; text-align: right; color: #f25c27; font-size: 11px;
-        font-weight: 700; text-decoration: none; margin-bottom: 20px; cursor: pointer;
+        font-weight: 800; text-decoration: none; margin-bottom: 20px; cursor: pointer;
+        text-transform: uppercase; letter-spacing: 0.5px;
     }
 
     /* Buttons */
     .primary-btn {
         width: 100%; background: #f25c27; color: #ffffff; border: none; margin-bottom: 10px;
-        padding: 15px; border-radius: 12px; font-size: 15px; font-weight: 800;
+        padding: 15px; border-radius: 12px; font-size: 14px; font-weight: 900;
         cursor: pointer; box-shadow: 0 8px 20px rgba(242, 92, 39, 0.3);
         transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
-        -webkit-tap-highlight-color: transparent;
+        -webkit-tap-highlight-color: transparent; text-transform: uppercase; letter-spacing: 1px;
     }
     .primary-btn:active { transform: scale(0.96); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.2); }
     
@@ -73,13 +82,16 @@
     .secondary-btn { background: #fdfdfd; color: #333; border: 1.5px solid #eaeaea; box-shadow: none; }
     .secondary-btn:active { transform: scale(0.96); }
 
-    .create-account { display: block; margin-top: 15px; color: #555; font-size: 12px; font-weight: 600; cursor: pointer; }
-    .create-account span { color: #f25c27; font-weight: 800; }
+    .create-account { 
+        display: block; margin-top: 15px; color: #555; font-size: 12px; 
+        font-weight: 800; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px;
+    }
+    .create-account span { color: #f25c27; font-weight: 900; }
 
     /* Divider */
     .divider { display: flex; align-items: center; text-align: center; margin: 25px 0 20px 0; }
     .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid #eaeaea; }
-    .divider span { padding: 0 10px; color: #888; font-size: 11px; font-weight: 600; }
+    .divider span { padding: 0 10px; color: #777; font-size: 11px; font-weight: 900; text-transform: uppercase; letter-spacing: 1px; }
 
     /* Social Buttons */
     .social-login { display: flex; justify-content: center; gap: 15px; }
@@ -92,7 +104,7 @@
     .social-btn:active { transform: scale(0.92); }
     .social-btn svg { width: 20px; height: 20px; }
 
-    /* --- CUSTOM DELETE MODAL --- */
+    /* CUSTOM DELETE MODAL */
     .custom-modal-overlay {
         position: fixed; top: 0; left: 0; width: 100%; height: 100%;
         background: rgba(10, 15, 20, 0.7); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px);
@@ -107,7 +119,7 @@
         text-align: center; transform: scale(1); transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
     }
     
-    .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; }
+    .custom-modal h3 { color: #dc3545; font-size: 22px; font-weight: 900; text-transform: uppercase; margin-bottom: 12px; letter-spacing: 1px; }
     .custom-modal p { color: #111; font-size: 13px; font-weight: 800; text-transform: uppercase; margin-bottom: 30px; letter-spacing: 0.5px; }
     
     .modal-actions { display: flex; gap: 12px; }
@@ -127,41 +139,41 @@
 
     <!-- Notification Toast -->
     <div id="toast" class="toast">
-        <span id="toast-message">Action Successful!</span>
+        <span id="toast-message">ACTION SUCCESSFUL!</span>
     </div>
 
     <!-- 1. LOGIN / REGISTER CARD -->
     <div id="login-card-main" class="card-container">
-        <h2 id="form-title">Login here</h2>
-        <p id="form-subtitle">Welcome back you've been missed!</p>
+        <h2 id="form-title">LOGIN HERE</h2>
+        <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
 
         <div id="email-section">
             <div class="input-group hidden-smooth" id="username-group">
-                <input type="text" id="username-input" placeholder="Full Name">
+                <input type="text" id="username-input" placeholder="FULL NAME">
             </div>
 
             <div class="input-group">
-                <input type="email" id="email-input" placeholder="Email Address">
+                <input type="email" id="email-input" placeholder="EMAIL ADDRESS">
             </div>
             <div class="input-group">
-                <input type="password" id="password-input" placeholder="Password">
+                <input type="password" id="password-input" placeholder="PASSWORD">
             </div>
             
-            <a class="forgot-pass" id="forgot-pass-link">Forgot your password?</a>
-            <button id="email-auth-btn" class="primary-btn">Sign in</button>
+            <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
+            <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
             
             <div class="create-account" id="toggle-auth-mode">
-                Don't have an account? <span>Register</span>
+                DON'T HAVE AN ACCOUNT? <span>REGISTER</span>
             </div>
         </div>
 
         <div class="divider">
-            <span>Or continue with</span>
+            <span>OR CONTINUE WITH</span>
         </div>
 
         <!-- Google Login Only -->
         <div class="social-login">
-            <button class="social-btn" id="google-login-btn" title="Continue with Google">
+            <button class="social-btn" id="google-login-btn" title="CONTINUE WITH GOOGLE">
                 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg>
             </button>
         </div>
@@ -169,26 +181,26 @@
 
     <!-- 2. LOGGED IN DASHBOARD -->
     <div id="dashboard-card" class="card-container hidden">
-        <h2>Profile</h2>
-        <p id="user-display-name">Loading...</p>
+        <h2>PROFILE</h2>
+        <p id="user-display-name">LOADING...</p>
 
-        <button id="logout-btn" class="primary-btn secondary-btn">Log Out</button>
+        <button id="logout-btn" class="primary-btn secondary-btn">LOG OUT</button>
         
         <div class="divider">
-            <span>Danger Zone</span>
+            <span>DANGER ZONE</span>
         </div>
         
-        <button id="open-delete-modal-btn" class="primary-btn danger-btn">Delete Account</button>
+        <button id="open-delete-modal-btn" class="primary-btn danger-btn">DELETE ACCOUNT</button>
     </div>
 
     <!-- 3. CUSTOM DELETE ACCOUNT MODAL -->
     <div id="delete-modal" class="custom-modal-overlay hidden">
         <div class="custom-modal">
-            <h3>Warning</h3>
+            <h3>WARNING</h3>
             <p>DELETE YOUR ACCOUNT PERMANENTLY?</p>
             <div class="modal-actions">
-                <button class="modal-btn cancel-btn" id="cancel-delete-btn">Cancel</button>
-                <button class="modal-btn confirm-delete-btn" id="confirm-delete-btn">Delete</button>
+                <button class="modal-btn cancel-btn" id="cancel-delete-btn">CANCEL</button>
+                <button class="modal-btn confirm-delete-btn" id="confirm-delete-btn">DELETE</button>
             </div>
         </div>
     </div>
@@ -198,7 +210,7 @@
         let toastTimeout;
         function showNotification(message) {
             const toast = document.getElementById('toast');
-            document.getElementById('toast-message').textContent = message;
+            document.getElementById('toast-message').textContent = message.toUpperCase(); // Ensure toast is uppercase
             toast.classList.add('show');
             
             clearTimeout(toastTimeout);
@@ -242,8 +254,8 @@
                     document.getElementById('login-card-main').classList.add('hidden');
                     document.getElementById('dashboard-card').classList.remove('hidden');
                     
-                    const displayInfo = user.displayName || user.email || "Verified User";
-                    document.getElementById('user-display-name').textContent = `Logged in as: ${displayInfo}`;
+                    const displayInfo = user.displayName || user.email || "VERIFIED USER";
+                    document.getElementById('user-display-name').textContent = `LOGGED IN AS: ${displayInfo.toUpperCase()}`;
                 }
             } else {
                 document.getElementById('login-card-main').classList.remove('hidden');
@@ -259,18 +271,18 @@
             
             const usernameGroup = document.getElementById('username-group');
             if (isLoginMode) {
-                document.getElementById('form-title').textContent = "Login here";
-                document.getElementById('form-subtitle').textContent = "Welcome back you've been missed!";
-                document.getElementById('email-auth-btn').textContent = "Sign in";
+                document.getElementById('form-title').textContent = "LOGIN HERE";
+                document.getElementById('form-subtitle').textContent = "WELCOME BACK YOU'VE BEEN MISSED!";
+                document.getElementById('email-auth-btn').textContent = "SIGN IN";
                 document.getElementById('forgot-pass-link').style.display = "block";
-                document.getElementById('toggle-auth-mode').innerHTML = `Don't have an account? <span>Register</span>`;
+                document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
                 usernameGroup.classList.add('hidden-smooth'); 
             } else {
-                document.getElementById('form-title').textContent = "Register here";
-                document.getElementById('form-subtitle').textContent = "Create an account to securely save data";
-                document.getElementById('email-auth-btn').textContent = "Create Account";
+                document.getElementById('form-title').textContent = "REGISTER HERE";
+                document.getElementById('form-subtitle').textContent = "CREATE AN ACCOUNT TO SECURELY SAVE DATA";
+                document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
                 document.getElementById('forgot-pass-link').style.display = "none";
-                document.getElementById('toggle-auth-mode').innerHTML = `Already have an account? <span>Login</span>`;
+                document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
                 usernameGroup.classList.remove('hidden-smooth'); 
             }
         });
@@ -289,7 +301,7 @@
             if (!email || !password) { showNotification("PLEASE ENTER EMAIL & PASSWORD"); return; }
 
             btn.disabled = true;
-            btn.textContent = "Processing...";
+            btn.textContent = "PROCESSING...";
 
             try {
                 if (isLoginMode) {
@@ -307,7 +319,7 @@
                     await sendEmailVerification(user);
                     await signOut(auth);
                     
-                    showNotification(`REGISTRATION SUCCESSFUL! A verification link has been sent to ${email}.`);
+                    showNotification(`REGISTRATION SUCCESSFUL! VERIFICATION LINK SENT TO YOUR EMAIL.`);
                     document.getElementById('toggle-auth-mode').click();
                 }
             } catch (error) {
@@ -317,7 +329,7 @@
                 else showNotification(error.message);
             } finally {
                 btn.disabled = false;
-                btn.textContent = isLoginMode ? "Sign in" : "Create Account";
+                btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT";
             }
         });
 
@@ -354,7 +366,7 @@
         });
 
         document.getElementById('confirm-delete-btn').addEventListener('click', () => {
-            deleteModal.classList.add('hidden'); // Close modal
+            deleteModal.classList.add('hidden'); 
             
             const user = auth.currentUser;
             if (user) {
