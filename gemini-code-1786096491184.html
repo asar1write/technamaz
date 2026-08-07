@@ -1,0 +1,1113 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Namaz Tracker App</title>
+<style>
+    /* ==========================================
+       CSS VARIABLES FOR DARK/LIGHT THEME
+       ========================================== */
+    :root {
+        --bg-main: #ffffff;
+        --bg-screen: #f8f9fa;
+        --bg-card: #ffffff;
+        --text-main: #222222;
+        --text-sub: #888888;
+        --border-line: #eaeaea;
+        --glass-bg: rgba(255, 255, 255, 0.85);
+        --glass-border: rgba(255, 255, 255, 0.9);
+        --pill-bg: #f5f5f5;
+        --active-pill-bg: #fcf0ea;
+        --brand-color: #f25c27;
+        --shadow-color: rgba(0, 0, 0, 0.05);
+        --modal-overlay: rgba(10, 15, 20, 0.75);
+        --disabled-bg: #f0f0f0;
+        --icon-bg: #f5f5f5;
+    }
+
+    [data-theme="dark"] {
+        --bg-main: #121212;
+        --bg-screen: #0a0a0a;
+        --bg-card: #1c1c1e;
+        --text-main: #ffffff;
+        --text-sub: #a1a1aa;
+        --border-line: #2c2c2e;
+        --glass-bg: rgba(28, 28, 30, 0.85);
+        --glass-border: rgba(50, 50, 50, 0.6);
+        --pill-bg: #2c2c2e;
+        --active-pill-bg: rgba(242, 92, 39, 0.15);
+        --shadow-color: rgba(0, 0, 0, 0.3);
+        --modal-overlay: rgba(0, 0, 0, 0.85);
+        --disabled-bg: #111111;
+        --icon-bg: #2c2c2e;
+    }
+
+    /* ==========================================
+       RESET & ZERO SCROLL OPTIMIZATION
+       ========================================== */
+    * { 
+        margin: 0; padding: 0; box-sizing: border-box; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        -webkit-touch-callout: none; 
+        -webkit-user-select: none; 
+        user-select: none; 
+        -webkit-tap-highlight-color: transparent !important; 
+        scrollbar-width: none; 
+    }
+    *::-webkit-scrollbar { display: none; } 
+    
+    input, select, textarea { -webkit-user-select: auto !important; user-select: auto !important; outline: none; }
+
+    body { 
+        background: var(--bg-main); width: 100vw; height: 100vh; 
+        position: fixed; top: 0; left: 0; overflow: hidden; 
+        overscroll-behavior: none; 
+        transition: background 0.4s ease;
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+        position: fixed; 
+        top: calc(45px + env(safe-area-inset-top)); 
+        left: 50%; transform: translate3d(-50%, -150px, 0);
+        background: var(--brand-color); color: #fff; padding: 12px 24px;
+        border-radius: 30px; font-size: 13px; font-weight: 800; letter-spacing: 0.5px; text-transform: uppercase;
+        box-shadow: 0 10px 25px rgba(242, 92, 39, 0.4);
+        opacity: 0; transition: all 0.4s cubic-bezier(0.25, 0.8, 0.25, 1); z-index: 9999;
+        display: flex; align-items: center; justify-content: center; text-align: center; 
+        white-space: nowrap; width: max-content; max-width: 90vw;
+        will-change: transform, opacity;
+    }
+    .toast.show { transform: translate3d(-50%, 0, 0); opacity: 1; }
+
+    #auth-flow-wrapper { width: 100%; height: 100%; position: relative; overflow: hidden; background: var(--bg-main); transition: background 0.4s ease;}
+    .app-screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-main); transition: transform 0.45s cubic-bezier(0.25, 1, 0.35, 1); will-change: transform; }
+    .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
+
+    /* ==========================================
+       🌟 SPLASH SCREEN 🌟
+       ========================================== */
+    #splash-screen {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: var(--bg-main); z-index: 10000; display: flex; flex-direction: column;
+        align-items: center; justify-content: center; overflow: hidden;
+        transition: opacity 0.5s ease, visibility 0.5s ease;
+    }
+    .splash-center-icon {
+        width: 120px; height: 120px; border-radius: 50%;
+        background: linear-gradient(135deg, #f25c27, #ff8a65);
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 15px 40px rgba(242, 92, 39, 0.35);
+        animation: float-bounce 2s infinite alternate cubic-bezier(0.4, 0, 0.2, 1);
+        will-change: transform;
+    }
+    .splash-center-icon svg { width: 60px; height: 60px; fill: #ffffff; }
+    .loading-dots { display: flex; gap: 8px; margin-top: 40px; }
+    .loading-dots span { width: 10px; height: 10px; background: var(--brand-color); border-radius: 50%; animation: dot-bounce 1.4s infinite ease-in-out both; will-change: transform; }
+    .loading-dots span:nth-child(1) { animation-delay: -0.32s; }
+    .loading-dots span:nth-child(2) { animation-delay: -0.16s; }
+
+    @keyframes float-bounce { 0% { transform: translate3d(0, 0px, 0) scale(0.95); box-shadow: 0 10px 25px rgba(242, 92, 39, 0.2); } 100% { transform: translate3d(0, -15px, 0) scale(1.05); box-shadow: 0 25px 50px rgba(242, 92, 39, 0.5); } }
+    @keyframes dot-bounce { 0%, 80%, 100% { transform: scale(0); } 40% { transform: scale(1); } }
+    .splash-fade-out { opacity: 0 !important; visibility: hidden; pointer-events: none; }
+
+    /* AUTH UI ELEMENTS */
+    #welcome-screen { transform: translateX(0); z-index: 2; }
+    #welcome-screen.slide-left { transform: translateX(-100%); pointer-events: none; }
+    #auth-screen { transform: translateX(100%); z-index: 3; }
+    #auth-screen.slide-in { transform: translateX(0); }
+    #dashboard-screen { z-index: 4; background: var(--bg-screen); justify-content: flex-start; overflow: hidden; }
+    
+    .illustration-wrapper { width: 100%; height: 260px; background: var(--pill-bg); border-radius: 30px; margin-bottom: 40px; display: flex; align-items: center; justify-content: center; }
+    .illustration-wrapper svg { width: 140px; height: auto; }
+    h2 { color: var(--brand-color); font-size: 26px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    p { color: var(--text-sub); font-size: 11px; font-weight: 800; margin-bottom: 40px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.6; }
+    .welcome-actions { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .welcome-actions button { flex: 1; padding: 18px 0; font-size: 14px; font-weight: 900; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: all 0.2s ease; }
+    .btn-login-main { background: var(--brand-color); color: #fff; border: none; box-shadow: 0 12px 25px rgba(242, 92, 39, 0.35); }
+    .btn-login-main:active { transform: scale(0.96); box-shadow: 0 6px 15px rgba(242, 92, 39, 0.25); }
+    .btn-register-main { background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-line); }
+    .btn-register-main:active { transform: scale(0.96); background: var(--pill-bg); }
+    
+    .input-group { position: relative; max-height: 60px; margin-bottom: 16px; opacity: 1; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1); overflow: hidden; }
+    .input-group.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; }
+    .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--text-main); transition: all 0.3s ease; letter-spacing: 0.5px; }
+    .input-group input:focus { border-color: var(--brand-color); }
+    .primary-btn { width: 100%; background: var(--brand-color); color: #ffffff; border: none; margin-bottom: 12px; padding: 18px; border-radius: 16px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px rgba(242, 92, 39, 0.35); text-transform: uppercase; letter-spacing: 1px; }
+    .primary-btn:active { transform: scale(0.96); box-shadow: 0 5px 12px rgba(242, 92, 39, 0.2); }
+    .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+    .create-account span { color: var(--brand-color); font-weight: 900; }
+    .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-line); }
+    .divider span { padding: 0 12px; color: var(--text-sub); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer;}
+    .social-btn svg { width: 20px; height: 20px; }
+
+    /* ==========================================
+       🌟 GLASS HEADER 🌟
+       ========================================== */
+    .top-filter-bar {
+        position: fixed; top: calc(4px + env(safe-area-inset-top)); 
+        left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px; 
+        background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border); border-radius: 40px; padding: 10px 16px;
+        box-shadow: 0 8px 30px var(--shadow-color); z-index: 5000;
+        display: flex; justify-content: center; align-items: center;
+        transition: background 0.4s ease, border 0.4s ease;
+        will-change: transform;
+    }
+    .filter-inner { display: flex; align-items: center; justify-content: center; gap: 6px; width: 100%; position: relative; }
+    
+    .custom-select-trigger {
+        display: flex; align-items: center; justify-content: center; gap: 6px;
+        padding: 6px 12px; border-radius: 20px; cursor: pointer;
+        font-size: 15px; font-weight: 900; color: var(--text-main); text-transform: uppercase;
+        transition: background 0.2s;
+    }
+    .custom-select-trigger:active { background: var(--shadow-color); }
+    .custom-select-trigger svg { width: 16px; height: 16px; stroke: var(--brand-color); fill: none; stroke-width: 3; }
+    .select-divider { width: 1.5px; height: 20px; background: var(--border-line); margin: 0 4px; border-radius: 2px; }
+
+    .month-complete-tick {
+        position: absolute; right: 10px;
+        width: 24px; height: 24px; background: #34c759; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        transform: scale(0); opacity: 0; transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4);
+    }
+    .month-complete-tick.show { transform: scale(1); opacity: 1; }
+    .month-complete-tick svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 3; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ==========================================
+       TABS SYSTEM & CALENDAR GRID (3 IN A ROW)
+       ========================================== */
+    .dashboard-content-wrapper {
+        width: 100%; height: 100vh; 
+        padding-top: calc(75px + env(safe-area-inset-top)); 
+        padding-bottom: calc(80px + env(safe-area-inset-bottom));
+        overflow: hidden; 
+        display: flex; flex-direction: column; align-items: center;
+    }
+    
+    .tab-pane { width: 100%; max-width: 600px; display: none; height: 100%; animation: fade-in 0.3s ease; }
+    .tab-pane.active { display: flex; flex-direction: column; align-items: center; width: 100%;}
+    
+    @keyframes fade-in { from { opacity: 0; transform: translate3d(0, 10px, 0); } to { opacity: 1; transform: translate3d(0, 0, 0); } }
+
+    /* 3 Column Grid */
+    .calendar-grid { 
+        flex-grow: 1; display: grid; 
+        grid-template-columns: repeat(3, 1fr); 
+        grid-template-rows: repeat(11, minmax(0, 1fr)); 
+        gap: 8px; width: 100%; padding: 0 10px 10px 10px;
+    }
+    
+    .day-card {
+        background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 16px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 4px; 
+        cursor: pointer; transition: transform 0.2s ease, background 0.2s ease, border 0.4s ease;
+        will-change: transform; transform: translate3d(0,0,0);
+        padding: 6px 0; /* Optimized padding for perfect fit */
+    }
+    .day-card:active { transform: scale(0.92) translate3d(0,0,0); background: var(--pill-bg); }
+    
+    .day-card.disabled-day { opacity: 0.35; pointer-events: none; background: var(--disabled-bg); border-color: var(--border-line); }
+    .day-card.today-active { border: 1.5px solid var(--brand-color); background: var(--active-pill-bg); }
+    .day-card.today-active .day-text { color: var(--brand-color); font-weight: 900; }
+
+    .date-badge { display: flex; align-items: baseline; gap: 4px; pointer-events: none; }
+    .date-badge h1 { font-size: 22px; font-weight: 900; color: var(--text-main); margin: 0; line-height: 1; }
+    .day-text { font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; }
+    
+    .dots-container { display: flex; gap: 4px; pointer-events: none; }
+    .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--border-line); transition: all 0.3s ease; }
+    .dot.active { background: var(--brand-color); }
+
+    /* ==========================================
+       🌟 PROFILE TAB (CENTERED PERFECTLY & COMPACT) 🌟
+       ========================================== */
+    #tab-profile.active { 
+        justify-content: center; /* Vertically Centers Everything */
+        padding-bottom: 25px; 
+    }
+    .profile-inner-container { width: 100%; max-width: 350px; display: flex; flex-direction: column; align-items: center; }   
+    
+    .profile-header { display: flex; flex-direction: column; align-items: center; margin-bottom: 18px; }
+    
+    /* Fixed Avatar with Clickable Area */
+    .avatar-wrapper { position: relative; width: 75px; height: 75px; border-radius: 50%; background: var(--bg-card); padding: 3px; box-shadow: 0 5px 15px var(--shadow-color); margin-bottom: 8px; cursor: pointer; transition: transform 0.2s;}
+    .avatar-wrapper:active { transform: scale(0.95); }
+    .avatar-wrapper img { width: 100%; height: 100%; border-radius: 50%; object-fit: cover; }
+    .default-avatar { width: 100%; height: 100%; border-radius: 50%; background: linear-gradient(135deg, #f25c27, #ff8a65); color: #fff; display: flex; align-items: center; justify-content: center; font-size: 28px; font-weight: 900; }
+    
+    /* Camera Icon Inside Circle properly */
+    .camera-badge { position: absolute; bottom: 0px; right: -2px; width: 24px; height: 24px; background: var(--brand-color); color: #fff; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2.5px solid var(--bg-screen); box-shadow: 0 4px 10px rgba(242, 92, 39, 0.3); z-index: 10;}
+    .camera-badge svg { width: 10px; height: 10px; fill: currentColor; }
+    
+    input[type="file"] { display: none !important; opacity: 0; position: absolute; z-index: -1; }
+    
+    .profile-name { font-size: 18px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px; }
+    .profile-email { font-size: 11px; font-weight: 600; color: var(--text-sub); margin-top: 2px; }
+    
+    /* Narrow, Compact Cards to prevent scroll */
+    .ios-card { width: 100%; background: var(--bg-card); border-radius: 14px; margin: 0 auto 10px auto; box-shadow: 0 4px 12px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; transition: background 0.4s ease;}
+    .ios-list-item { width: 100%; padding: 12px 14px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); display: flex; justify-content: space-between; align-items: center; font-size: 14px; font-weight: 700; color: var(--text-main); cursor: pointer; transition: background 0.2s; }
+    .ios-list-item:active { background: var(--pill-bg); }
+    .ios-list-item:last-child { border-bottom: none; }
+    .ios-list-item.action-blue { color: #007aff; } .ios-list-item.action-green { color: #34c759; } .ios-list-item.action-orange { color: #f25c27;} .ios-list-item.danger { color: #dc3545; }
+    .list-left { display: flex; align-items: center; gap: 8px; pointer-events: none;}
+    .list-left svg { width: 16px; height: 16px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+    .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
+
+    /* Theme Switch */
+    .theme-switch { width: 40px; height: 24px; background: #e5e5ea; border-radius: 12px; position: relative; transition: 0.3s; cursor: pointer; }
+    .theme-switch.active { background: #34c759; }
+    .switch-knob { width: 20px; height: 20px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); will-change: transform;}
+    .theme-switch.active .switch-knob { transform: translate3d(16px, 0, 0); }
+    [data-theme="dark"] .theme-switch:not(.active) { background: #3a3a3c; }
+
+    /* ==========================================
+       🌟 PDF TAB UI (Centered Placeholder) 🌟
+       ========================================== */
+    #tab-pdf.active { align-items: center; justify-content: center; }
+
+    /* ==========================================
+       🌟 MODALS (CENTERED) 🌟
+       ========================================== */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+        background: var(--modal-overlay); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        z-index: 8000; opacity: 0; visibility: hidden; transition: opacity 0.3s ease;
+        display: flex; align-items: center; justify-content: center; padding: 20px;
+    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    
+    .modal-content {
+        background: var(--bg-card); width: 100%; max-width: 360px; max-height: 80vh;
+        border-radius: 24px; padding: 25px 20px; display: flex; flex-direction: column;
+        transform: scale(0.85) translate3d(0, 20px, 0); opacity: 0;
+        transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15); will-change: transform, opacity;
+    }
+    .modal-overlay.show .modal-content { transform: scale(1) translate3d(0, 0, 0); opacity: 1; }
+    
+    .sheet-header-box { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; padding: 0 5px; position: relative; }
+    .picker-title-pill { background: var(--brand-color); color: #fff; padding: 6px 20px; border-radius: 20px; font-size: 14px; font-weight: 900; letter-spacing: 0.5px; margin: 0 auto; text-transform: uppercase;}
+    .sheet-close-btn { position: absolute; right: 0px; width: 32px; height: 32px; background: var(--icon-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; }
+    .sheet-close-btn svg { width: 14px; height: 14px; stroke: var(--text-main); stroke-width: 2.5; fill: none; }
+    
+    .sheet-list-container { overflow-y: auto; flex-grow: 1; padding: 0 5px; scrollbar-width: none;}
+    .sheet-list-container::-webkit-scrollbar { display: none; }
+    .sheet-item {
+        padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800; color: var(--text-main);
+        margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; text-align: center; text-transform: uppercase; 
+        background: var(--pill-bg); border: 1.5px solid transparent; will-change: transform;
+    }
+    .sheet-item:active { transform: scale(0.96) translateZ(0); }
+    .sheet-item.selected { background: var(--brand-color); color: #fff; border-color: var(--brand-color); }
+
+    .offline-textarea { width: 100%; height: 100px; border-radius: 14px; padding: 12px; border: 1.5px solid var(--border-line); background: var(--bg-main); color: var(--text-main); font-size: 12px; font-family: monospace; resize: none; margin-bottom: 15px; outline: none; word-break: break-all;}
+    .offline-textarea:focus { border-color: var(--brand-color); }
+
+    .modal-actions-row { display: flex; gap: 10px; margin-top: 10px;}
+    .btn-action { flex: 1; padding: 12px; border-radius: 12px; font-weight: 800; font-size: 13px; cursor: pointer; text-transform: uppercase; border: none; transition: transform 0.2s; text-align: center;}
+    .btn-action:active { transform: scale(0.95); }
+    .btn-cancel { background: var(--pill-bg); color: var(--text-sub); }
+    .btn-save { background: var(--brand-color); color: #fff; }
+
+    /* ==========================================
+       🌟 NAMAZ POPUP MODAL 🌟
+       ========================================== */
+    .namaz-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border-line); border-radius: 16px; margin-bottom: 10px; transition: all 0.2s ease; cursor: pointer; will-change: transform;}
+    .namaz-row:active { background: var(--pill-bg); transform: scale(0.97) translateZ(0); }
+    .namaz-info { display: flex; align-items: center; gap: 14px; pointer-events: none; }
+    .namaz-info svg { width: 22px; height: 22px; stroke: var(--brand-color); fill: none; stroke-width: 2.5; }
+    .namaz-info span { font-size: 15px; font-weight: 800; color: var(--text-main); text-transform: uppercase; } 
+    
+    .tick-box { width: 26px; height: 26px; border: 2px solid var(--text-sub); border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.2, 0.8, 0.2, 1); pointer-events: none; }
+    .tick-box svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset 0.3s ease 0.1s; }
+    .tick-box.ticked { background: var(--brand-color); border-color: var(--brand-color); transform: scale(1.1) translateZ(0); }
+    .tick-box.ticked svg { stroke-dashoffset: 0; }
+
+    /* ==========================================
+       🌟 GLASS BOTTOM NAVIGATION 🌟
+       ========================================== */
+    .bottom-nav {
+        position: absolute; bottom: calc(6px + env(safe-area-inset-bottom)); 
+        left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px;
+        background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border); border-radius: 40px; box-shadow: 0 8px 30px var(--shadow-color); 
+        display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; z-index: 5000; will-change: transform;
+        transition: background 0.4s ease, border 0.4s ease;
+    }
+    .nav-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 25%; padding: 6px 0; border-radius: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: var(--text-sub); z-index: 2; will-change: transform;}
+    .nav-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--active-pill-bg); border-radius: 30px; z-index: -1; opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); will-change: transform, opacity;}
+    .nav-item.active::before { opacity: 1; transform: scale(1) translateZ(0); }
+    .nav-item:active { transform: scale(0.92) translateZ(0); }
+    .nav-item.active { color: var(--brand-color); }
+    .icon-container { position: relative; margin-bottom: 2px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; pointer-events: none;}
+    .nav-item svg { width: 22px; height: 22px; fill: transparent; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.3s ease; }
+    .nav-item.active svg { stroke: var(--brand-color); }
+    .nav-label { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.5px; pointer-events: none;}
+
+    .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+    <script> 
+        const savedTheme = localStorage.getItem('namazTrackerTheme');
+        if(savedTheme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+        document.body.style.height = window.innerHeight + 'px'; 
+    </script>
+
+    <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
+
+    <!-- 🌟 SPLASH ANIMATION 🌟 -->
+    <div id="splash-screen">
+        <div class="splash-center-icon">
+            <svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><path d="M85,40 A 32 32 0 1 0 120,75 A 42 42 0 0 1 85,40 Z"/></svg>
+        </div>
+        <div class="loading-dots"><span></span><span></span><span></span></div>
+    </div>
+
+    <!-- MAIN WRAPPER FOR AUTH -->
+    <div id="auth-flow-wrapper" class="hidden">
+        <div id="welcome-screen" class="app-screen">
+            <div class="screen-content">
+                <div class="illustration-wrapper"><svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="75" r="50" fill="var(--pill-bg)" /><path d="M85,40 A 32 32 0 1 0 120,75 A 42 42 0 0 1 85,40 Z" fill="var(--brand-color)"/><circle cx="120" cy="40" r="4" fill="var(--brand-color)" /><circle cx="138" cy="52" r="3" fill="var(--brand-color)" /><rect x="65" y="98" width="12" height="12" rx="3" fill="var(--text-main)" /><rect x="85" y="98" width="12" height="12" rx="3" fill="var(--brand-color)" /><rect x="105" y="98" width="12" height="12" rx="3" fill="var(--brand-color)" /><rect x="125" y="98" width="12" height="12" rx="3" fill="var(--text-main)" /></svg></div>
+                <h2>NAMAZ TRACKER</h2>
+                <p>STAY CONSISTENT WITH YOUR DAILY PRAYERS AND BUILD A STRONGER CONNECTION.</p>
+                <div class="welcome-actions"><button id="nav-login-btn" class="btn-login-main">LOGIN</button><button id="nav-register-btn" class="btn-register-main">REGISTER</button></div>
+            </div>
+        </div>
+
+        <div id="auth-screen" class="app-screen">
+            <button id="back-to-welcome" class="goal-box-back"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <div class="screen-content">
+                <h2 id="form-title">LOGIN HERE</h2>
+                <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
+                <div id="email-section" class="input-section">
+                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" placeholder="FULL NAME"></div>
+                    <div class="input-group"><input type="email" id="email-input" placeholder="EMAIL ADDRESS"></div>
+                    <div class="input-group"><input type="password" id="password-input" placeholder="PASSWORD"></div>
+                    <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
+                    <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
+                    <div class="create-account" id="toggle-auth-mode">DON'T HAVE AN ACCOUNT? <span>REGISTER</span></div>
+                </div>
+                <div class="divider"><span id="divider-text">OR CONTINUE WITH</span></div>
+                <div class="social-login">
+                    <button class="social-btn" id="google-login-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-screen" class="app-screen hidden">
+        
+        <!-- 🌟 GLASS HEADER 🌟 -->
+        <div class="top-filter-bar" id="filter-bar">
+            <div class="filter-inner">
+                <div class="custom-select-trigger" onclick="openModal('month')">
+                    <span id="display-month">AUGUST</span>
+                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="select-divider"></div>
+                <div class="custom-select-trigger" onclick="openModal('year')">
+                    <span id="display-year">2026</span>
+                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div id="month-complete-tick" class="month-complete-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+            </div>
+        </div>
+
+        <!-- TABS CONTAINER -->
+        <div class="dashboard-content-wrapper">
+            <div id="tab-2026" class="tab-pane active"><div id="calendar-container-2026" class="calendar-grid"></div></div>
+            <div id="tab-2019" class="tab-pane"><div id="calendar-container-2019" class="calendar-grid"></div></div>
+            
+            <!-- 🌟 SIMPLE PDF TAB 🌟 -->
+            <div id="tab-pdf" class="tab-pane" style="align-items:center; justify-content:center;">
+                <div style="text-align: center; color: var(--text-sub);">
+                    <svg viewBox="0 0 24 24" style="width:50px; height:50px; stroke:currentColor; fill:none; stroke-width:1.5; margin-bottom:10px;"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg>
+                    <h3>PDF EXPORTS</h3>
+                    <p style="font-size:12px; margin-top:5px;">Coming Soon</p>
+                </div>
+            </div>
+            
+            <!-- 🌟 PROFILE TAB (No Scroll, Centered perfectly) 🌟 -->
+            <div id="tab-profile" class="tab-pane">
+                <div class="profile-inner-container">
+                    <div class="profile-header">
+                        <!-- Clickable Avatar -->
+                        <div class="avatar-wrapper" id="avatar-img-container" onclick="document.getElementById('file-upload-input').click();">
+                            <div class="default-avatar">U</div>
+                            <div class="camera-badge"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>
+                        </div>
+                        <input type="file" id="file-upload-input" accept="image/*">
+                        <div class="profile-name" id="user-display-name">USER NAME</div>
+                        <div class="profile-email" id="user-display-email">user@email.com</div>
+                    </div>
+
+                    <!-- Compact Settings Cards -->
+                    <div class="ios-card">
+                        <button class="ios-list-item" onclick="openModal('edit-profile')">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Edit Profile</div>
+                            <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                        <div class="ios-list-item" style="cursor: default;">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark Mode</div>
+                            <div class="theme-switch" id="theme-toggle" onclick="toggleTheme()"><div class="switch-knob"></div></div>
+                        </div>
+                    </div>
+
+                    <div class="ios-card">
+                        <button class="ios-list-item action-blue" id="btn-backup">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 5.5 5.5 0 0 1 1.79 10.9z"></path><polyline points="12 12 12 16"></polyline><polyline points="10 14 12 12 14 14"></polyline></svg> Cloud Backup</div>
+                            <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                        <button class="ios-list-item action-green" id="btn-restore">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 5.5 5.5 0 0 1 1.79 10.9z"></path><polyline points="12 12 12 8"></polyline><polyline points="10 10 12 12 14 10"></polyline></svg> Cloud Restore</div>
+                            <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+
+                    <div class="ios-card">
+                        <button class="ios-list-item action-orange" onclick="generateOfflineBackup()">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Offline Backup</div>
+                            <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                        <button class="ios-list-item action-orange" onclick="openModal('offline-restore')">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Offline Restore</div>
+                            <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                        </button>
+                    </div>
+
+                    <div class="ios-card">
+                        <button class="ios-list-item" onclick="openModal('logout-confirm')">
+                            <div class="list-left"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Log Out</div>
+                        </button>
+                        <button class="ios-list-item danger" onclick="openModal('delete')">
+                            <div class="list-left"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Account</div>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        <!-- 🌟 BOTTOM NAVIGATION 🌟 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-target="tab-2026" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+                <span class="nav-label">2026</span>
+            </div>
+            <div class="nav-item" data-target="tab-2019" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+                <span class="nav-label">2019</span>
+            </div>
+            <div class="nav-item" data-target="tab-pdf" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg></div>
+                <span class="nav-label">PDF</span>
+            </div>
+            <div class="nav-item" data-target="tab-profile" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                <span class="nav-label">Profile</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🌟 MODALS 🌟 -->
+    
+    <!-- Edit Profile -->
+    <div id="modal-edit-profile" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">EDIT PROFILE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-edit-profile')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <input type="text" id="edit-profile-input" class="edit-input" placeholder="Enter Name">
+            <button class="btn-action btn-save" onclick="saveProfileName()">SAVE UPDATES</button>
+        </div>
+    </div>
+
+    <!-- Month/Year Picker -->
+    <div id="modal-picker" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill" id="picker-title">SELECT</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-picker')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <div class="sheet-list-container" id="picker-list"></div>
+        </div>
+    </div>
+
+    <!-- Offline Backup (Short Code) -->
+    <div id="modal-offline-backup" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">BACKUP CODE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-offline-backup')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; text-align:center;">Copy this short code and save it.</p>
+            <textarea id="backup-code-area" class="offline-textarea" readonly></textarea>
+            <button class="btn-action btn-save" onclick="copyBackupCode()">COPY CODE</button>
+        </div>
+    </div>
+
+    <!-- Offline Restore -->
+    <div id="modal-offline-restore" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">RESTORE CODE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-offline-restore')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; text-align:center;">Paste your saved code here.</p>
+            <textarea id="restore-code-area" class="offline-textarea" placeholder="Paste Code Here..."></textarea>
+            <button class="btn-action btn-save" onclick="processOfflineRestore()">RESTORE DATA</button>
+        </div>
+    </div>
+
+    <!-- Center Namaz Modal -->
+    <div id="modal-namaz" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header-top" style="position:relative; display:flex; justify-content:center; margin-bottom:25px;">
+                <div class="picker-title-pill" id="modal-date-title" style="box-shadow: 0 4px 10px rgba(242, 92, 39, 0.3);">1 AUG 2026</div>
+                <div class="sheet-close-btn" style="position:absolute; right:0;" onclick="closeModal({target: document.getElementById('modal-namaz')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            
+            <div class="modal-namaz-list">
+                <div class="namaz-row" onclick="toggleNamazInModal(this, 0)">
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><span>FAJR</span></div>
+                    <div class="tick-box" id="modal-tick-0"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row" onclick="toggleNamazInModal(this, 1)">
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3"></circle></svg><span>ZUHR</span></div>
+                    <div class="tick-box" id="modal-tick-1"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row" onclick="toggleNamazInModal(this, 2)">
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg><span>ASR</span></div>
+                    <div class="tick-box" id="modal-tick-2"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row" onclick="toggleNamazInModal(this, 3)">
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg><span>MAGHRIB</span></div>
+                    <div class="tick-box" id="modal-tick-3"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row" onclick="toggleNamazInModal(this, 4)">
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path><circle cx="12" cy="12" r="2"></circle></svg><span>ISHA</span></div>
+                    <div class="tick-box" id="modal-tick-4"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT CONFIRMATION -->
+    <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" style="max-height: 250px; text-align:center;" onclick="event.stopPropagation()">
+            <h3 style="color:var(--text-main); font-size:18px; font-weight:900; margin-bottom:12px;">LOG OUT</h3>
+            <p style="color:var(--text-sub); font-size:13px; font-weight:800; margin-bottom:30px;">ARE YOU SURE YOU WANT TO LOG OUT?</p>
+            <div class="modal-actions-row">
+                <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-logout-confirm')})">CANCEL</button>
+                <button class="btn-action" style="background:var(--brand-color); color:#fff;" id="confirm-logout-btn">YES, LOG OUT</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- DELETE CONFIRMATION -->
+    <div id="modal-delete" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" style="max-height: 250px; text-align:center;" onclick="event.stopPropagation()">
+            <h3 style="color:#dc3545; font-size:18px; font-weight:900; margin-bottom:12px;">WARNING</h3>
+            <p style="color:var(--text-sub); font-size:13px; font-weight:800; margin-bottom:30px;">DELETE YOUR ACCOUNT PERMANENTLY?</p>
+            <div class="modal-actions-row">
+                <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-delete')})">CANCEL</button>
+                <button class="btn-action" style="background:#dc3545; color:#fff;" id="confirm-delete-btn">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Scripts -->
+    <script>
+        // Modal Manager
+        function openModal(modalId) {
+            if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
+            if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId); return; }
+            document.getElementById('modal-' + modalId).classList.add('show');
+        }
+
+        function closeModal(e) {
+            const overlay = e.target;
+            if(overlay.classList && overlay.classList.contains('modal-overlay')) overlay.classList.remove('show');
+        }
+        function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('show')); }
+
+        // Profile Logic
+        function saveProfileName() {
+            const newName = document.getElementById('edit-profile-input').value.trim();
+            if(newName !== "") {
+                document.getElementById('user-display-name').textContent = newName.toUpperCase();
+                showNotification("PROFILE UPDATED");
+                const imgContainer = document.getElementById('avatar-img-container');
+                if(!imgContainer.querySelector('img')) {
+                    imgContainer.innerHTML = `<div class="default-avatar">${newName.charAt(0).toUpperCase()}</div><div class="camera-badge"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>`;
+                }
+                closeAllModals();
+            }
+        }
+
+        function toggleTheme() {
+            const toggle = document.getElementById('theme-toggle');
+            toggle.classList.toggle('active');
+            if(toggle.classList.contains('active')) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('namazTrackerTheme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('namazTrackerTheme', 'light');
+            }
+        }
+
+        let toastTimeout;
+        function showNotification(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message; 
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 1500); 
+        }
+
+        let isLoginMode = true; 
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const authScreen = document.getElementById('auth-screen');
+
+        function openAuthScreen(modeIsLogin) {
+            isLoginMode = modeIsLogin;
+            const usernameGroup = document.getElementById('username-group');
+            if (isLoginMode) {
+                document.getElementById('form-title').textContent = "LOGIN HERE";
+                document.getElementById('form-subtitle').textContent = "WELCOME BACK YOU'VE BEEN MISSED!";
+                document.getElementById('email-auth-btn').textContent = "SIGN IN";
+                document.getElementById('forgot-pass-link').style.display = "block";
+                document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
+                usernameGroup.classList.add('hidden-smooth'); 
+            } else {
+                document.getElementById('form-title').textContent = "REGISTER HERE";
+                document.getElementById('form-subtitle').textContent = "CREATE ACCOUNT TO SAVE PROGRESS";
+                document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
+                document.getElementById('forgot-pass-link').style.display = "none";
+                document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
+                usernameGroup.classList.remove('hidden-smooth'); 
+            }
+            welcomeScreen.classList.add('slide-left');
+            authScreen.classList.add('slide-in');
+        }
+
+        document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
+        document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
+        document.getElementById('back-to-welcome').addEventListener('click', () => { welcomeScreen.classList.remove('slide-left'); authScreen.classList.remove('slide-in'); });
+        document.getElementById('toggle-auth-mode').addEventListener('click', () => { openAuthScreen(!isLoginMode); });
+
+        // ===============================================
+        // DYNAMIC CALENDAR (3 IN A ROW COMPACT)
+        // ===============================================
+        const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        const monthNamesFull = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+        const monthNamesShort = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        
+        let currentTabId = 'tab-2026';
+        let currentYear = 2026;
+        let currentMonth = 7; 
+        
+        window.namazState = JSON.parse(localStorage.getItem('namazTrackerLocalData')) || {};
+
+        function saveLocalState() {
+            localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+            checkMonthCompletion(); 
+        }
+
+        function checkMonthCompletion() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            let totalValidDays = 0;
+            let completedValidDays = 0;
+
+            for(let i = 1; i <= daysInMonth; i++) {
+                if(currentYear === 2019 && currentMonth === 0 && i <= 13) continue;
+                totalValidDays++;
+                const dayKey = `${currentYear}-${currentMonth}-${i}`;
+                if(window.namazState[dayKey] && window.namazState[dayKey].filter(Boolean).length === 5) completedValidDays++;
+            }
+
+            const badge = document.getElementById('month-complete-tick');
+            if(totalValidDays > 0 && completedValidDays === totalValidDays) badge.classList.add('show');
+            else badge.classList.remove('show');
+        }
+
+        function generateCalendar() {
+            let containerId = currentTabId === 'tab-2026' ? 'calendar-container-2026' : 'calendar-container-2019';
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const realToday = new Date(); 
+            
+            for(let i = 1; i <= daysInMonth; i++) {
+                const dateObj = new Date(currentYear, currentMonth, i);
+                const dayName = dayNames[dateObj.getDay()];
+                const dayKey = `${currentYear}-${currentMonth}-${i}`;
+
+                if(!window.namazState[dayKey]) window.namazState[dayKey] = [false, false, false, false, false];
+
+                let dotsHtml = '';
+                for(let d=0; d<5; d++) {
+                    const activeClass = window.namazState[dayKey][d] ? 'active' : '';
+                    dotsHtml += `<div class="dot ${activeClass}"></div>`;
+                }
+
+                let isDisabledDay = false;
+                if(currentYear === 2019 && currentMonth === 0 && i <= 13) isDisabledDay = true;
+
+                const isToday = (currentYear === realToday.getFullYear() && currentMonth === realToday.getMonth() && i === realToday.getDate());
+                let cardClasses = "day-card";
+                if(isToday && !isDisabledDay) cardClasses += " today-active";
+                if(isDisabledDay) cardClasses += " disabled-day";
+
+                const clickEvent = isDisabledDay ? "" : `onclick="openNamazModal('${dayKey}', ${i}, '${monthNamesShort[currentMonth]}', ${currentYear})"`;
+
+                const cardHtml = `
+                    <div class="${cardClasses}" ${clickEvent}>
+                        <div class="date-badge"><h1>${i}</h1><span class="day-text">${dayName}</span></div>
+                        <div class="dots-container" id="dots-${dayKey}">
+                            ${dotsHtml}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            }
+            saveLocalState();
+            
+            document.getElementById('display-month').textContent = monthNamesFull[currentMonth];
+            document.getElementById('display-year').textContent = currentYear;
+        }
+
+        function switchNav(selectedItem) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            selectedItem.classList.add('active');
+            
+            const targetTabId = selectedItem.getAttribute('data-target');
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(targetTabId).classList.add('active');
+
+            const filterBar = document.getElementById('filter-bar');
+            if(targetTabId === 'tab-2026' || targetTabId === 'tab-2019') {
+                filterBar.style.display = 'flex';
+                currentTabId = targetTabId;
+                
+                const realToday = new Date();
+                if(targetTabId === 'tab-2026' && realToday.getFullYear() >= 2026) {
+                    currentYear = realToday.getFullYear();
+                    currentMonth = realToday.getMonth();
+                } else if(targetTabId === 'tab-2019') {
+                    currentYear = 2019;
+                    currentMonth = 0; 
+                } else {
+                    currentYear = 2026;
+                }
+                generateCalendar();
+            } else {
+                filterBar.style.display = 'none';
+            }
+        }
+
+        // ===============================================
+        // PICKER MODAL LOGIC 
+        // ===============================================
+        let currentPickerType = ''; 
+
+        function openCustomPicker(type) {
+            currentPickerType = type;
+            const listContainer = document.getElementById('picker-list');
+            const title = document.getElementById('picker-title');
+            listContainer.innerHTML = '';
+            
+            if(type === 'month') {
+                title.textContent = 'SELECT MONTH';
+                monthNamesFull.forEach((mName, index) => {
+                    const isSelected = index === currentMonth ? 'selected' : '';
+                    listContainer.innerHTML += `<div class="sheet-item ${isSelected}" onclick="selectPickerValue(${index})">${mName}</div>`;
+                });
+            } else {
+                title.textContent = 'SELECT YEAR';
+                let startYear = currentTabId === 'tab-2026' ? 2026 : 2019;
+                let endYear = currentTabId === 'tab-2026' ? 2100 : 2025;
+                for(let y = startYear; y <= endYear; y++) {
+                    const isSelected = y === currentYear ? 'selected' : '';
+                    listContainer.innerHTML += `<div class="sheet-item ${isSelected}" onclick="selectPickerValue(${y})">${y}</div>`;
+                }
+            }
+            document.getElementById('modal-picker').classList.add('show');
+        }
+
+        function selectPickerValue(val) {
+            if(currentPickerType === 'month') currentMonth = val;
+            else currentYear = val;
+            closeAllModals();
+            generateCalendar();
+        }
+
+        // ===============================================
+        // NAMAZ POPUP MODAL LOGIC 
+        // ===============================================
+        let activeDayKey = null;
+
+        function openNamazModal(dayKey, dateNum, monthName, year) {
+            activeDayKey = dayKey;
+            document.getElementById('modal-date-title').textContent = `${dateNum} ${monthName} ${year}`;
+
+            const state = window.namazState[dayKey];
+            for(let i=0; i<5; i++) {
+                const tickBox = document.getElementById(`modal-tick-${i}`);
+                if(state[i]) tickBox.classList.add('ticked');
+                else tickBox.classList.remove('ticked');
+            }
+            document.getElementById('modal-namaz').classList.add('show');
+        }
+
+        function closeNamazModal() { closeAllModals(); }
+
+        function toggleNamazInModal(rowElement, index) {
+            const tickBox = rowElement.querySelector('.tick-box');
+            tickBox.classList.toggle('ticked');
+            const isTicked = tickBox.classList.contains('ticked');
+            
+            if(activeDayKey) {
+                window.namazState[activeDayKey][index] = isTicked;
+                saveLocalState(); 
+                const dotElement = document.getElementById(`dots-${activeDayKey}`).children[index];
+                if(isTicked) dotElement.classList.add('active');
+                else dotElement.classList.remove('active');
+            }
+        }
+
+        // ===============================================
+        // COMPRESSED OFFLINE BACKUP (Short Base64)
+        // ===============================================
+        function compressState(stateObj) {
+            let parts = [];
+            for (let day in stateObj) {
+                if (stateObj[day].some(val => val)) {
+                    let bin = stateObj[day].map(v => v ? 1 : 0).join('');
+                    parts.push(`${day}:${bin}`);
+                }
+            }
+            return btoa(parts.join('|'));
+        }
+
+        function decompressState(encodedStr) {
+            let str = atob(encodedStr);
+            let stateObj = {};
+            if(str) {
+                str.split('|').forEach(part => {
+                    let [day, bin] = part.split(':');
+                    if (day && bin) {
+                        stateObj[day] = bin.split('').map(b => b === '1');
+                    }
+                });
+            }
+            return stateObj;
+        }
+
+        function generateOfflineBackup() {
+            const code = compressState(window.namazState);
+            document.getElementById('backup-code-area').value = code || "NO DATA YET";
+            openModal('offline-backup');
+        }
+
+        function copyBackupCode() {
+            const copyText = document.getElementById('backup-code-area');
+            copyText.select();
+            document.execCommand("copy");
+            showNotification("COPIED!");
+        }
+
+        function processOfflineRestore() {
+            try {
+                const encoded = document.getElementById('restore-code-area').value.trim();
+                if(!encoded) return showNotification("PLEASE ENTER CODE");
+                
+                const decodedState = decompressState(encoded);
+                window.namazState = decodedState;
+                saveLocalState();
+                generateCalendar();
+                closeAllModals();
+                showNotification("DATA RESTORED!");
+            } catch(e) {
+                showNotification("INVALID CODE!");
+            }
+        }
+
+        // Init App Data
+        const appStartSystemDate = new Date();
+        if(appStartSystemDate.getFullYear() >= 2026){
+            currentYear = appStartSystemDate.getFullYear();
+            currentMonth = appStartSystemDate.getMonth();
+        }
+        generateCalendar(); 
+
+        document.getElementById('file-upload-input').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const imgContainer = document.getElementById('avatar-img-container');
+                    imgContainer.innerHTML = `<img id="user-profile-img" src="${e.target.result}" alt="Profile"><div class="camera-badge" onclick="document.getElementById('file-upload-input').click();"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>`;
+                    showNotification("PROFILE PIC UPDATED");
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQKH9j93yz_q6fGAZ4HCW9XZxcXELtRPg",
+            authDomain: "asar-namaztracker.firebaseapp.com",
+            projectId: "asar-namaztracker",
+            storageBucket: "asar-namaztracker.firebasestorage.app",
+            messagingSenderId: "868194462025",
+            appId: "1:868194462025:web:56ef9b77e36aef1c365298"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); 
+        const provider = new GoogleAuthProvider();
+
+        getRedirectResult(auth).then((result) => { if (result) showNotification("GOOGLE LOGIN SUCCESS!"); }).catch((error) => {});
+
+        let initialAuthCheckDone = false; 
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
+                    document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                    document.getElementById('dashboard-screen').classList.add('hidden');
+                } else {
+                    document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    
+                    const pName = (user.displayName || "USER").toUpperCase();
+                    document.getElementById('user-display-name').textContent = pName;
+                    document.getElementById('user-display-email').textContent = user.email || "No Email Bound";
+                    
+                    const imgContainer = document.getElementById('avatar-img-container');
+                    if(user.photoURL) {
+                        imgContainer.innerHTML = `<img id="user-profile-img" src="${user.photoURL}" alt="Profile"><div class="camera-badge" onclick="document.getElementById('file-upload-input').click();"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>`;
+                    } else {
+                        imgContainer.innerHTML = `<div class="default-avatar">${pName.charAt(0)}</div><div class="camera-badge" onclick="document.getElementById('file-upload-input').click();"><svg viewBox="0 0 24 24"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"></path><circle cx="12" cy="13" r="4"></circle></svg></div>`;
+                    }
+                }
+            } else {
+                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                welcomeScreen.classList.remove('slide-left');
+                authScreen.classList.remove('slide-in');
+            }
+
+            if (!initialAuthCheckDone) {
+                initialAuthCheckDone = true;
+                const splashScreen = document.getElementById('splash-screen');
+                splashScreen.classList.add('splash-fade-out'); 
+                setTimeout(() => { splashScreen.style.display = 'none'; }, 500); 
+            }
+        });
+
+        document.getElementById('btn-backup').addEventListener('click', async () => {
+            if (!auth.currentUser) return;
+            try {
+                showNotification("SAVING TO CLOUD...");
+                const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave);
+                showNotification("BACKUP SUCCESSFUL!");
+            } catch(e) { showNotification("BACKUP FAILED!"); }
+        });
+
+        document.getElementById('btn-restore').addEventListener('click', async () => {
+            if (!auth.currentUser) return;
+            try {
+                showNotification("FETCHING FROM CLOUD...");
+                const docSnap = await getDoc(doc(db, "users_backup", auth.currentUser.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.namazData) {
+                        window.namazState = data.namazData; 
+                        localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+                        generateCalendar(); 
+                    }
+                    showNotification("DATA RESTORED!");
+                } else { showNotification("NO CLOUD BACKUP."); }
+            } catch(e) { showNotification("RESTORE FAILED!"); }
+        });
+
+        document.getElementById('forgot-pass-link').addEventListener('click', async () => {
+            const email = document.getElementById('email-input').value.trim();
+            if (!email) { showNotification("ENTER EMAIL"); return; }
+            try { await sendPasswordResetEmail(auth, email); showNotification("RESET LINK SENT!"); } catch (error) {}
+        });
+
+        document.getElementById('email-auth-btn').addEventListener('click', async () => {
+            const username = document.getElementById('username-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+            const password = document.getElementById('password-input').value.trim();
+            const btn = document.getElementById('email-auth-btn');
+
+            if (!isLoginMode && !username) { showNotification("ENTER FULL NAME"); return; }
+            if (!email || !password) { showNotification("ENTER CREDENTIALS"); return; }
+
+            btn.disabled = true; btn.textContent = "PROCESSING...";
+            try {
+                if (isLoginMode) {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    if (!userCredential.user.emailVerified) { await signOut(auth); showNotification("UNVERIFIED! CHECK INBOX."); } 
+                    else { showNotification("LOGIN SUCCESS!"); }
+                } else {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: username });
+                    await sendEmailVerification(userCredential.user);
+                    await signOut(auth);
+                    showNotification("LINK SENT! CHECK EMAIL.");
+                    openAuthScreen(true); 
+                }
+            } catch (error) { showNotification("ERROR."); } 
+            finally { btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT"; }
+        });
+
+        document.getElementById('google-login-btn').addEventListener('click', () => { signInWithRedirect(auth, provider); });
+        
+        document.getElementById('logout-btn').addEventListener('click', () => openModal('logout-confirm'));
+        document.getElementById('confirm-logout-btn').addEventListener('click', () => { 
+            closeAllModals();
+            signOut(auth).then(() => { 
+                showNotification("LOGGED OUT!"); 
+                document.getElementById('password-input').value = ""; 
+                document.querySelector('[data-target="tab-2026"]').click(); 
+            }); 
+        });
+
+        document.getElementById('open-delete-modal-btn').addEventListener('click', () => openModal('delete'));
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            closeAllModals(); 
+            if (auth.currentUser) { deleteUser(auth.currentUser).then(() => { showNotification("ACCOUNT DELETED."); }).catch(() => {}); }
+        });
+    </script>
+</body>
+</html>
