@@ -1,0 +1,1392 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>Namaz Tracker App</title>
+<style>
+    /* ==========================================
+       CSS VARIABLES FOR DARK/LIGHT THEME
+       ========================================== */
+    :root {
+        --bg-main: #ffffff;
+        --bg-screen: #f8f9fa;
+        --bg-card: #ffffff;
+        --text-main: #222222;
+        --text-sub: #888888;
+        --border-line: #eaeaea;
+        --pill-bg: #f5f5f5;
+        --active-pill-bg: rgba(242, 92, 39, 0.15);
+        --brand-color: #f25c27;
+        --brand-shadow: rgba(242, 92, 39, 0.45);
+        --btn-text-color: #ffffff; 
+        --shadow-color: rgba(0, 0, 0, 0.05);
+        --modal-overlay: rgba(10, 15, 20, 0.75);
+        --disabled-bg: #f0f0f0;
+        --icon-bg: #f5f5f5;
+        
+        /* App height lock variable for keyboard fix */
+        --app-height: 100vh;
+        
+        transition: background 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+    }
+
+    [data-theme="dark"] {
+        --bg-main: #121212;
+        --bg-screen: #0a0a0a;
+        --bg-card: #1c1c1e;
+        --text-main: #ffffff;
+        --text-sub: #a1a1aa;
+        --border-line: #2c2c2e;
+        --pill-bg: #2c2c2e;
+        --shadow-color: rgba(0, 0, 0, 0.4);
+        --modal-overlay: rgba(0, 0, 0, 0.85);
+        --disabled-bg: #111111;
+        --icon-bg: #2c2c2e;
+    }
+
+    /* ==========================================
+       RESET & SMOOTH DARK MODE TRANSITIONS
+       ========================================== */
+    * { 
+        margin: 0; padding: 0; box-sizing: border-box; 
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
+        -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; 
+        -webkit-tap-highlight-color: transparent !important; scrollbar-width: none; 
+    }
+    *::-webkit-scrollbar { display: none; } 
+    input, select, textarea { -webkit-user-select: auto !important; user-select: auto !important; outline: none; }
+
+    body, .app-screen, .ios-card, .modal-content, .bottom-nav, .day-card, .sheet-item, 
+    .offline-textarea, .profile-header-new, .alert-modal-content, .alert-icon-top, input {
+        transition: background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                    border-color 0.4s ease, color 0.4s ease, 
+                    box-shadow 0.4s ease, fill 0.4s ease, stroke 0.4s ease;
+    }
+
+    body { 
+        background: var(--bg-main); width: 100vw; height: var(--app-height); 
+        position: fixed; top: 0; left: 0; overflow: hidden; overscroll-behavior: none; 
+    }
+
+    /* TOAST NOTIFICATION */
+    .toast {
+        position: fixed; top: calc(32px + env(safe-area-inset-top)); left: 50%; transform: translate3d(-50%, -100px, 0) scale(0.95);
+        background: var(--brand-color); color: var(--btn-text-color); padding: 12px 24px;
+        border-radius: 30px; font-size: 13px; font-weight: 900; letter-spacing: 0.5px; text-transform: uppercase;
+        box-shadow: 0 10px 25px var(--brand-shadow); opacity: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); z-index: 9999;
+        display: flex; align-items: center; justify-content: center; text-align: center; white-space: nowrap; width: max-content; max-width: 90vw;
+        will-change: transform, opacity;
+    }
+    .toast.show { transform: translate3d(-50%, 0, 0) scale(1); opacity: 1; }
+
+    #auth-flow-wrapper { width: 100%; height: 100%; position: relative; overflow: hidden; background: var(--bg-main); transition: background 0.4s ease;}
+    .app-screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-main); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
+    .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
+
+    /* =========================================
+       🌟 ORIGINAL YOUTUBE STYLE SPLASH SCREEN 🌟
+       ========================================= */
+    #splash-screen {
+        position: fixed; inset: 0; background: var(--bg-main); 
+        display: flex; flex-direction: column; justify-content: center; align-items: center;
+        z-index: 10000; transition: opacity 0.6s ease-out, visibility 0.6s ease-out;
+    }
+    .splash-glow {
+        position: absolute; width: 350px; height: 350px;
+        background: radial-gradient(circle, var(--active-pill-bg) 0%, transparent 70%);
+        border-radius: 50%; animation: pulseGlow 2.5s ease-in-out infinite alternate;
+    }
+    @keyframes pulseGlow { 0% { transform: scale(0.85); opacity: 0.6; } 100% { transform: scale(1.15); opacity: 1; } }
+    
+    .splash-content-anim { display: flex; flex-direction: column; align-items: center; justify-content: center; z-index: 2; width: 100%; padding: 0 20px; }
+    .svg-icon-wrapper { width: 110px; height: 110px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; }
+    .splash-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0px 10px 20px var(--brand-shadow)); }
+    
+    .svg-path { stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; animation: drawLine 1s cubic-bezier(0.4, 0, 0.2, 1) forwards, fillIcon 0.6s ease-out 0.7s forwards; }
+    .ring-spin { transform-origin: 50px 50px; animation: spinRing 12s linear infinite; }
+    
+    @keyframes drawLine { to { stroke-dashoffset: 0; } }
+    @keyframes fillIcon { to { fill-opacity: 1; filter: drop-shadow(0px 6px 12px var(--brand-shadow)); } }
+    @keyframes spinRing { to { transform: rotate(360deg); } }
+    
+    @keyframes starPop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; filter: drop-shadow(0 0 5px var(--brand-color)); } }
+    .star-pop { animation: starPop 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.8s forwards; transform-origin: 35px 33px; }
+
+    .text-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; }
+    
+    .splash-title {
+        font-size: 20px; font-weight: 900; letter-spacing: 5px; margin: 0; padding: 0; text-transform: uppercase;
+        color: var(--text-main); opacity: 0; transform: translateY(12px);
+        animation: popUpFade 0.6s cubic-bezier(0.25, 1, 0.5, 1) 0.5s forwards;
+    }
+    
+    .glowing-line {
+        width: 0px; height: 3px; background: var(--brand-color); margin: 12px 0; border-radius: 5px;
+        box-shadow: 0 0 10px var(--brand-shadow); opacity: 0; animation: expandLine 0.6s ease-out 0.8s forwards;
+    }
+    
+    @keyframes popUpFade { to { opacity: 1; transform: translateY(0); } }
+    @keyframes expandLine { to { width: 110px; opacity: 1; } }
+    .splash-fade-out { opacity: 0 !important; visibility: hidden !important; pointer-events: none !important; z-index: -1 !important; }
+
+    /* AUTH UI ELEMENTS */
+    #welcome-screen { transform: translateX(0); z-index: 2; }
+    #welcome-screen.slide-left { transform: translateX(-100%); pointer-events: none; }
+    #auth-screen { transform: translateX(100%); z-index: 3; }
+    #auth-screen.slide-in { transform: translateX(0); }
+    #dashboard-screen { z-index: 4; background: var(--bg-screen); justify-content: flex-start; overflow: hidden; }
+    
+    .illustration-wrapper { width: 100%; height: 260px; background: var(--pill-bg); border-radius: 30px; margin-bottom: 30px; display: flex; align-items: center; justify-content: center; }
+    .illustration-wrapper svg { width: 140px; height: auto; }
+    h2 { color: var(--brand-color); font-size: 26px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
+    p { color: var(--text-sub); font-size: 11px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.6; }
+    .welcome-actions { display: flex; align-items: center; gap: 12px; width: 100%; }
+    .welcome-actions button { flex: 1; padding: 18px 0; font-size: 14px; font-weight: 900; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s ease; }
+    .btn-login-main { background: var(--brand-color); color: var(--btn-text-color); border: none; box-shadow: 0 12px 25px var(--brand-shadow); }
+    .btn-login-main:active { transform: scale(0.96); box-shadow: 0 6px 15px var(--brand-shadow); }
+    .btn-register-main { background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-line); }
+    .btn-register-main:active { transform: scale(0.96); background: var(--pill-bg); }
+    .goal-box-back { position: absolute; top: 25px; left: 20px; width: 44px; height: 44px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; z-index: 100; }
+    .goal-box-back svg { width: 20px; height: 20px; stroke: var(--text-main); }
+    
+    .input-group { position: relative; max-height: 60px; margin-bottom: 16px; opacity: 1; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
+    .input-group.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; }
+    .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--text-main); transition: all 0.3s ease; letter-spacing: 0.5px; }
+    .input-group input:focus { border-color: var(--brand-color); }
+    
+    .forgot-pass { display: block; width: 100%; text-align: right; color: var(--brand-color); font-size: 12px; font-weight: 800; margin-top: -4px; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.2s ease; }
+    .forgot-pass:active { opacity: 0.5; }
+
+    .primary-btn { width: 100%; background: var(--brand-color); color: var(--btn-text-color); border: none; margin-bottom: 12px; padding: 18px; border-radius: 16px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px var(--brand-shadow); text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s;}
+    .primary-btn:active { transform: scale(0.96); }
+    .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
+    .create-account span { color: var(--brand-color); font-weight: 900; }
+    .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; }
+    .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-line); }
+    .divider span { padding: 0 12px; color: var(--text-sub); font-size: 11px; font-weight: 900; text-transform: uppercase; }
+    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer;}
+    .social-btn svg { width: 20px; height: 20px; }
+
+    /* ==========================================
+       🌟 PREMIUM HEADER (Month & Year Buttons) 🌟
+       ========================================== */
+    .top-filter-bar {
+        position: fixed; top: calc(15px + env(safe-area-inset-top)); 
+        left: 50%; transform: translateX(-50%); width: 94%; max-width: 400px; 
+        display: flex; justify-content: center; align-items: center;
+        z-index: 5000; transition: opacity 0.3s ease; will-change: transform, opacity;
+    }
+    .header-pill-wrapper {
+        background: transparent; width: 100%; display: flex; align-items: center; justify-content: space-evenly; gap: 15px;
+    }
+    .header-btn-clickable {
+        flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
+        background: var(--brand-color); color: var(--btn-text-color); padding: 14px 10px; border-radius: 30px;
+        box-shadow: 0 8px 25px var(--brand-shadow); font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s; position: relative;
+    }
+    .header-btn-clickable:active { transform: scale(0.96); box-shadow: 0 4px 15px var(--brand-shadow); }
+    .header-btn-clickable span { -webkit-text-stroke: 1px currentColor; }
+    .header-btn-clickable svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 3; }
+
+    .month-complete-tick {
+        position: absolute; right: -8px; top: -8px; width: 26px; height: 26px; background: #34c759; border-radius: 50%;
+        display: flex; align-items: center; justify-content: center; transform: scale(0); opacity: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: 0 4px 10px rgba(52, 199, 89, 0.4); border: 2.5px solid var(--bg-main); z-index: 10;
+    }
+    .month-complete-tick.show { transform: scale(1); opacity: 1; }
+    .month-complete-tick svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
+
+    /* ==========================================
+       TABS SYSTEM (DESIGN LOCKED - FULL SCREEN)
+       ========================================== */
+    .dashboard-content-wrapper {
+        width: 100%; height: var(--app-height); 
+        padding-top: calc(85px + env(safe-area-inset-top)); padding-bottom: calc(75px + env(safe-area-inset-bottom));
+        overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: flex-start;
+    }
+    .dashboard-content-wrapper.no-header-padding { padding-top: calc(15px + env(safe-area-inset-top)); }
+    
+    .tab-pane { width: 100%; max-width: 600px; display: none; height: 100%; animation: fade-in 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
+    .tab-pane.active { display: flex; flex-direction: column; align-items: center; width: 100%; }
+    
+    @keyframes fade-in { 
+        from { opacity: 0; transform: translate3d(0, 10px, 0); } 
+        to { opacity: 1; transform: translate3d(0, 0, 0); } 
+    }
+
+    /* ==========================================
+       🌟 COMPACT CALENDAR GRID 🌟
+       ========================================== */
+    .calendar-grid { 
+        flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); 
+        gap: 8px; width: 100%; padding: 5px 15px 15px 15px; 
+    }
+    .day-card {
+        background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 12px;
+        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; 
+        cursor: pointer; transition: transform 0.2s ease, background 0.2s ease; will-change: transform; transform: translate3d(0,0,0); padding: 4px 0;
+    }
+    .day-card:active { transform: scale(0.95) translate3d(0,0,0); background: var(--pill-bg); }
+    .day-card.disabled-day { opacity: 0.35; pointer-events: none; background: var(--disabled-bg); border-color: var(--border-line); }
+    .day-card.today-active { border: 1.5px solid var(--brand-color); background: var(--active-pill-bg); }
+    .day-card.today-active .day-text { color: var(--brand-color); font-weight: 900; }
+    .date-badge { display: flex; align-items: baseline; gap: 4px; pointer-events: none; }
+    .date-badge h1 { font-size: 22px; font-weight: 900; color: var(--text-main); margin: 0; line-height: 1; }
+    .day-text { font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; }
+    .dots-container { display: flex; gap: 4px; pointer-events: none; }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-line); transition: all 0.3s ease; }
+    .dot.active { background: var(--brand-color); }
+
+    /* ==========================================
+       🌟 PROFILE TAB (FLEX DISTRIBUTED - NO EMPTY SPACE) 🌟
+       ========================================== */
+    #tab-profile.active { justify-content: flex-start; padding: 0 15px; }
+    .profile-inner-container { 
+        width: 100%; max-width: 360px; height: 100%; 
+        display: flex; flex-direction: column; align-items: center; 
+        padding-bottom: 5px; 
+    }   
+    
+    .profile-header-new { 
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        margin-bottom: 12px; text-align: center; width: 100%; flex-shrink: 0;
+        background: var(--active-pill-bg); padding: 25px 15px; border-radius: 20px;
+        border: 1.5px solid var(--brand-color); box-shadow: 0 8px 20px var(--brand-shadow);
+    }
+    .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); }
+    
+    .cards-layout-wrapper {
+        flex-grow: 1; width: 100%;
+        display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    }
+
+    .ios-card { 
+        width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; 
+        display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly;
+    }
+    
+    .ios-list-item { 
+        width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); 
+        display: flex; justify-content: space-between; align-items: center; 
+        font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1;
+    }
+    .ios-list-item:active { background: var(--pill-bg); }
+    .ios-list-item:last-child { border-bottom: none; }
+    .ios-list-item.action-blue { color: #007aff; } .ios-list-item.action-green { color: #34c759; } .ios-list-item.action-orange { color: var(--brand-color);} .ios-list-item.danger { color: #e3342f; }
+    .list-left { display: flex; align-items: center; gap: 12px; pointer-events: none;}
+    .list-left svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
+    .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
+
+    .theme-switch { width: 44px; height: 26px; background: #e5e5ea; border-radius: 13px; position: relative; transition: 0.3s; cursor: pointer; }
+    .theme-switch.active { background: #34c759; }
+    .switch-knob { width: 22px; height: 22px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); will-change: transform;}
+    .theme-switch.active .switch-knob { transform: translate3d(18px, 0, 0); }
+    [data-theme="dark"] .theme-switch:not(.active) { background: #3a3a3c; }
+
+    /* ==========================================
+       🌟 30 THEME COLOR SWATCHES (15 Normal, 15 Neon) 🌟
+       ========================================== */
+    .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 5px; justify-items: center; }
+    .color-swatch { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2.5px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
+    .color-swatch:active { transform: scale(0.85); }
+
+    /* ==========================================
+       🌟 MODALS & POPUPS (BUTTERY SMOOTH) 🌟
+       ========================================== */
+    .modal-overlay {
+        position: fixed; top: 0; left: 0; width: 100vw; height: var(--app-height);
+        background: var(--modal-overlay); backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
+        z-index: 8000; opacity: 0; visibility: hidden; transition: opacity 0.35s ease;
+    }
+    .modal-overlay.show { opacity: 1; visibility: visible; }
+    
+    .modal-content {
+        background: var(--bg-card); width: 92%; max-width: 360px; max-height: 85vh;
+        border-radius: 24px; padding: 25px 15px; display: flex; flex-direction: column;
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -48%) scale(0.95); 
+        opacity: 0; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: 0 15px 50px rgba(0,0,0,0.15); will-change: transform, opacity;
+    }
+    .modal-overlay.show .modal-content { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    
+    .sheet-header-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
+    .picker-title-pill { background: var(--brand-color); color: var(--btn-text-color); padding: 6px 20px; border-radius: 20px; font-size: 14px; font-weight: 900; letter-spacing: 0.5px; margin: 0 auto; text-transform: uppercase; box-shadow: 0 4px 12px var(--brand-shadow);}
+    .sheet-close-btn { position: absolute; right: 5px; width: 32px; height: 32px; background: var(--icon-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);}
+    .sheet-close-btn:active { transform: scale(0.85); background: var(--border-line);}
+    .sheet-close-btn svg { width: 14px; height: 14px; stroke: var(--text-main); stroke-width: 2.5; fill: none; }
+    
+    .sheet-list-container { overflow-y: auto; flex-grow: 1; padding: 0 5px; scrollbar-width: none;}
+    .sheet-item { padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; text-align: center; text-transform: uppercase; background: var(--pill-bg); border: 1.5px solid transparent; will-change: transform; }
+    .sheet-item:active { transform: scale(0.96) translate3d(0,0,0); }
+    .sheet-item.selected { background: var(--brand-color); color: var(--btn-text-color); border-color: var(--brand-color); }
+
+    .offline-textarea { width: 100%; height: 90px; border-radius: 12px; padding: 12px; border: 1.5px solid var(--border-line); background: var(--bg-main); color: var(--text-main); font-size: 12px; font-family: monospace; resize: none; margin-bottom: 15px; word-break: break-all;}
+    .offline-textarea:focus { border-color: var(--brand-color); }
+
+    .modal-actions-row { display: flex; gap: 10px; margin-top: 5px; width: 100%; justify-content: center; padding: 0 5px;}
+    .btn-action { flex: 1; padding: 14px 10px; border-radius: 30px; font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase; border: none; transition: transform 0.2s; text-align: center; display: flex; align-items: center; justify-content: center;}
+    .btn-action:active { transform: scale(0.96); }
+    .btn-cancel { background: var(--icon-bg); color: var(--text-main); }
+    .btn-save { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow); }
+
+    /* ==========================================
+       🌟 ALERTS (LOGOUT & DELETE WITH ICONS) 🌟
+       ========================================== */
+    .alert-modal-content {
+        background: var(--bg-card); width: 90%; max-width: 320px; border-radius: 24px; padding: 35px 20px 20px 20px;
+        position: absolute; top: 50%; left: 50%; transform: translate(-50%, -48%) scale(0.95); opacity: 0;
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        box-shadow: 0 20px 50px rgba(0,0,0,0.2); text-align: center; will-change: transform, opacity;
+    }
+    .modal-overlay.show .alert-modal-content { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    
+    .alert-icon-top {
+        position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
+        width: 50px; height: 50px; background: var(--bg-card); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        box-shadow: 0 5px 15px var(--shadow-color); border: 2.5px solid var(--border-line);
+    }
+    .alert-icon-top svg { width: 22px; height: 22px; stroke: var(--brand-color); stroke-width: 2.5; fill: none; }
+    .alert-icon-top.danger-icon svg { stroke: #e3342f; }
+
+    .alert-title-badge {
+        background: var(--active-pill-bg); color: var(--brand-color); padding: 6px 16px; border-radius: 20px;
+        font-size: 13px; font-weight: 900; display: inline-block; margin: 0 auto 12px auto; letter-spacing: 0.5px;
+    }
+    .alert-title-badge.danger-badge { background: rgba(227, 52, 47, 0.1); color: #e3342f; }
+    
+    .alert-desc { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 25px; line-height: 1.5; }
+    .alert-actions { display: flex; gap: 12px; }
+    .alert-btn { flex: 1; padding: 14px; border-radius: 30px; font-size: 13px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.2s; }
+    .alert-btn:active { transform: scale(0.96); }
+    .alert-btn.cancel { background: var(--icon-bg); color: var(--text-main); }
+    .alert-btn.logout { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow);}
+    .alert-btn.delete { background: #e3342f; color: #fff; box-shadow: 0 4px 15px rgba(227, 52, 47, 0.3);}
+
+    /* ==========================================
+       🌟 NAMAZ POPUP MODAL 🌟
+       ========================================== */
+    .modal-namaz-list {
+        display: flex; flex-direction: column; touch-action: none; user-select: none; padding: 0 5px;
+    }
+    .namaz-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border-line); border-radius: 16px; margin-bottom: 12px; transition: transform 0.2s ease, background 0.2s ease; cursor: pointer; will-change: transform;}
+    .namaz-row:active { transform: scale(0.97) translate3d(0,0,0); background: var(--pill-bg); }
+    
+    .namaz-info { display: flex; align-items: center; gap: 14px; pointer-events: none; }
+    .namaz-info svg { width: 24px; height: 24px; stroke: var(--brand-color); fill: none; stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;}
+    .namaz-info span { font-size: 16px; font-weight: 900; color: var(--text-main); text-transform: uppercase; letter-spacing: 0.5px;} 
+    
+    .tick-box { width: 28px; height: 28px; border: 2.5px solid var(--text-sub); border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s cubic-bezier(0.25, 1, 0.5, 1); pointer-events: none; }
+    .tick-box svg { width: 16px; height: 16px; stroke: #fff; stroke-width: 3.5; fill: none; stroke-linecap: round; stroke-linejoin: round; stroke-dasharray: 24; stroke-dashoffset: 24; transition: stroke-dashoffset 0.3s ease 0.1s; }
+    .tick-box.ticked { background: var(--brand-color); border-color: var(--brand-color); transform: scale(1.1) translate3d(0,0,0); }
+    .tick-box.ticked svg { stroke: var(--btn-text-color); stroke-dashoffset: 0; }
+
+    /* ==========================================
+       🌟 GLASS BOTTOM NAVIGATION 🌟
+       ========================================== */
+    .bottom-nav {
+        position: absolute; bottom: calc(6px + env(safe-area-inset-bottom)); 
+        left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px;
+        background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border); border-radius: 40px; box-shadow: 0 8px 30px var(--shadow-color); 
+        display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; z-index: 5000; will-change: transform;
+    }
+    .nav-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 33.333%; padding: 6px 0; border-radius: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: var(--text-sub); z-index: 2; will-change: transform;}
+    .nav-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--active-pill-bg); border-radius: 30px; z-index: -1; opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform, opacity;}
+    .nav-item.active::before { opacity: 1; transform: scale(1) translate3d(0,0,0); }
+    .nav-item:active { transform: scale(0.92) translate3d(0,0,0); }
+    .nav-item.active { color: var(--brand-color); }
+    .icon-container { margin-bottom: 2px; display: flex; align-items: center; justify-content: center; width: 24px; height: 24px; pointer-events: none;}
+    .nav-item svg { width: 22px; height: 22px; fill: transparent; stroke: currentColor; stroke-width: 2; stroke-linecap: round; stroke-linejoin: round; transition: all 0.3s ease; }
+    .nav-item.active svg { stroke: var(--brand-color); }
+    .nav-label { font-size: 11px; font-weight: 900; text-transform: uppercase; pointer-events: none;}
+
+    .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+    <script> 
+        (function() {
+            let initHeight = window.innerHeight;
+            document.documentElement.style.setProperty('--app-height', `${initHeight}px`);
+
+            let theme = localStorage.getItem('namazTrackerTheme');
+            if (theme === 'dark') document.documentElement.setAttribute('data-theme', 'dark');
+            
+            let color = localStorage.getItem('namazTrackerColor');
+            let neon = localStorage.getItem('namazTrackerNeon');
+            let textColor = localStorage.getItem('namazTrackerText');
+            
+            if(color) {
+                document.documentElement.style.setProperty('--brand-color', color);
+                document.documentElement.style.setProperty('--btn-text-color', textColor === 'dark' ? '#121212' : '#ffffff');
+                let r = parseInt(color.slice(1,3), 16);
+                let g = parseInt(color.slice(3,5), 16);
+                let b = parseInt(color.slice(5,7), 16);
+                document.documentElement.style.setProperty('--active-pill-bg', `rgba(${r}, ${g}, ${b}, 0.15)`);
+                let shadowAlpha = neon === 'true' ? 0.7 : 0.35;
+                document.documentElement.style.setProperty('--brand-shadow', `rgba(${r}, ${g}, ${b}, ${shadowAlpha})`);
+            }
+        })();
+    </script>
+
+    <!-- TOAST -->
+    <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
+
+    <!-- 🌟 YOUTUBE STYLE SPLASH ANIMATION (Restored to Original Design) 🌟 -->
+    <div id="splash-screen">
+        <div class="splash-glow"></div>
+        <div class="splash-content-anim">
+            <div class="svg-icon-wrapper">
+                <svg class="splash-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <circle cx="50" cy="50" r="46" stroke="var(--brand-color)" stroke-width="1.5" stroke-dasharray="4 8" fill="none" class="ring-spin"/>
+                    <path class="svg-path" d="M 55,20 A 28,28 0 1,0 80,65 A 32,32 0 1,1 55,20 Z" stroke="var(--brand-color)" stroke-width="1.5" fill="var(--brand-color)" stroke-linejoin="round"/>
+                    <path class="svg-path star-pop" d="M 35 25 Q 35 33 43 33 Q 35 33 35 41 Q 35 33 27 33 Q 35 33 35 25 Z" fill="var(--brand-color)" stroke="none" style="opacity: 0;"/>
+                </svg>
+            </div>
+            <div class="text-container">
+                <h1 class="splash-title">NAMAZ TRACKER</h1>
+                <div class="glowing-line"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hidden by default to fix Login flash bug -->
+    <div id="auth-flow-wrapper" class="hidden">
+        <div id="welcome-screen" class="app-screen">
+            <div class="screen-content">
+                <div class="illustration-wrapper"><svg viewBox="0 0 200 150" xmlns="http://www.w3.org/2000/svg"><circle cx="100" cy="75" r="50" fill="var(--pill-bg)" /><path d="M85,40 A 32 32 0 1 0 120,75 A 42 42 0 0 1 85,40 Z" fill="var(--brand-color)"/><circle cx="120" cy="40" r="4" fill="var(--brand-color)" /><circle cx="138" cy="52" r="3" fill="var(--brand-color)" /><rect x="65" y="98" width="12" height="12" rx="3" fill="var(--text-main)" /><rect x="85" y="98" width="12" height="12" rx="3" fill="var(--brand-color)" /><rect x="105" y="98" width="12" height="12" rx="3" fill="var(--brand-color)" /><rect x="125" y="98" width="12" height="12" rx="3" fill="var(--text-main)" /></svg></div>
+                <h2>NAMAZ TRACKER</h2>
+                <p>STAY CONSISTENT WITH YOUR DAILY PRAYERS AND BUILD A STRONGER CONNECTION.</p>
+                <div class="welcome-actions"><button id="nav-login-btn" class="btn-login-main">LOGIN</button><button id="nav-register-btn" class="btn-register-main">REGISTER</button></div>
+            </div>
+        </div>
+
+        <div id="auth-screen" class="app-screen">
+            <button id="back-to-welcome" class="goal-box-back"><svg viewBox="0 0 24 24" fill="none" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="19" y1="12" x2="5" y2="12"></line><polyline points="12 19 5 12 12 5"></polyline></svg></button>
+            <div class="screen-content">
+                <h2 id="form-title">LOGIN HERE</h2>
+                <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
+                <div id="email-section" class="input-section">
+                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" placeholder="FULL NAME"></div>
+                    <div class="input-group"><input type="email" id="email-input" placeholder="EMAIL ADDRESS"></div>
+                    <div class="input-group"><input type="password" id="password-input" placeholder="PASSWORD"></div>
+                    <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
+                    <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
+                    <div class="create-account" id="toggle-auth-mode">DON'T HAVE AN ACCOUNT? <span>REGISTER</span></div>
+                </div>
+                <div class="divider"><span id="divider-text">OR CONTINUE WITH</span></div>
+                <div class="social-login">
+                    <button class="social-btn" id="google-login-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google</button>
+                </div>
+            </div>
+        </div>
+    </div> 
+
+    <!-- DASHBOARD -->
+    <div id="dashboard-screen" class="app-screen hidden">
+        
+        <div class="top-filter-bar" id="filter-bar">
+            <div class="header-pill-wrapper">
+                <div class="header-btn-clickable" onclick="openModal('month')">
+                    <span id="display-month">AUG</span>
+                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                </div>
+                <div class="header-btn-clickable" onclick="openModal('year')">
+                    <span id="display-year">2026</span>
+                    <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <div id="month-complete-tick" class="month-complete-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+            </div>
+        </div>
+
+        <div class="dashboard-content-wrapper" id="dash-wrapper">
+            <div id="tab-2026" class="tab-pane active"><div id="calendar-container-2026" class="calendar-grid"></div></div>
+            <div id="tab-2019" class="tab-pane"><div id="calendar-container-2019" class="calendar-grid"></div></div>
+            
+            <!-- 🌟 PROFILE TAB (No Scroll, Flex Distributed Layout) 🌟 -->
+            <div id="tab-profile" class="tab-pane">
+                <div class="profile-inner-container">
+                    
+                    <div class="profile-header-new">
+                        <div class="profile-name-bold" id="user-display-name">USER NAME</div>
+                        <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-top: 6px;" id="user-display-email"></div>
+                    </div>
+
+                    <div class="cards-layout-wrapper">
+                        <div class="ios-card">
+                            <button class="ios-list-item" onclick="openModal('edit-profile')">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Edit Profile Name</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                            <div class="ios-list-item" style="cursor: default;">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark Mode</div>
+                                <div class="theme-switch" id="theme-toggle" onclick="toggleTheme()"><div class="switch-knob"></div></div>
+                            </div>
+                            <div class="ios-list-item" onclick="openModal('theme')">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0-10 10c0 5 4 10 10 10s10-5 10-10a10 10 0 0 0-10-10zm0 18v-8l6 6c-2 2-6 2-6 2zm0-8l6-6A8 8 0 0 1 18 12h-6z"></path></svg> App Theme Colors</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </div>
+                        </div>
+
+                        <div class="ios-card">
+                            <button class="ios-list-item action-blue" id="btn-backup">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 5.5 5.5 0 0 1 1.79 10.9z"></path><polyline points="12 12 12 16"></polyline><polyline points="10 14 12 12 14 14"></polyline></svg> Cloud Backup</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                            <button class="ios-list-item action-green" id="btn-restore">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M17.5 19H9a7 7 0 1 1 6.71-9.9 5.5 5.5 0 0 1 1.79 10.9z"></path><polyline points="12 12 12 8"></polyline><polyline points="10 10 12 12 14 10"></polyline></svg> Cloud Restore</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+
+                        <div class="ios-card">
+                            <button class="ios-list-item action-orange" onclick="generateOfflineBackup()">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path><polyline points="14 2 14 8 20 8"></polyline><line x1="16" y1="13" x2="8" y2="13"></line><line x1="16" y1="17" x2="8" y2="17"></line><polyline points="10 9 9 9 8 9"></polyline></svg> Offline Backup</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                            <button class="ios-list-item action-orange" onclick="openModal('offline-restore')">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg> Offline Restore</div>
+                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
+                            </button>
+                        </div>
+
+                        <div class="ios-card">
+                            <button class="ios-list-item" onclick="openModal('logout-confirm')">
+                                <div class="list-left"><svg viewBox="0 0 24 24" stroke="currentColor"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg> Log Out</div>
+                            </button>
+                            <button class="ios-list-item danger" onclick="openModal('delete')">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg> Delete Account</div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div> 
+
+        <!-- 🌟 BOTTOM NAVIGATION 🌟 -->
+        <div class="bottom-nav">
+            <div class="nav-item active" data-target="tab-2026" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+                <span class="nav-label">2026</span>
+            </div>
+            <div class="nav-item" data-target="tab-2019" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
+                <span class="nav-label">2019</span>
+            </div>
+            <div class="nav-item" data-target="tab-profile" onclick="switchNav(this)">
+                <div class="icon-container"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                <span class="nav-label">Profile</span>
+            </div>
+        </div>
+
+    </div>
+
+    <!-- 🌟 MODALS 🌟 -->
+    
+    <!-- 🌟 30 App Theme Colors Picker (15 Normal, 15 Neon) 🌟 -->
+    <div id="modal-theme" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">SELECT THEME</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-theme')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <div class="theme-grid" style="padding-bottom: 5px;">
+                <!-- 15 Normal Colors -->
+                <div class="color-swatch" style="background: #f25c27;" onclick="changeThemeColor('#f25c27', false, false)"></div>
+                <div class="color-swatch" style="background: #e3342f;" onclick="changeThemeColor('#e3342f', false, false)"></div>
+                <div class="color-swatch" style="background: #e91e63;" onclick="changeThemeColor('#e91e63', false, false)"></div>
+                <div class="color-swatch" style="background: #9c27b0;" onclick="changeThemeColor('#9c27b0', false, false)"></div>
+                <div class="color-swatch" style="background: #673ab7;" onclick="changeThemeColor('#673ab7', false, false)"></div>
+                <div class="color-swatch" style="background: #3f51b5;" onclick="changeThemeColor('#3f51b5', false, false)"></div>
+                <div class="color-swatch" style="background: #007aff;" onclick="changeThemeColor('#007aff', false, false)"></div>
+                <div class="color-swatch" style="background: #03a9f4;" onclick="changeThemeColor('#03a9f4', false, false)"></div>
+                <div class="color-swatch" style="background: #00bcd4;" onclick="changeThemeColor('#00bcd4', false, false)"></div>
+                <div class="color-swatch" style="background: #009688;" onclick="changeThemeColor('#009688', false, false)"></div>
+                <div class="color-swatch" style="background: #34c759;" onclick="changeThemeColor('#34c759', false, false)"></div>
+                <div class="color-swatch" style="background: #8bc34a;" onclick="changeThemeColor('#8bc34a', false, true)"></div>
+                <div class="color-swatch" style="background: #ff9500;" onclick="changeThemeColor('#ff9500', false, false)"></div>
+                <div class="color-swatch" style="background: #795548;" onclick="changeThemeColor('#795548', false, false)"></div>
+                <div class="color-swatch" style="background: #607D8B;" onclick="changeThemeColor('#607D8B', false, false)"></div>
+                
+                <!-- 15 Neon Colors (With Shadow & Dark Text logic where needed) -->
+                <div class="color-swatch" style="background: #FF0000; box-shadow: 0 0 12px #FF0000;" onclick="changeThemeColor('#FF0000', true, false)"></div>
+                <div class="color-swatch" style="background: #FF00FF; box-shadow: 0 0 12px #FF00FF;" onclick="changeThemeColor('#FF00FF', true, false)"></div>
+                <div class="color-swatch" style="background: #B026FF; box-shadow: 0 0 12px #B026FF;" onclick="changeThemeColor('#B026FF', true, false)"></div>
+                <div class="color-swatch" style="background: #0000FF; box-shadow: 0 0 12px #0000FF;" onclick="changeThemeColor('#0000FF', true, false)"></div>
+                <div class="color-swatch" style="background: #00FFFF; box-shadow: 0 0 12px #00FFFF;" onclick="changeThemeColor('#00FFFF', true, true)"></div>
+                <div class="color-swatch" style="background: #00FF00; box-shadow: 0 0 12px #00FF00;" onclick="changeThemeColor('#00FF00', true, true)"></div>
+                <div class="color-swatch" style="background: #39FF14; box-shadow: 0 0 12px #39FF14;" onclick="changeThemeColor('#39FF14', true, true)"></div>
+                <div class="color-swatch" style="background: #CCFF00; box-shadow: 0 0 12px #CCFF00;" onclick="changeThemeColor('#CCFF00', true, true)"></div>
+                <div class="color-swatch" style="background: #ECFE06; box-shadow: 0 0 12px #ECFE06;" onclick="changeThemeColor('#ECFE06', true, true)"></div>
+                <div class="color-swatch" style="background: #FFD700; box-shadow: 0 0 12px #FFD700;" onclick="changeThemeColor('#FFD700', true, true)"></div>
+                <div class="color-swatch" style="background: #FFA500; box-shadow: 0 0 12px #FFA500;" onclick="changeThemeColor('#FFA500', true, true)"></div>
+                <div class="color-swatch" style="background: #FF3131; box-shadow: 0 0 12px #FF3131;" onclick="changeThemeColor('#FF3131', true, false)"></div>
+                <div class="color-swatch" style="background: #FF1493; box-shadow: 0 0 12px #FF1493;" onclick="changeThemeColor('#FF1493', true, false)"></div>
+                <div class="color-swatch" style="background: #00FA9A; box-shadow: 0 0 12px #00FA9A;" onclick="changeThemeColor('#00FA9A', true, true)"></div>
+                <div class="color-swatch" style="background: #7DF9FF; box-shadow: 0 0 12px #7DF9FF;" onclick="changeThemeColor('#7DF9FF', true, true)"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Edit Profile -->
+    <div id="modal-edit-profile" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">EDIT PROFILE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-edit-profile')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <input type="text" id="edit-profile-input" class="edit-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 15px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase;" placeholder="Enter Name">
+            <div class="modal-actions-row">
+                <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-edit-profile')})">CANCEL</button>
+                <button class="btn-action btn-save" onclick="saveProfileName()">SAVE UPDATES</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Month/Year Picker -->
+    <div id="modal-picker" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill" id="picker-title">SELECT</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-picker')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <div class="sheet-list-container" id="picker-list"></div>
+        </div>
+    </div>
+
+    <!-- Offline Backup -->
+    <div id="modal-offline-backup" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">BACKUP CODE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-offline-backup')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; text-align:center;">Copy this short code and save it.</p>
+            <textarea id="backup-code-area" class="offline-textarea" readonly></textarea>
+            <div class="modal-actions-row">
+                <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-offline-backup')})">CANCEL</button>
+                <button class="btn-action btn-save" onclick="copyBackupCode()">COPY CODE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Offline Restore -->
+    <div id="modal-offline-restore" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="sheet-header-box">
+                <div style="width:32px;"></div>
+                <div class="picker-title-pill">RESTORE CODE</div>
+                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-offline-restore')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            <p style="font-size: 11px; color: var(--text-sub); text-transform: uppercase; margin-bottom: 10px; text-align:center;">Paste your saved backup code here.</p>
+            <textarea id="restore-code-area" class="offline-textarea" placeholder="Paste Code Here..."></textarea>
+            <div class="modal-actions-row">
+                <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-offline-restore')})">CANCEL</button>
+                <button class="btn-action btn-save" onclick="processOfflineRestore()">RESTORE DATA</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Center Namaz Modal -->
+    <div id="modal-namaz" class="modal-overlay" onclick="closeModal(event)">
+        <div class="modal-content" onclick="event.stopPropagation()">
+            <div class="modal-header-top" style="position:relative; display:flex; justify-content:center; margin-bottom:20px; height: 38px;">
+                <div class="picker-title-pill" id="modal-date-title" style="box-shadow: 0 4px 10px var(--brand-shadow);">1 AUG 2026</div>
+                <div class="sheet-close-btn" style="position:absolute; right:0;" onclick="closeModal({target: document.getElementById('modal-namaz')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
+            </div>
+            
+            <div class="modal-namaz-list" id="namaz-drag-container">
+                <div class="namaz-row">
+                    <div class="namaz-info">
+                        <svg viewBox="0 0 24 24">
+                            <path d="M12 4v4"></path><path d="M5.5 7.5l3 3"></path><path d="M18.5 7.5l-3 3"></path>
+                            <path d="M2 18h20"></path><path d="M17 18a5 5 0 0 0-10 0"></path>
+                        </svg>
+                        <span>FAJR</span>
+                    </div>
+                    <div class="tick-box" id="modal-tick-0"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row">
+                    <div class="namaz-info">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
+                        <span>ZUHR</span>
+                    </div>
+                    <div class="tick-box" id="modal-tick-1"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row">
+                    <div class="namaz-info">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
+                        <span>ASR</span>
+                    </div>
+                    <div class="tick-box" id="modal-tick-2"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row">
+                    <div class="namaz-info">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
+                        <span>MAGHRIB</span>
+                    </div>
+                    <div class="tick-box" id="modal-tick-3"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+                <div class="namaz-row">
+                    <div class="namaz-info">
+                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path><circle cx="15" cy="5" r="1"></circle><circle cx="18" cy="9" r="1.5"></circle></svg>
+                        <span>ISHA</span>
+                    </div>
+                    <div class="tick-box" id="modal-tick-4"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- LOGOUT / DELETE ALERTS -->
+    <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top">
+                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
+            </div>
+            <div class="alert-title-badge">LOG OUT</div>
+            <div class="alert-desc">Are you sure you want to log out of your account?</div>
+            <div class="alert-actions">
+                <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-logout-confirm')})">CANCEL</button>
+                <button class="alert-btn logout" id="confirm-logout-btn">LOG OUT</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-delete" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top danger-icon">
+                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
+            </div>
+            <div class="alert-title-badge danger-badge">WARNING</div>
+            <div class="alert-desc">Delete your account permanently? This action cannot be undone.</div>
+            <div class="alert-actions">
+                <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-delete')})">CANCEL</button>
+                <button class="alert-btn delete" id="confirm-delete-btn">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- UI Scripts -->
+    <script>
+        // PURE UI SPLASH SCREEN
+        const hideSplash = () => {
+            const splash = document.getElementById('splash-screen');
+            if(splash) {
+                splash.classList.add('splash-fade-out');
+                setTimeout(() => { splash.style.display = 'none'; }, 600);
+            }
+        };
+        setTimeout(hideSplash, 2200);
+
+        // 🔧 Theme Color & Dark Text Logic
+        function changeThemeColor(color, isNeon, isDarkText) {
+            document.documentElement.style.setProperty('--brand-color', color);
+            document.documentElement.style.setProperty('--btn-text-color', isDarkText ? '#121212' : '#ffffff');
+            
+            let r = parseInt(color.slice(1, 3), 16);
+            let g = parseInt(color.slice(3, 5), 16);
+            let b = parseInt(color.slice(5, 7), 16);
+            document.documentElement.style.setProperty('--active-pill-bg', `rgba(${r}, ${g}, ${b}, 0.15)`);
+            let shadowAlpha = isNeon ? 0.7 : 0.35;
+            document.documentElement.style.setProperty('--brand-shadow', `rgba(${r}, ${g}, ${b}, ${shadowAlpha})`);
+            
+            localStorage.setItem('namazTrackerColor', color);
+            localStorage.setItem('namazTrackerNeon', isNeon ? 'true' : 'false');
+            localStorage.setItem('namazTrackerText', isDarkText ? 'dark' : 'light');
+            closeAllModals();
+        }
+
+        function openModal(modalId) {
+            if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
+            if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId); return; }
+            document.getElementById('modal-' + modalId).classList.add('show');
+        }
+
+        function closeModal(e) {
+            const overlay = e.target;
+            if(overlay.classList && overlay.classList.contains('modal-overlay')) overlay.classList.remove('show');
+        }
+        function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('show')); }
+
+        function saveProfileName() {
+            const newName = document.getElementById('edit-profile-input').value.trim();
+            if(newName !== "") {
+                document.getElementById('user-display-name').textContent = newName.toUpperCase();
+                showNotification("PROFILE NAME UPDATED");
+                closeAllModals();
+            }
+        }
+
+        function toggleTheme() {
+            const toggle = document.getElementById('theme-toggle');
+            toggle.classList.toggle('active');
+            if(toggle.classList.contains('active')) {
+                document.documentElement.setAttribute('data-theme', 'dark');
+                localStorage.setItem('namazTrackerTheme', 'dark');
+            } else {
+                document.documentElement.removeAttribute('data-theme');
+                localStorage.setItem('namazTrackerTheme', 'light');
+            }
+        }
+
+        let toastTimeout;
+        function showNotification(message) {
+            const toast = document.getElementById('toast');
+            document.getElementById('toast-message').textContent = message; 
+            toast.classList.add('show');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); 
+        }
+
+        let isLoginMode = true; 
+        const welcomeScreen = document.getElementById('welcome-screen');
+        const authScreen = document.getElementById('auth-screen');
+
+        function openAuthScreen(modeIsLogin) {
+            isLoginMode = modeIsLogin;
+            const usernameGroup = document.getElementById('username-group');
+            if (isLoginMode) {
+                document.getElementById('form-title').textContent = "LOGIN HERE";
+                document.getElementById('form-subtitle').textContent = "WELCOME BACK YOU'VE BEEN MISSED!";
+                document.getElementById('email-auth-btn').textContent = "SIGN IN";
+                document.getElementById('forgot-pass-link').style.display = "block";
+                document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
+                usernameGroup.classList.add('hidden-smooth'); 
+            } else {
+                document.getElementById('form-title').textContent = "REGISTER HERE";
+                document.getElementById('form-subtitle').textContent = "CREATE ACCOUNT TO SAVE PROGRESS";
+                document.getElementById('email-auth-btn').textContent = "CREATE ACCOUNT";
+                document.getElementById('forgot-pass-link').style.display = "none";
+                document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
+                usernameGroup.classList.remove('hidden-smooth'); 
+            }
+            welcomeScreen.classList.add('slide-left');
+            authScreen.classList.add('slide-in');
+        }
+
+        document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
+        document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
+        document.getElementById('back-to-welcome').addEventListener('click', () => { welcomeScreen.classList.remove('slide-left'); authScreen.classList.remove('slide-in'); });
+        document.getElementById('toggle-auth-mode').addEventListener('click', () => { openAuthScreen(!isLoginMode); });
+
+        const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
+        const monthNamesFull = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
+        const monthNamesShort = ["JAN", "FEB", "MAR", "APR", "MAY", "JUN", "JUL", "AUG", "SEP", "OCT", "NOV", "DEC"];
+        
+        let currentTabId = 'tab-2026';
+        let currentYear = 2026;
+        let currentMonth = 7; 
+        
+        try {
+            window.namazState = JSON.parse(localStorage.getItem('namazTrackerLocalData')) || {};
+        } catch (e) {
+            window.namazState = {};
+            localStorage.setItem('namazTrackerLocalData', JSON.stringify({}));
+        }
+
+        function saveLocalState() {
+            localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+            checkMonthCompletion(); 
+        }
+
+        function checkMonthCompletion() {
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            let totalValidDays = 0;
+            let completedValidDays = 0;
+
+            for(let i = 1; i <= daysInMonth; i++) {
+                if(currentYear === 2019 && currentMonth === 0 && i <= 13) continue;
+                totalValidDays++;
+                const dayKey = `${currentYear}-${currentMonth}-${i}`;
+                if(window.namazState[dayKey] && window.namazState[dayKey].filter(Boolean).length === 5) completedValidDays++;
+            }
+
+            const badge = document.getElementById('month-complete-tick');
+            if(totalValidDays > 0 && completedValidDays === totalValidDays) badge.classList.add('show');
+            else badge.classList.remove('show');
+        }
+
+        function generateCalendar() {
+            let containerId = currentTabId === 'tab-2026' ? 'calendar-container-2026' : 'calendar-container-2019';
+            const container = document.getElementById(containerId);
+            container.innerHTML = ''; 
+
+            const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
+            const realToday = new Date(); 
+            
+            let totalRows = Math.ceil(daysInMonth / 3);
+            container.style.gridTemplateRows = `repeat(${totalRows}, minmax(0, 1fr))`;
+            
+            for(let i = 1; i <= daysInMonth; i++) {
+                const dateObj = new Date(currentYear, currentMonth, i);
+                const dayName = dayNames[dateObj.getDay()];
+                const dayKey = `${currentYear}-${currentMonth}-${i}`;
+
+                if(!window.namazState[dayKey]) window.namazState[dayKey] = [false, false, false, false, false];
+
+                let dotsHtml = '';
+                for(let d=0; d<5; d++) {
+                    const activeClass = window.namazState[dayKey][d] ? 'active' : '';
+                    dotsHtml += `<div class="dot ${activeClass}"></div>`;
+                }
+
+                let isDisabledDay = false;
+                if(currentYear === 2019 && currentMonth === 0 && i <= 13) isDisabledDay = true;
+
+                const isToday = (currentYear === realToday.getFullYear() && currentMonth === realToday.getMonth() && i === realToday.getDate());
+                let cardClasses = "day-card";
+                if(isToday && !isDisabledDay) cardClasses += " today-active";
+                if(isDisabledDay) cardClasses += " disabled-day";
+
+                const clickEvent = isDisabledDay ? "" : `onclick="openNamazModal('${dayKey}', ${i}, '${monthNamesShort[currentMonth]}', ${currentYear})"`;
+
+                const cardHtml = `
+                    <div class="${cardClasses}" ${clickEvent}>
+                        <div class="date-badge"><h1>${i}</h1><span class="day-text">${dayName}</span></div>
+                        <div class="dots-container" id="dots-${dayKey}">
+                            ${dotsHtml}
+                        </div>
+                    </div>
+                `;
+                container.innerHTML += cardHtml;
+            }
+            saveLocalState();
+            
+            document.getElementById('display-month').textContent = monthNamesShort[currentMonth];
+            document.getElementById('display-year').textContent = currentYear;
+            
+            localStorage.setItem('namazSavedYear', currentYear);
+            localStorage.setItem('namazSavedMonth', currentMonth);
+        }
+
+        function switchNav(selectedItem) {
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            selectedItem.classList.add('active');
+            
+            const targetTabId = selectedItem.getAttribute('data-target');
+            document.querySelectorAll('.tab-pane').forEach(tab => tab.classList.remove('active'));
+            document.getElementById(targetTabId).classList.add('active');
+
+            const filterBar = document.getElementById('filter-bar');
+            const dashWrapper = document.getElementById('dash-wrapper');
+            
+            if(targetTabId === 'tab-2026' || targetTabId === 'tab-2019') {
+                filterBar.style.display = 'flex';
+                dashWrapper.classList.remove('no-header-padding');
+                
+                if (targetTabId !== currentTabId) {
+                    currentTabId = targetTabId;
+                    currentYear = currentTabId === 'tab-2026' ? 2026 : 2019;
+                }
+                localStorage.setItem('namazSavedTab', currentTabId);
+                generateCalendar();
+            } else {
+                filterBar.style.display = 'none';
+                dashWrapper.classList.add('no-header-padding');
+                localStorage.setItem('namazSavedTab', targetTabId);
+            }
+        }
+
+        let currentPickerType = ''; 
+
+        function openCustomPicker(type) {
+            currentPickerType = type;
+            const listContainer = document.getElementById('picker-list');
+            const title = document.getElementById('picker-title');
+            listContainer.innerHTML = '';
+            
+            if(type === 'month') {
+                title.textContent = 'SELECT MONTH';
+                monthNamesFull.forEach((mName, index) => {
+                    const isSelected = index === currentMonth ? 'selected' : '';
+                    listContainer.innerHTML += `<div class="sheet-item ${isSelected}" onclick="selectPickerValue(${index})">${mName}</div>`;
+                });
+            } else {
+                title.textContent = 'SELECT YEAR';
+                let startYear = currentTabId === 'tab-2026' ? 2026 : 2019;
+                let endYear = currentTabId === 'tab-2026' ? 2100 : 2025;
+                for(let y = startYear; y <= endYear; y++) {
+                    const isSelected = y === currentYear ? 'selected' : '';
+                    listContainer.innerHTML += `<div class="sheet-item ${isSelected}" onclick="selectPickerValue(${y})">${y}</div>`;
+                }
+            }
+            document.getElementById('modal-picker').classList.add('show');
+        }
+
+        function selectPickerValue(val) {
+            if(currentPickerType === 'month') currentMonth = val;
+            else currentYear = val;
+            closeAllModals();
+            generateCalendar();
+        }
+
+        let activeDayKey = null;
+        
+        function openNamazModal(dayKey, dateNum, monthName, year) {
+            activeDayKey = dayKey;
+            document.getElementById('modal-date-title').textContent = `${dateNum} ${monthName} ${year}`;
+
+            const state = window.namazState[dayKey];
+            for(let i=0; i<5; i++) {
+                const tickBox = document.getElementById(`modal-tick-${i}`);
+                if(state[i]) tickBox.classList.add('ticked');
+                else tickBox.classList.remove('ticked');
+            }
+            document.getElementById('modal-namaz').classList.add('show');
+        }
+
+        const dragContainer = document.getElementById('namaz-drag-container');
+        let isDragging = false;
+        let dragSet = new Set();
+        let dragTargetState = true;
+
+        function applyNamazToggle(rowElement, index, forceState) {
+            const tickBox = rowElement.querySelector('.tick-box');
+            const isCurrentlyTicked = tickBox.classList.contains('ticked');
+            
+            if(isCurrentlyTicked !== forceState) {
+                if(forceState) tickBox.classList.add('ticked');
+                else tickBox.classList.remove('ticked');
+                
+                if(activeDayKey) {
+                    window.namazState[activeDayKey][index] = forceState;
+                    saveLocalState(); 
+                    const dotElement = document.getElementById(`dots-${activeDayKey}`).children[index];
+                    if(forceState) dotElement.classList.add('active');
+                    else dotElement.classList.remove('active');
+                }
+            }
+        }
+
+        function pointerDown(e, rowElem = null) {
+            const row = rowElem || e.target.closest('.namaz-row');
+            if(!row) return;
+            isDragging = true;
+            dragSet.clear();
+            const index = Array.from(dragContainer.children).indexOf(row);
+            const tickBox = row.querySelector('.tick-box');
+            dragTargetState = !tickBox.classList.contains('ticked');
+            
+            applyNamazToggle(row, index, dragTargetState);
+            dragSet.add(index);
+        }
+
+        function pointerMove(e) {
+            if(!isDragging) return;
+            let clientX = e.clientX || (e.touches && e.touches[0].clientX);
+            let clientY = e.clientY || (e.touches && e.touches[0].clientY);
+            if(!clientX) return;
+
+            const elemBelow = document.elementFromPoint(clientX, clientY);
+            if(!elemBelow) return;
+
+            const row = elemBelow.closest('.namaz-row');
+            if(row && dragContainer.contains(row)) {
+                const index = Array.from(dragContainer.children).indexOf(row);
+                if(!dragSet.has(index)) {
+                    applyNamazToggle(row, index, dragTargetState);
+                    dragSet.add(index);
+                }
+            }
+        }
+
+        function pointerUp() { isDragging = false; }
+
+        dragContainer.addEventListener('touchstart', (e) => {
+            const row = e.target.closest('.namaz-row');
+            if(row) {
+                e.preventDefault(); 
+                pointerDown(e, row);
+            }
+        }, {passive: false});
+        dragContainer.addEventListener('touchmove', pointerMove, {passive: false});
+        window.addEventListener('touchend', pointerUp);
+
+        dragContainer.addEventListener('mousedown', pointerDown);
+        dragContainer.addEventListener('mousemove', pointerMove);
+        window.addEventListener('mouseup', pointerUp);
+
+        // Accurate Offline Backup Compressor
+        function compressState(stateObj) {
+            let months = {};
+            for (let key in stateObj) {
+                let [y, m, d] = key.split('-');
+                let ym = `${y}-${m}`;
+                if(!months[ym]) months[ym] = new Array(31).fill(0);
+                let dayIndex = parseInt(d) - 1;
+                let val = 0;
+                for(let i=0; i<5; i++) if(stateObj[key][i]) val |= (1 << i);
+                months[ym][dayIndex] = val;
+            }
+            let out = [];
+            for(let ym in months) {
+                let arr = months[ym];
+                while(arr.length > 0 && arr[arr.length-1] === 0) arr.pop();
+                if(arr.length === 0) continue;
+                let str = arr.map(v => v.toString(36)).join('');
+                let shortYm = ym.replace('20', ''); 
+                out.push(`${shortYm}:${str}`);
+            }
+            return out.join('-'); 
+        }
+
+        function decompressState(encodedStr) {
+            let stateObj = {};
+            if(!encodedStr || encodedStr === "NO DATA") return stateObj;
+            try {
+                encodedStr.split('-').forEach(part => {
+                    let parts = part.split(':');
+                    if(parts.length !== 2) return;
+                    let [ym, daysStr] = parts;
+                    let [y, m] = ym.split('-');
+                    if(!y || !m) return;
+                    let fullY = parseInt(y) + 2000;
+                    for(let d=0; d<daysStr.length; d++) {
+                        let val = parseInt(daysStr[d], 36);
+                        if(isNaN(val)) continue;
+                        if(val > 0) {
+                            let dayState = [];
+                            for(let i=0; i<5; i++) dayState.push((val & (1 << i)) !== 0);
+                            stateObj[`${fullY}-${m}-${d+1}`] = dayState;
+                        }
+                    }
+                });
+            } catch(e) { console.log(e); }
+            return stateObj;
+        }
+
+        function generateOfflineBackup() {
+            const code = compressState(window.namazState);
+            document.getElementById('backup-code-area').value = code || "NO DATA";
+            openModal('offline-backup');
+        }
+
+        function copyBackupCode() {
+            const copyText = document.getElementById('backup-code-area');
+            copyText.select();
+            document.execCommand("copy");
+            showNotification("COPIED!");
+        }
+
+        function processOfflineRestore() {
+            try {
+                const encoded = document.getElementById('restore-code-area').value.trim();
+                if(!encoded) return showNotification("PLEASE ENTER CODE");
+                
+                const decodedState = decompressState(encoded);
+                window.namazState = decodedState;
+                saveLocalState();
+                generateCalendar();
+                closeAllModals();
+                showNotification("DATA RESTORED!");
+            } catch(e) {
+                showNotification("INVALID CODE!");
+            }
+        }
+
+        let savedYear = localStorage.getItem('namazSavedYear');
+        let savedMonth = localStorage.getItem('namazSavedMonth');
+        let savedTab = localStorage.getItem('namazSavedTab');
+
+        const appStartSystemDate = new Date();
+
+        if(savedYear !== null && savedMonth !== null && savedTab !== null) {
+            currentYear = parseInt(savedYear);
+            currentMonth = parseInt(savedMonth);
+            currentTabId = savedTab;
+            
+            const savedNavItem = document.querySelector(`.nav-item[data-target="${currentTabId}"]`);
+            if(savedNavItem) savedNavItem.click();
+            else generateCalendar(); 
+        } else {
+            if(appStartSystemDate.getFullYear() >= 2026){
+                currentYear = appStartSystemDate.getFullYear();
+                currentMonth = appStartSystemDate.getMonth();
+            }
+            generateCalendar(); 
+        }
+    </script>
+
+    <!-- Firebase Script -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyCQKH9j93yz_q6fGAZ4HCW9XZxcXELtRPg",
+            authDomain: "asar-namaztracker.firebaseapp.com",
+            projectId: "asar-namaztracker",
+            storageBucket: "asar-namaztracker.firebasestorage.app",
+            messagingSenderId: "868194462025",
+            appId: "1:868194462025:web:56ef9b77e36aef1c365298"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const auth = getAuth(app);
+        const db = getFirestore(app); 
+        const provider = new GoogleAuthProvider();
+
+        async function fetchAutoCloudRestore(user) {
+            try {
+                const docSnap = await getDoc(doc(db, "users_backup", user.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.namazData) {
+                        window.namazState = data.namazData; 
+                        localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+                        generateCalendar(); 
+                        showNotification("CLOUD DATA SYNCED!");
+                    }
+                }
+            } catch(e) { console.log("Silent Cloud Fetch Error", e); }
+        }
+
+        getRedirectResult(auth).then((result) => { 
+            if (result) { 
+                showNotification("GOOGLE LOGIN SUCCESS!"); 
+                fetchAutoCloudRestore(result.user); 
+            } 
+        }).catch((error) => {});
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
+                    document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                    document.getElementById('dashboard-screen').classList.add('hidden');
+                } else {
+                    document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    
+                    const pName = (user.displayName || "USER").toUpperCase();
+                    document.getElementById('user-display-name').textContent = pName;
+                    
+                    const emailElement = document.getElementById('user-display-email');
+                    if (emailElement) {
+                        emailElement.textContent = user.email || "No Email Bound";
+                    }
+                }
+            } else {
+                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                document.getElementById('dashboard-screen').classList.add('hidden');
+                const welcomeScreen = document.getElementById('welcome-screen');
+                const authScreen = document.getElementById('auth-screen');
+                if (welcomeScreen && authScreen) {
+                    welcomeScreen.classList.remove('slide-left');
+                    authScreen.classList.remove('slide-in');
+                }
+            }
+        });
+
+        document.getElementById('btn-backup').addEventListener('click', async () => {
+            if (!auth.currentUser) return;
+            try {
+                showNotification("SAVING TO CLOUD...");
+                const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave);
+                showNotification("BACKUP SUCCESSFUL!");
+            } catch(e) { showNotification("BACKUP FAILED!"); }
+        });
+
+        document.getElementById('btn-restore').addEventListener('click', async () => {
+            if (!auth.currentUser) return;
+            try {
+                showNotification("FETCHING FROM CLOUD...");
+                const docSnap = await getDoc(doc(db, "users_backup", auth.currentUser.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.namazData) {
+                        window.namazState = data.namazData; 
+                        localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+                        generateCalendar(); 
+                    }
+                    showNotification("DATA RESTORED!");
+                } else { showNotification("NO CLOUD BACKUP."); }
+            } catch(e) { showNotification("RESTORE FAILED!"); }
+        });
+
+        document.getElementById('forgot-pass-link').addEventListener('click', async () => {
+            const email = document.getElementById('email-input').value.trim();
+            if (!email) { showNotification("ENTER EMAIL FIRST"); return; }
+            try { 
+                await sendPasswordResetEmail(auth, email); 
+                showNotification("RESET LINK SENT!"); 
+            } catch (error) {
+                if (error.code === 'auth/user-not-found') showNotification("USER NOT FOUND");
+                else showNotification("ERROR SENDING LINK");
+            }
+        });
+
+        document.getElementById('email-auth-btn').addEventListener('click', async () => {
+            const username = document.getElementById('username-input').value.trim();
+            const email = document.getElementById('email-input').value.trim();
+            const password = document.getElementById('password-input').value.trim();
+            const btn = document.getElementById('email-auth-btn');
+
+            if (!isLoginMode && !username) { showNotification("ENTER FULL NAME"); return; }
+            if (!email || !password) { showNotification("ENTER CREDENTIALS"); return; }
+
+            btn.disabled = true; btn.textContent = "PROCESSING...";
+            try {
+                if (isLoginMode) {
+                    const userCredential = await signInWithEmailAndPassword(auth, email, password);
+                    if (!userCredential.user.emailVerified) { await signOut(auth); showNotification("UNVERIFIED! CHECK INBOX."); } 
+                    else { 
+                        showNotification("LOGIN SUCCESS!"); 
+                        fetchAutoCloudRestore(userCredential.user); 
+                    }
+                } else {
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: username });
+                    await sendEmailVerification(userCredential.user);
+                    await signOut(auth);
+                    showNotification("LINK SENT! CHECK EMAIL.");
+                    openAuthScreen(true); 
+                }
+            } catch (error) {
+                if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY IN USE");
+                else if(error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
+                else if(error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS");
+                else showNotification("ERROR: " + error.message.substring(0, 20));
+            } 
+            finally { btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT"; }
+        });
+
+        document.getElementById('google-login-btn').addEventListener('click', () => { signInWithRedirect(auth, provider); });
+        
+        document.getElementById('confirm-logout-btn').addEventListener('click', () => { 
+            closeAllModals();
+            signOut(auth).then(() => { 
+                showNotification("LOGGED OUT!"); 
+                document.getElementById('password-input').value = ""; 
+                document.querySelector('[data-target="tab-2026"]').click(); 
+            }); 
+        });
+
+        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+            closeAllModals(); 
+            if (auth.currentUser) { 
+                deleteUser(auth.currentUser).then(() => { 
+                    showNotification("ACCOUNT DELETED."); 
+                }).catch((error) => {
+                    if (error.code === 'auth/requires-recent-login') {
+                        showNotification("RE-LOGIN TO DELETE");
+                        signOut(auth);
+                    } else {
+                        showNotification("DELETE FAILED");
+                    }
+                }); 
+            }
+        });
+    </script>
+</body>
+</html>
