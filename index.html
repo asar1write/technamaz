@@ -418,12 +418,14 @@
     }
     .alert-icon-top svg { width: 22px; height: 22px; stroke: var(--brand-color); stroke-width: 2.5; fill: none; }
     .alert-icon-top.danger-icon svg { stroke: #e3342f; }
+    .alert-icon-top.success-icon svg { stroke: #34c759; }
 
     .alert-title-badge {
         background: var(--active-pill-bg); color: var(--brand-color); padding: 6px 16px; border-radius: 20px;
         font-size: 14px; font-weight: 900; display: inline-block; margin: 0 auto 15px auto; letter-spacing: 1px;
     }
     .alert-title-badge.danger-badge { background: rgba(227, 52, 47, 0.1); color: #e3342f; }
+    .alert-title-badge.success-badge { background: rgba(52, 199, 89, 0.1); color: #34c759; }
     
     .alert-desc { 
         font-size: 15px; font-weight: 800; color: var(--text-main); 
@@ -435,6 +437,7 @@
     .alert-btn.cancel { background: var(--icon-bg); color: var(--text-main); }
     .alert-btn.logout { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow);}
     .alert-btn.delete { background: #e3342f; color: #fff; box-shadow: 0 4px 15px rgba(227, 52, 47, 0.3);}
+    .alert-btn.success-btn { background: #34c759; color: #fff; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);}
 
     /* ==========================================
        🌟 NAMAZ POPUP MODAL 🌟
@@ -794,7 +797,7 @@
         </div>
     </div>
 
-    <!-- LOGOUT / DELETE ALERTS -->
+    <!-- LOGOUT / DELETE / VERIFICATION ALERTS -->
     <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top">
@@ -819,6 +822,23 @@
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-delete')})">CANCEL</button>
                 <button class="alert-btn delete" id="confirm-delete-btn">DELETE</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 NEW: REGISTRATION VERIFICATION POP-UP 🌟 -->
+    <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top success-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div class="alert-title-badge success-badge">VERIFY EMAIL</div>
+            <div class="alert-desc" style="font-size: 13px; text-transform: none; margin-bottom: 20px;">
+                We've sent a verification link to your email address.<br><br>
+                <b>Note:</b> If you don't find the link in your inbox, please make sure to check your <b>Spam</b> or <b>Junk</b> folder.
+            </div>
+            <div class="alert-actions">
+                <button class="alert-btn success-btn" onclick="closeModal({target: document.getElementById('modal-verification')}); openAuthScreen(true);">OK, I UNDERSTAND</button>
             </div>
         </div>
     </div>
@@ -880,7 +900,7 @@
             closeAllModals();
         }
 
-        // 🌟 RESTORED: BUTTON-ORIGIN ANIMATION CALCULATOR FOR BUTTERY SMOOTH EXPANSION 🌟
+        // 🌟 RESTORED & OPTIMIZED: BUTTON-ORIGIN ANIMATION CALCULATOR 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -902,7 +922,12 @@
                 modalContent.style.setProperty('--start-y', '20px');
             }
             
-            modal.classList.add('show');
+            // 🌟 LAG FIX: Double rAF ensures the transform origins are painted before CSS transition starts 🌟
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    modal.classList.add('show');
+                });
+            });
         }
 
         function closeModal(e) {
@@ -1150,7 +1175,13 @@
                 modalContent.style.setProperty('--start-x', deltaX + 'px');
                 modalContent.style.setProperty('--start-y', deltaY + 'px');
             }
-            modal.classList.add('show');
+            
+            // 🌟 LAG FIX 🌟
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    modal.classList.add('show');
+                });
+            });
         }
 
         function selectPickerValue(val) {
@@ -1186,7 +1217,11 @@
                 modalContent.style.setProperty('--start-y', deltaY + 'px');
             }
             
-            modal.classList.add('show');
+            requestAnimationFrame(() => {
+                requestAnimationFrame(() => {
+                    modal.classList.add('show');
+                });
+            });
         }
 
         const dragContainer = document.getElementById('namaz-drag-container');
@@ -1497,8 +1532,9 @@
                     await updateProfile(userCredential.user, { displayName: username });
                     await sendEmailVerification(userCredential.user);
                     await signOut(auth);
-                    showNotification("LINK SENT! CHECK EMAIL.");
-                    openAuthScreen(true); 
+                    
+                    // 🌟 NEW: SHOW VERIFICATION POPUP 🌟
+                    openModal('verification', btn);
                 }
             } catch (error) {
                 if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY IN USE");
