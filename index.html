@@ -91,11 +91,7 @@
         position: fixed; top: 0; left: 0; 
     }
 
-    /* Ensure specific transitions don't conflict with toggle switches */
-    html, body, #auth-flow-wrapper, #dashboard-screen, .app-screen, .ios-card, .bottom-nav, .day-card, .sheet-item, 
-    .offline-textarea, .profile-header-new, .alert-icon-top, input, .text-main, .text-sub, .modal-content, .alert-modal-content {
-        transition: background-color 0.3s ease, background 0.3s ease, border-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
-    }
+    /* REMOVED: Heavy global background transitions that caused lag and white lines in Dark Mode */
 
     /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
@@ -321,12 +317,12 @@
     }
 
     .ios-card { 
-        width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1.5px solid var(--border-line); overflow: hidden; 
+        width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; 
         display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly;
     }
     
     .ios-list-item { 
-        width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1.5px solid var(--border-line); 
+        width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); 
         display: flex; justify-content: space-between; align-items: center; 
         font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1;
         transition: background-color 0.2s ease;
@@ -896,13 +892,13 @@
             }
         };
 
-        // FASTER SPLASH TIME
+        // FASTER SPLASH TIME (Reduced from 800ms to 150ms)
         setTimeout(() => {
             isMinSplashTimeOver = true;
             checkAndHideSplash();
-        }, 800); 
+        }, 150); 
         
-        // 5-SEC FAILSAFE (Only Triggers if Firebase Network Completely Times out)
+        // 5-SEC FAILSAFE
         setTimeout(() => {
             if(!isAuthResolved) {
                 isAuthResolved = true; 
@@ -937,7 +933,7 @@
             closeAllModals();
         }
 
-        // 🌟 RESTORED & OPTIMIZED: BUTTON-ORIGIN ANIMATION CALCULATOR 🌟
+        // 🌟 FAST MODAL OPEN (Removed extra rAF lag) 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -959,11 +955,8 @@
                 modalContent.style.setProperty('--start-y', '20px');
             }
             
-            // 🌟 LAG FIX: Double rAF ensures the transform origins are painted before CSS transition starts 🌟
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    modal.classList.add('show');
-                });
+                modal.classList.add('show');
             });
         }
 
@@ -982,7 +975,7 @@
             }
         }
 
-        // 🌟 BUG 3 FIX: PREVENT LIST ITEM TAP ISSUES ON DARK MODE SWITCH 🌟
+        // 🌟 FAST DARK MODE SWITCH 🌟
         function toggleTheme(e) {
             if(e) e.stopPropagation(); 
             const toggle = document.getElementById('theme-toggle');
@@ -1133,7 +1126,6 @@
             localStorage.setItem('namazSavedMonth', currentMonth);
         }
 
-        // 🌟 BUG 2 FIX: RESTORE ANIMATIONS ON TAB SWITCH 🌟
         function switchNav(selectedItem) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             selectedItem.classList.add('active');
@@ -1141,7 +1133,6 @@
             const targetTabId = selectedItem.getAttribute('data-target');
             document.querySelectorAll('.tab-pane').forEach(tab => {
                 tab.classList.remove('active');
-                // Remove animation classes to reset state
                 const innerProfile = tab.querySelector('.profile-inner-container');
                 if(innerProfile) innerProfile.classList.remove('animate-entry');
             });
@@ -1161,17 +1152,15 @@
                     currentYear = currentTabId === 'tab-2026' ? 2026 : 2019;
                 }
                 localStorage.setItem('namazSavedTab', currentTabId);
-                // generateCalendar creates new HTML elements which automatically animates them
                 generateCalendar();
             } else {
                 filterBar.style.display = 'none';
                 dashWrapper.classList.add('no-header-padding');
                 localStorage.setItem('namazSavedTab', targetTabId);
                 
-                // Re-trigger Profile Animations perfectly
                 const innerProfile = activeTab.querySelector('.profile-inner-container');
                 if(innerProfile) {
-                    void innerProfile.offsetWidth; // Force Reflow
+                    void innerProfile.offsetWidth; 
                     innerProfile.classList.add('animate-entry');
                 }
             }
@@ -1233,9 +1222,7 @@
             }
             
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    modal.classList.add('show');
-                });
+                modal.classList.add('show');
             });
         }
 
@@ -1273,9 +1260,7 @@
             }
             
             requestAnimationFrame(() => {
-                requestAnimationFrame(() => {
-                    modal.classList.add('show');
-                });
+                modal.classList.add('show');
             });
         }
 
@@ -1494,9 +1479,8 @@
             } 
         }).catch((error) => {});
 
-        // 🌟 BUG 1 FIX: PURE AUTH STATE DRIVEN SCREEN REVEAL 🌟
         onAuthStateChanged(auth, async (user) => {
-            isAuthResolved = true; // Hard-mark the promise as true
+            isAuthResolved = true; 
 
             if (user) {
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
@@ -1652,8 +1636,9 @@
             }); 
         });
 
-        document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
-            closeAllModals(); 
+        document.getElementById('confirm-delete-btn').addEventListener('click', async (e) => {
+            const btn = e.target;
+            btn.textContent = "DELETING..."; // Instant UI change for lag perception
             if (auth.currentUser) { 
                 try {
                     await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: Date.now() }, { merge: true });
@@ -1664,8 +1649,11 @@
                     generateCalendar();
                     
                     await signOut(auth); 
+                    closeAllModals(); 
                 } catch (error) {
                     showNotification("ERROR INITIATING DELETE PROCESS");
+                } finally {
+                    btn.textContent = "DELETE";
                 }
             }
         });
@@ -1676,19 +1664,22 @@
                 showNotification("INCORRECT EMAIL. TRY AGAIN.");
                 return;
             }
+            const btn = document.getElementById('btn-recover-account');
+            btn.textContent = "PROCESSING...";
             try {
-                await sendEmailVerification(auth.currentUser);
+                // Bug fix: Clear deletion status, send link, and immediately log out user to enforce security.
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
-                showNotification("RECOVERY LINK SENT! ACCOUNT RESTORED.");
+                await sendEmailVerification(auth.currentUser);
+                
+                showNotification("VERIFICATION LINK SENT! PLEASE LOGIN AGAIN.");
                 
                 closeAllModals();
-                
-                document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                fetchAutoCloudRestore(auth.currentUser);
+                await signOut(auth); // THIS ENSURES NO IMMEDIATE LOGIN ACCESS WITHOUT LINK/PASSWORD
                 
             } catch(error) {
                 showNotification("ERROR SENDING RECOVERY LINK");
+            } finally {
+                btn.textContent = "RESTORE";
             }
         });
 
