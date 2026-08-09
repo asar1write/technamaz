@@ -91,6 +91,8 @@
         position: fixed; top: 0; left: 0; 
     }
 
+    /* REMOVED: Heavy global background transitions that caused lag and white lines in Dark Mode */
+
     /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
         0% { transform: scale(0.95); opacity: 0; }
@@ -332,7 +334,7 @@
     .list-left svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
     .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
 
-    /* 🌟 PERFECTED DARK MODE TOGGLE 🌟 */
+    /* 🌟 PERFECTED DARK MODE TOGGLE (Bug Fix) 🌟 */
     .theme-switch { 
         width: 48px; height: 28px; background: #e5e5ea; border-radius: 14px; 
         position: relative; transition: background 0.3s ease; cursor: pointer; 
@@ -485,14 +487,6 @@
 
     .hidden { display: none !important; }
 </style>
-
-<!-- 🌟 EmailJS SDK integration 🌟 -->
-<script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
-<script type="text/javascript">
-    (function() {
-        emailjs.init("URppcuxge3sL4oS8W"); 
-    })();
-</script>
 
 </head>
 <body>
@@ -810,7 +804,7 @@
         </div>
     </div>
 
-    <!-- LOGOUT / DELETE / ALERTS -->
+    <!-- LOGOUT / DELETE / VERIFICATION ALERTS -->
     <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top">
@@ -839,6 +833,24 @@
         </div>
     </div>
 
+    <!-- 🌟 REGISTRATION VERIFICATION POP-UP 🌟 -->
+    <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top success-icon">
+                <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
+            </div>
+            <div class="alert-title-badge success-badge">VERIFY EMAIL</div>
+            <div class="alert-desc" style="font-size: 13px; text-transform: none; margin-bottom: 20px;">
+                We've sent a verification link to your email address.<br><br>
+                <b>Note:</b> If you don't find the link in your inbox, please make sure to check your <b>Spam</b> or <b>Junk</b> folder.
+            </div>
+            <div class="alert-actions">
+                <button class="alert-btn success-btn" onclick="closeModal({target: document.getElementById('modal-verification')}); window.isRegistering = false; openAuthScreen(true);">OK, I UNDERSTAND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 NEW: ACCOUNT RECOVERY MODAL 🌟 -->
     <div id="modal-recovery" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top" style="border-color: #03a9f4;">
@@ -856,11 +868,10 @@
 
     <!-- UI Scripts -->
     <script>
+        // 🔧 🌟 BUG 1 FIX: FULL AUTH STATE SYNC SYSTEM 🌟
         let isAuthResolved = false;
         let isMinSplashTimeOver = false;
         window.isRegistering = false; 
-
-        window.generatedOTP = null;
 
         const checkAndHideSplash = () => {
             if(isAuthResolved && isMinSplashTimeOver) {
@@ -881,11 +892,13 @@
             }
         };
 
+        // FASTER SPLASH TIME (Reduced from 800ms to 150ms)
         setTimeout(() => {
             isMinSplashTimeOver = true;
             checkAndHideSplash();
         }, 150); 
         
+        // 5-SEC FAILSAFE
         setTimeout(() => {
             if(!isAuthResolved) {
                 isAuthResolved = true; 
@@ -920,6 +933,7 @@
             closeAllModals();
         }
 
+        // 🌟 FAST MODAL OPEN (Removed extra rAF lag) 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -961,6 +975,7 @@
             }
         }
 
+        // 🌟 FAST DARK MODE SWITCH 🌟
         function toggleTheme(e) {
             if(e) e.stopPropagation(); 
             const toggle = document.getElementById('theme-toggle');
@@ -1420,10 +1435,10 @@
         }
     </script>
 
-    <!-- Firebase Script with EmailJS Integration -->
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -1468,36 +1483,42 @@
             isAuthResolved = true; 
 
             if (user) {
-                try {
-                    const docSnap = await getDoc(doc(db, "users_backup", user.uid));
-                    if (docSnap.exists() && docSnap.data().deleteScheduledAt) {
-                        const deleteTime = docSnap.data().deleteScheduledAt;
-                        const timePassed = Date.now() - deleteTime;
-                        
-                        if (timePassed > 24 * 60 * 60 * 1000) {
-                            await deleteUser(user);
-                            showNotification("ACCOUNT PERMANENTLY DELETED.");
-                            return;
-                        } else {
-                            document.getElementById('dashboard-screen').classList.add('hidden');
-                            document.getElementById('auth-flow-wrapper').classList.remove('hidden');
-                            openModal('recovery', null);
-                            return; 
+                if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
+                    document.getElementById('dashboard-screen').classList.add('hidden');
+                    document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                } else {
+                    
+                    try {
+                        const docSnap = await getDoc(doc(db, "users_backup", user.uid));
+                        if (docSnap.exists() && docSnap.data().deleteScheduledAt) {
+                            const deleteTime = docSnap.data().deleteScheduledAt;
+                            const timePassed = Date.now() - deleteTime;
+                            
+                            if (timePassed > 24 * 60 * 60 * 1000) {
+                                await deleteUser(user);
+                                showNotification("ACCOUNT PERMANENTLY DELETED.");
+                                return;
+                            } else {
+                                document.getElementById('dashboard-screen').classList.add('hidden');
+                                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                                openModal('recovery', null);
+                                return; 
+                            }
                         }
-                    }
-                } catch(e) { console.log(e); }
+                    } catch(e) { console.log(e); }
 
-                document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                
-                const pName = (user.displayName || "USER").toUpperCase();
-                document.getElementById('user-display-name').textContent = pName;
-                
-                const emailElement = document.getElementById('user-display-email');
-                if (emailElement) {
-                    emailElement.textContent = user.email || "No Email Bound";
+                    // Proceeding normal login smoothly
+                    document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                    document.getElementById('dashboard-screen').classList.remove('hidden');
+                    
+                    const pName = (user.displayName || "USER").toUpperCase();
+                    document.getElementById('user-display-name').textContent = pName;
+                    
+                    const emailElement = document.getElementById('user-display-email');
+                    if (emailElement) {
+                        emailElement.textContent = user.email || "No Email Bound";
+                    }
                 }
-                
             } else {
                 if (!window.isRegistering) {
                     document.getElementById('dashboard-screen').classList.add('hidden');
@@ -1552,7 +1573,6 @@
             }
         });
 
-        // 🌟 Registration Flow with EmailJS 🌟
         document.getElementById('email-auth-btn').addEventListener('click', async () => {
             const username = document.getElementById('username-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
@@ -1563,65 +1583,32 @@
             if (!email || !password) { showNotification("ENTER CREDENTIALS"); return; }
 
             btn.disabled = true; btn.textContent = "PROCESSING...";
-            
             try {
                 if (isLoginMode) {
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
-                    showNotification("LOGIN SUCCESS!"); 
-                    localStorage.removeItem('namazTrackerLocalData');
-                    window.namazState = {};
-                    generateCalendar();
-                    fetchAutoCloudRestore(userCredential.user); 
-                    
+                    if (!userCredential.user.emailVerified) { await signOut(auth); showNotification("UNVERIFIED! CHECK INBOX."); } 
+                    else { 
+                        showNotification("LOGIN SUCCESS!"); 
+                        
+                        localStorage.removeItem('namazTrackerLocalData');
+                        window.namazState = {};
+                        generateCalendar();
+                        
+                        fetchAutoCloudRestore(userCredential.user); 
+                    }
                 } else {
                     window.isRegistering = true; 
                     
-                    window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
-                    
-                    let templateParams = {
-                        to_name: username || "User",
-                        to_email: email,
-                        otp: window.generatedOTP
-                    };
+                    localStorage.removeItem('namazTrackerLocalData');
+                    window.namazState = {};
+                    generateCalendar();
 
-                    showNotification("SENDING OTP TO EMAIL...");
+                    const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+                    await updateProfile(userCredential.user, { displayName: username });
+                    await sendEmailVerification(userCredential.user);
+                    await signOut(auth); 
                     
-                    emailjs.send("service_namaztracker", "template_namaztracker", templateParams)
-                        .then(async function(response) {
-                            showNotification("OTP SENT SUCCESSFULLY!");
-                            
-                            let enteredOTP = prompt("Please enter the 6-digit OTP sent to your email:");
-                            
-                            if (enteredOTP === window.generatedOTP) {
-                                showNotification("VERIFYING & CREATING ACCOUNT...");
-                                
-                                const userCredential = await createUserWithEmailAndPassword(auth, email, password);
-                                await updateProfile(userCredential.user, { displayName: username });
-                                
-                                localStorage.removeItem('namazTrackerLocalData');
-                                window.namazState = {};
-                                generateCalendar();
-                                
-                                document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                                document.getElementById('dashboard-screen').classList.remove('hidden');
-                                document.getElementById('user-display-name').textContent = username.toUpperCase();
-                                document.getElementById('user-display-email').textContent = email;
-                                
-                                showNotification("ACCOUNT CREATED SUCCESSFULLY!");
-                                window.isRegistering = false;
-                                btn.disabled = false; btn.textContent = "CREATE ACCOUNT";
-
-                            } else {
-                                showNotification("INCORRECT OTP! REGISTRATION CANCELLED.");
-                                window.isRegistering = false;
-                                btn.disabled = false; btn.textContent = "CREATE ACCOUNT";
-                            }
-                        }, function(error) {
-                            console.log("EmailJS Error:", error);
-                            showNotification("FAILED TO SEND OTP!");
-                            window.isRegistering = false;
-                            btn.disabled = false; btn.textContent = "CREATE ACCOUNT";
-                        });
+                    openModal('verification', btn);
                 }
             } catch (error) {
                 window.isRegistering = false; 
@@ -1629,9 +1616,8 @@
                 else if(error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
                 else if(error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS");
                 else showNotification("ERROR: " + error.message.substring(0, 20));
-                
-                btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT";
             } 
+            finally { btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT"; }
         });
 
         document.getElementById('google-login-btn').addEventListener('click', () => { signInWithRedirect(auth, provider); });
@@ -1652,7 +1638,7 @@
 
         document.getElementById('confirm-delete-btn').addEventListener('click', async (e) => {
             const btn = e.target;
-            btn.textContent = "DELETING..."; 
+            btn.textContent = "DELETING..."; // Instant UI change for lag perception
             if (auth.currentUser) { 
                 try {
                     await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: Date.now() }, { merge: true });
@@ -1681,13 +1667,14 @@
             const btn = document.getElementById('btn-recover-account');
             btn.textContent = "PROCESSING...";
             try {
+                // Bug fix: Clear deletion status, send link, and immediately log out user to enforce security.
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
-                await sendPasswordResetEmail(auth, emailInput);
+                await sendEmailVerification(auth.currentUser);
                 
-                showNotification("RECOVERY LINK SENT! PLEASE LOGIN AGAIN.");
+                showNotification("VERIFICATION LINK SENT! PLEASE LOGIN AGAIN.");
                 
                 closeAllModals();
-                await signOut(auth); 
+                await signOut(auth); // THIS ENSURES NO IMMEDIATE LOGIN ACCESS WITHOUT LINK/PASSWORD
                 
             } catch(error) {
                 showNotification("ERROR SENDING RECOVERY LINK");
