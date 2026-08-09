@@ -583,7 +583,6 @@
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             
-                            <!-- APPEARANCE BUTTON ID ADDED HERE -->
                             <button class="ios-list-item" id="btn-appearance" onclick="openModal('appearance', this)">
                                 <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Appearance</div>
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -647,6 +646,7 @@
 
     </div>
 
+    <!-- UPDATE: Passing event to setTheme function so it knows exactly where you clicked -->
     <div id="modal-appearance" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -656,7 +656,7 @@
             </div>
             
             <div class="theme-preview-container">
-                <div class="theme-preview" onclick="setTheme('light')">
+                <div class="theme-preview" onclick="setTheme('light', event)">
                     <div class="mockup-screen light-mockup">
                         <div class="mockup-header"></div>
                         <div class="mockup-body">
@@ -668,7 +668,7 @@
                     <span class="theme-label">LIGHT</span>
                     <div class="theme-radio" id="radio-light"></div>
                 </div>
-                <div class="theme-preview" onclick="setTheme('dark')">
+                <div class="theme-preview" onclick="setTheme('dark', event)">
                     <div class="mockup-screen dark-mockup">
                         <div class="mockup-header"></div>
                         <div class="mockup-body">
@@ -963,8 +963,8 @@
             }
         }
 
-        // 🌟 FIXED: Flawless Theme Switch with pure Glass Effect and Zero Blur 🌟
-        function setTheme(targetTheme) {
+        // 🌟 FIXED: INSTANT, JITTER-FREE CIRCULAR REVEAL FROM CLICK POSITION 🌟
+        function setTheme(targetTheme, event) {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             
             if (currentTheme === targetTheme) {
@@ -972,61 +972,49 @@
                 return;
             }
 
-            // Always calculate origin from the Appearance button specifically
-            let x = window.innerWidth / 2;
-            let y = window.innerHeight; 
-            const appearanceBtn = document.getElementById('btn-appearance');
-            if (appearanceBtn) {
-                const rect = appearanceBtn.getBoundingClientRect();
-                x = rect.left + rect.width / 2;
-                y = rect.top + rect.height / 2;
+            // Get exact click position (finger/mouse) to start the animation from there perfectly
+            let x = event ? (event.clientX || (event.touches && event.touches[0].clientX) || window.innerWidth / 2) : window.innerWidth / 2;
+            let y = event ? (event.clientY || (event.touches && event.touches[0].clientY) || window.innerHeight / 2) : window.innerHeight / 2;
+
+            // Fallback for older browsers
+            if (!document.startViewTransition) {
+                document.documentElement.classList.add('theme-transitioning-fallback');
+                applyThemeColors(targetTheme);
+                document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
+                document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
+                closeAllModals();
+                setTimeout(() => document.documentElement.classList.remove('theme-transitioning-fallback'), 400);
+                return;
             }
 
-            // Close modal smoothly first 
-            closeAllModals();
+            // Fire view transition IMMEDIATELY without the 350ms delay
+            const transition = document.startViewTransition(() => {
+                applyThemeColors(targetTheme);
+                document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
+                document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
+                closeAllModals(); // Close modal immediately inside the transition frame
+            });
 
-            // Wait exactly 350ms so the CSS modal closing animation is completely gone, preventing the first-click glitch
-            setTimeout(() => {
-                // Fallback for older browsers
-                if (!document.startViewTransition) {
-                    document.documentElement.classList.add('theme-transitioning-fallback');
-                    applyThemeColors(targetTheme);
-                    document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
-                    document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
-                    setTimeout(() => document.documentElement.classList.remove('theme-transitioning-fallback'), 400);
-                    return;
-                }
-
-                // View Transition API
-                const transition = document.startViewTransition(() => {
-                    applyThemeColors(targetTheme);
-                    document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
-                    document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
-                });
-
-                transition.ready.then(() => {
-                    // Find furthest corner from origin point
-                    const maxRadius = Math.hypot(
-                        Math.max(x, window.innerWidth - x), 
-                        Math.max(y, window.innerHeight - y)
-                    ); 
-                    
-                    document.documentElement.animate(
-                        {
-                            clipPath: [
-                                `circle(0px at ${x}px ${y}px)`,
-                                `circle(${maxRadius}px at ${x}px ${y}px)`
-                            ]
-                            // REMOVED: filter array to keep animation crystal clear like glass
-                        },
-                        {
-                            duration: 800, 
-                            easing: 'cubic-bezier(0.25, 1, 0.5, 1)', 
-                            pseudoElement: '::view-transition-new(root)'
-                        }
-                    );
-                });
-            }, 350); // Exact 350ms wait time crucial for the first-click bug
+            transition.ready.then(() => {
+                const maxRadius = Math.hypot(
+                    Math.max(x, window.innerWidth - x), 
+                    Math.max(y, window.innerHeight - y)
+                ); 
+                
+                document.documentElement.animate(
+                    {
+                        clipPath: [
+                            `circle(0px at ${x}px ${y}px)`,
+                            `circle(${maxRadius}px at ${x}px ${y}px)`
+                        ]
+                    },
+                    {
+                        duration: 500, // Buttery smooth and fast
+                        easing: 'cubic-bezier(0.25, 1, 0.5, 1)', 
+                        pseudoElement: '::view-transition-new(root)'
+                    }
+                );
+            });
         }
 
         function applyThemeColors(theme) {
