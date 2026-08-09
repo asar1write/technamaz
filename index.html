@@ -2,9 +2,10 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=overlays-content">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Namaz Tracker App</title>
 
+<!-- 🔧 Instant Theme Loading to prevent any white flash at launch -->
 <script> 
     (function() {
         let theme = localStorage.getItem('namazTrackerTheme');
@@ -12,7 +13,6 @@
             document.documentElement.setAttribute('data-theme', 'dark');
             document.documentElement.style.backgroundColor = '#121212';
         } else {
-            document.documentElement.setAttribute('data-theme', 'light');
             document.documentElement.style.backgroundColor = '#ffffff';
         }
         
@@ -80,35 +80,22 @@
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; 
         -webkit-touch-callout: none; -webkit-user-select: none; user-select: none; 
         -webkit-tap-highlight-color: transparent !important; scrollbar-width: none; 
-        touch-action: manipulation; 
     }
     *::-webkit-scrollbar { display: none; } 
     input, select, textarea { -webkit-user-select: auto !important; user-select: auto !important; outline: none; }
 
-    /* Loked screen strictly with fixed app-height to prevent keyboard layout squish */
-    html, body { position: fixed; width: 100vw; height: var(--app-height); overflow: hidden; overscroll-behavior: none; }
+    html, body { width: 100vw; height: var(--app-height); overflow: hidden; overscroll-behavior: none; }
 
-    /* Smooth transforms only (Removed global heavy transitions that caused lag) */
+    /* 🌟 FIX: Updated Global Transitions for Buttery Smooth Dark Mode 🌟 */
     html, body, #auth-flow-wrapper, #dashboard-screen, .app-screen, .ios-card, .bottom-nav, .day-card, .sheet-item, 
     .offline-textarea, .profile-header-new, .alert-icon-top, input, .ios-list-item, h2, p, span, .text-main, .text-sub {
-        transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1);
+        transition: background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1), 
+                    background 0.4s cubic-bezier(0.25, 1, 0.5, 1),
+                    border-color 0.4s ease, color 0.4s ease, 
+                    box-shadow 0.4s ease, fill 0.4s ease, stroke 0.4s ease;
     }
 
-    /* VIEW TRANSITION CIRCULAR REVEAL - PAYTM STYLE (NO TEXT HIDDEN) */
-    ::view-transition-old(root),
-    ::view-transition-new(root) {
-        animation: none;
-        mix-blend-mode: normal;
-    }
-    ::view-transition-old(root) { z-index: 1; }
-    ::view-transition-new(root) { z-index: 2; }
-
-    /* FALLBACK FOR OLDER BROWSERS */
-    html.theme-transitioning-fallback,
-    html.theme-transitioning-fallback * {
-        transition: background-color 0.4s ease, color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease, fill 0.4s ease, stroke 0.4s ease !important;
-    }
-
+    /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
         0% { transform: scale(0.92); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
@@ -121,6 +108,11 @@
         0% { opacity: 0; transform: translateY(20px); }
         100% { opacity: 1; transform: translateY(0); }
     }
+    .animate-entry .profile-header-new { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.1s forwards; }
+    .animate-entry .ios-card:nth-child(1) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.2s forwards; }
+    .animate-entry .ios-card:nth-child(2) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.3s forwards; }
+    .animate-entry .ios-card:nth-child(3) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.4s forwards; }
+    .animate-entry .ios-card:nth-child(4) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.5s forwards; }
 
     /* TOAST NOTIFICATION */
     .toast {
@@ -134,14 +126,16 @@
     .toast.show { transform: translate3d(-50%, 0, 0) scale(1); opacity: 1; }
 
     #auth-flow-wrapper, #dashboard-screen { 
-        width: 100%; height: var(--app-height); position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        width: 100%; height: 100%; position: absolute; top: 0; left: 0; 
         background: var(--bg-main); overflow: hidden; 
     }
     
-    .app-screen { width: 100%; height: var(--app-height); position: fixed; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-main); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
+    .app-screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-main); transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
     .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
 
-    /* SPLASH SCREEN */
+    /* =========================================
+       🌟 EXACT 2.2 SECOND SPLASH 🌟
+       ========================================= */
     #splash-screen {
         position: fixed; inset: 0; background: var(--bg-main); 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
@@ -198,9 +192,9 @@
     @keyframes expandLine { to { width: 110px; opacity: 1; } }
 
     /* AUTH UI ELEMENTS */
-    #welcome-screen { transform: translateX(0); z-index: 2; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);}
+    #welcome-screen { transform: translateX(0); z-index: 2; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);}
     #welcome-screen.slide-left { transform: translateX(-100%); pointer-events: none; }
-    #auth-screen { transform: translateX(100%); z-index: 3; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1);}
+    #auth-screen { transform: translateX(100%); z-index: 3; transition: transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);}
     #auth-screen.slide-in { transform: translateX(0); }
     #dashboard-screen { z-index: 4; background: var(--bg-screen); justify-content: flex-start; overflow: hidden; }
     
@@ -209,43 +203,35 @@
     h2 { color: var(--brand-color); font-size: 26px; font-weight: 900; margin-bottom: 12px; text-transform: uppercase; letter-spacing: 0.5px; }
     p { color: var(--text-sub); font-size: 11px; font-weight: 800; margin-bottom: 30px; text-transform: uppercase; letter-spacing: 0.5px; line-height: 1.6; }
     .welcome-actions { display: flex; align-items: center; gap: 12px; width: 100%; }
-    
-    /* FAST Button interactions */
-    .welcome-actions button { flex: 1; padding: 18px 0; font-size: 14px; font-weight: 900; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.15s ease; will-change: transform; }
+    .welcome-actions button { flex: 1; padding: 18px 0; font-size: 14px; font-weight: 900; border-radius: 16px; cursor: pointer; text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s ease; }
     .btn-login-main { background: var(--brand-color); color: var(--btn-text-color); border: none; box-shadow: 0 12px 25px var(--brand-shadow); }
-    .btn-login-main:active { transform: scale(0.96) translateZ(0); box-shadow: 0 6px 15px var(--brand-shadow); }
+    .btn-login-main:active { transform: scale(0.96); box-shadow: 0 6px 15px var(--brand-shadow); }
     .btn-register-main { background: var(--bg-card); color: var(--text-main); border: 1.5px solid var(--border-line); }
-    .btn-register-main:active { transform: scale(0.96) translateZ(0); background: var(--pill-bg); }
-    .goal-box-back { position: absolute; top: 25px; left: 20px; width: 44px; height: 44px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); z-index: 100; will-change: transform; }
-    .goal-box-back:active { transform: scale(0.92) translateZ(0); }
+    .btn-register-main:active { transform: scale(0.96); background: var(--pill-bg); }
+    .goal-box-back { position: absolute; top: 25px; left: 20px; width: 44px; height: 44px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; z-index: 100; }
     .goal-box-back svg { width: 20px; height: 20px; stroke: var(--text-main); }
     
     .input-group { position: relative; max-height: 60px; margin-bottom: 16px; opacity: 1; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
     .input-group.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; }
-    
-    /* Strict font size to prevent iOS shifting */
-    .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 16px !important; font-weight: 700; color: var(--text-main); transition: all 0.3s ease; letter-spacing: 0.5px; }
+    .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--text-main); transition: all 0.3s ease; letter-spacing: 0.5px; }
     .input-group input:focus { border-color: var(--brand-color); }
     
     .forgot-pass { display: block; width: 100%; text-align: right; color: var(--brand-color); font-size: 12px; font-weight: 800; margin-top: -4px; margin-bottom: 20px; cursor: pointer; text-transform: uppercase; letter-spacing: 0.5px; transition: opacity 0.2s ease; }
     .forgot-pass:active { opacity: 0.5; }
 
-    /* Fast primary button */
-    .primary-btn { width: 100%; background: var(--brand-color); color: var(--btn-text-color); border: none; margin-bottom: 12px; padding: 18px; border-radius: 16px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px var(--brand-shadow); text-transform: uppercase; letter-spacing: 1px; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.15s ease; will-change: transform;}
-    .primary-btn:active { transform: scale(0.96) translateZ(0); }
-    
-    .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; transition: transform 0.15s ease; }
-    .create-account:active { transform: scale(0.98); }
+    .primary-btn { width: 100%; background: var(--brand-color); color: var(--btn-text-color); border: none; margin-bottom: 12px; padding: 18px; border-radius: 16px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px var(--brand-shadow); text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s;}
+    .primary-btn:active { transform: scale(0.96); }
+    .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
     .create-account span { color: var(--brand-color); font-weight: 900; }
     .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; }
     .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-line); }
     .divider span { padding: 0 12px; color: var(--text-sub); font-size: 11px; font-weight: 900; text-transform: uppercase; }
-    
-    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform;}
-    .social-btn:active { transform: scale(0.96) translateZ(0); }
+    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer;}
     .social-btn svg { width: 20px; height: 20px; }
 
-    /* HEADER */
+    /* ==========================================
+       🌟 PREMIUM HEADER (Month & Year Buttons) 🌟
+       ========================================== */
     .top-filter-bar {
         position: fixed; top: calc(15px + env(safe-area-inset-top)); 
         left: 50%; transform: translateX(-50%); width: 94%; max-width: 400px; 
@@ -259,9 +245,9 @@
         flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
         background: var(--brand-color); color: var(--btn-text-color); padding: 14px 10px; border-radius: 30px;
         box-shadow: 0 8px 25px var(--brand-shadow); font-size: 16px; font-weight: 900; text-transform: uppercase; letter-spacing: 0.5px;
-        transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.15s; position: relative; will-change: transform;
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1), box-shadow 0.2s; position: relative;
     }
-    .header-btn-clickable:active { transform: scale(0.96) translateZ(0); box-shadow: 0 4px 15px var(--brand-shadow); }
+    .header-btn-clickable:active { transform: scale(0.96); box-shadow: 0 4px 15px var(--brand-shadow); }
     .header-btn-clickable span { -webkit-text-stroke: 1px currentColor; }
     .header-btn-clickable svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 3; }
 
@@ -273,7 +259,9 @@
     .month-complete-tick.show { transform: scale(1); opacity: 1; }
     .month-complete-tick svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* TABS */
+    /* ==========================================
+       TABS SYSTEM
+       ========================================== */
     .dashboard-content-wrapper {
         width: 100%; height: var(--app-height); 
         padding-top: calc(85px + env(safe-area-inset-top)); padding-bottom: calc(75px + env(safe-area-inset-bottom));
@@ -284,7 +272,9 @@
     .tab-pane { width: 100%; max-width: 600px; display: none; height: 100%; overflow: hidden; }
     .tab-pane.active { display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-    /* CALENDAR */
+    /* ==========================================
+       🌟 COMPACT CALENDAR GRID 🌟
+       ========================================== */
     .calendar-grid { 
         flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); 
         gap: 8px; width: 100%; padding: 5px 15px 15px 15px; 
@@ -292,9 +282,9 @@
     .day-card {
         background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 12px;
         display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; 
-        cursor: pointer; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1), background 0.15s ease; will-change: transform; transform: translate3d(0,0,0); padding: 4px 0;
+        cursor: pointer; transition: transform 0.2s ease, background 0.2s ease; will-change: transform; transform: translate3d(0,0,0); padding: 4px 0;
     }
-    .day-card:active { transform: scale(0.94) translate3d(0,0,0); background: var(--pill-bg); }
+    .day-card:active { transform: scale(0.95) translate3d(0,0,0); background: var(--pill-bg); }
     .day-card.disabled-day { opacity: 0.35; pointer-events: none; background: var(--disabled-bg); border-color: var(--border-line); }
     .day-card.today-active { border: 1.5px solid var(--brand-color); background: var(--active-pill-bg); }
     .day-card.today-active .day-text { color: var(--brand-color); font-weight: 900; }
@@ -305,7 +295,9 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-line); transition: all 0.3s ease; }
     .dot.active { background: var(--brand-color); }
 
-    /* PROFILE */
+    /* ==========================================
+       🌟 PROFILE TAB 🌟
+       ========================================== */
     #tab-profile.active { justify-content: flex-start; padding: 0 15px; }
     .profile-inner-container { 
         width: 100%; max-width: 360px; height: 100%; 
@@ -334,7 +326,7 @@
     .ios-list-item { 
         width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); 
         display: flex; justify-content: space-between; align-items: center; 
-        font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1; transition: background 0.15s ease;
+        font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1;
     }
     .ios-list-item:active { background: var(--pill-bg); }
     .ios-list-item:last-child { border-bottom: none; }
@@ -343,79 +335,73 @@
     .list-left svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
     .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
 
+    .theme-switch { width: 44px; height: 26px; background: #e5e5ea; border-radius: 13px; position: relative; transition: 0.3s; cursor: pointer; }
+    .theme-switch.active { background: #34c759; }
+    .switch-knob { width: 22px; height: 22px; background: #fff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); will-change: transform;}
+    .theme-switch.active .switch-knob { transform: translate3d(18px, 0, 0); }
+    [data-theme="dark"] .theme-switch:not(.active) { background: #3a3a3c; }
+
+    /* ==========================================
+       🌟 30 THEME COLOR SWATCHES 🌟
+       ========================================== */
     .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 5px; justify-items: center; }
-    .color-swatch { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2.5px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
-    .color-swatch:active { transform: scale(0.85) translateZ(0); }
+    .color-swatch { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2.5px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
+    .color-swatch:active { transform: scale(0.85); }
 
-    /* APPEARANCE SECTION */
-    .theme-preview-container { display: flex; gap: 30px; justify-content: center; padding: 10px 0 25px 0; }
-    .theme-preview { display: flex; flex-direction: column; align-items: center; gap: 12px; cursor: pointer; transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
-    .theme-preview:active { transform: scale(0.92); }
-    
-    .mockup-screen { width: 100px; height: 160px; border-radius: 14px; border: 2.5px solid var(--border-line); box-shadow: 0 8px 20px var(--shadow-color); padding: 8px; display:flex; flex-direction:column; gap:8px; pointer-events: none;}
-    .light-mockup { background: #f8f9fa; }
-    .light-mockup .mockup-header { background: #ffffff; height: 35px; border-radius: 8px; border: 1px solid #eaeaea; }
-    .light-mockup .mockup-body { background: #ffffff; flex-grow: 1; border-radius: 8px; border: 1px solid #eaeaea; padding: 8px; display: flex; flex-direction: column; gap: 6px;}
-    .light-mockup .mockup-line { height: 6px; background: #eaeaea; border-radius: 4px; }
-    
-    .dark-mockup { background: #0a0a0a; border-color: #333; }
-    .dark-mockup .mockup-header { background: #1c1c1e; height: 35px; border-radius: 8px; }
-    .dark-mockup .mockup-body { background: #1c1c1e; flex-grow: 1; border-radius: 8px; padding: 8px; display: flex; flex-direction: column; gap: 6px;}
-    .dark-mockup .mockup-line { height: 6px; background: #333; border-radius: 4px; }
-
-    .theme-label { font-size: 14px; font-weight: 900; color: var(--text-main); pointer-events: none; }
-    
-    .theme-radio { width: 24px; height: 24px; border-radius: 50%; border: 2.5px solid var(--text-sub); display: flex; align-items: center; justify-content: center; transition: all 0.2s; pointer-events: none;}
-    .theme-radio.active { border-color: var(--brand-color); }
-    .theme-radio.active::after { content: ''; width: 12px; height: 12px; background: var(--brand-color); border-radius: 50%; transform: scale(1); animation: popIn 0.3s cubic-bezier(0.25, 1, 0.5, 1); }
-    @keyframes popIn { 0% { transform: scale(0); } 100% { transform: scale(1); } }
-
-
-    /* FAST BUTTERY SMOOTH MODALS WITH ORIGIN CALCULATION */
+    /* ==========================================
+       🌟 BUTTERY SMOOTH NATIVE MODALS 🌟
+       ========================================== */
     .modal-overlay {
         position: fixed; top: 0; left: 0; width: 100vw; height: var(--app-height);
         background: var(--modal-overlay); 
         backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         z-index: 8000; opacity: 0; visibility: hidden; 
-        transition: opacity 0.25s ease-out, visibility 0s linear 0.25s;
+        
+        /* Smooth fade out for background */
+        transition: opacity 0.4s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.4s;
     }
     
     .modal-overlay.show { 
         opacity: 1; visibility: visible; 
-        transition: opacity 0.25s ease-in, visibility 0s linear 0s; 
+        /* Smooth fade in for background */
+        transition: opacity 0.4s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; 
     }
     
     .modal-content, .alert-modal-content {
         --start-x: 0px;
-        --start-y: 20px;
+        --start-y: 0px;
         background: var(--bg-card); width: 92%; max-width: 360px; max-height: 85vh;
-        border-radius: 28px; 
+        border-radius: 28px; /* Thoda aur round native look ke liye */
         padding: 25px 15px; display: flex; flex-direction: column;
         position: absolute; top: 50%; left: 50%; 
         
-        /* Smooth transform directly from origin */
-        transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(0.05); 
+        /* Starts exactly from button center, scaled down to 0 */
+        transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(0); 
         opacity: 0; 
-        transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.25s ease-out;
+        
+        /* 📉 CLOSING ANIMATION: Fast fade, smooth scale down back to button */
+        transition: transform 0.4s cubic-bezier(0.32, 0.72, 0, 1), opacity 0.3s ease-out;
         box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
         will-change: transform, opacity;
-        transform-origin: center;
     }
     
     .modal-overlay.show .modal-content, .modal-overlay.show .alert-modal-content { 
+        /* Expands fully to the center of the screen */
         transform: translate(-50%, -50%) scale(1); 
         opacity: 1; 
-        transition: transform 0.4s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.3s ease-in; 
+        
+        /* 📈 OPENING ANIMATION: Fluid Spring Effect (Bounces slightly like Android/iOS) */
+        transition: transform 0.55s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.35s ease-in; 
     }
     
     .sheet-header-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
     .picker-title-pill { background: var(--brand-color); color: var(--btn-text-color); padding: 6px 20px; border-radius: 20px; font-size: 14px; font-weight: 900; letter-spacing: 0.5px; margin: 0 auto; text-transform: uppercase; box-shadow: 0 4px 12px var(--brand-shadow);}
-    .sheet-close-btn { position: absolute; right: 5px; width: 32px; height: 32px; background: var(--icon-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform;}
-    .sheet-close-btn:active { transform: scale(0.85) translateZ(0); background: var(--border-line);}
+    .sheet-close-btn { position: absolute; right: 5px; width: 32px; height: 32px; background: var(--icon-bg); border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);}
+    .sheet-close-btn:active { transform: scale(0.85); background: var(--border-line);}
     .sheet-close-btn svg { width: 14px; height: 14px; stroke: var(--text-main); stroke-width: 2.5; fill: none; }
     
     .sheet-list-container { overflow-y: auto; flex-grow: 1; padding: 0 5px; scrollbar-width: none;}
-    .sheet-item { padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; cursor: pointer; transition: all 0.15s ease; text-align: center; text-transform: uppercase; background: var(--pill-bg); border: 1.5px solid transparent; will-change: transform; }
+    .sheet-item { padding: 12px 20px; border-radius: 12px; font-size: 15px; font-weight: 800; color: var(--text-main); margin-bottom: 8px; cursor: pointer; transition: all 0.2s ease; text-align: center; text-transform: uppercase; background: var(--pill-bg); border: 1.5px solid transparent; will-change: transform; }
     .sheet-item:active { transform: scale(0.96) translate3d(0,0,0); }
     .sheet-item.selected { background: var(--brand-color); color: var(--btn-text-color); border-color: var(--brand-color); }
 
@@ -423,12 +409,14 @@
     .offline-textarea:focus { border-color: var(--brand-color); }
 
     .modal-actions-row { display: flex; gap: 10px; margin-top: 5px; width: 100%; justify-content: center; padding: 0 5px;}
-    .btn-action { flex: 1; padding: 14px 10px; border-radius: 30px; font-weight: 900; font-size: 13px; cursor: pointer; text-transform: uppercase; border: none; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); text-align: center; display: flex; align-items: center; justify-content: center; will-change: transform;}
-    .btn-action:active { transform: scale(0.96) translateZ(0); }
+    .btn-action { flex: 1; padding: 14px 10px; border-radius: 30px; font-weight: 800; font-size: 12px; cursor: pointer; text-transform: uppercase; border: none; transition: transform 0.2s; text-align: center; display: flex; align-items: center; justify-content: center;}
+    .btn-action:active { transform: scale(0.96); }
     .btn-cancel { background: var(--icon-bg); color: var(--text-main); }
     .btn-save { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow); }
 
-    /* ALERTS */
+    /* ==========================================
+       🌟 ALERTS (LOGOUT & DELETE WITH ICONS) 🌟
+       ========================================== */
     .alert-icon-top {
         position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
         width: 50px; height: 50px; background: var(--bg-card); border-radius: 50%;
@@ -440,23 +428,25 @@
 
     .alert-title-badge {
         background: var(--active-pill-bg); color: var(--brand-color); padding: 6px 16px; border-radius: 20px;
-        font-size: 14px; font-weight: 900; display: inline-block; margin: 0 auto 15px auto; letter-spacing: 0.5px; text-transform: uppercase;
+        font-size: 13px; font-weight: 900; display: inline-block; margin: 0 auto 12px auto; letter-spacing: 0.5px;
     }
     .alert-title-badge.danger-badge { background: rgba(227, 52, 47, 0.1); color: #e3342f; }
     
-    .alert-desc { font-size: 15px; font-weight: 900; color: var(--text-main); margin-bottom: 25px; line-height: 1.5; text-transform: uppercase; text-align: center; }
+    .alert-desc { font-size: 13px; font-weight: 600; color: var(--text-sub); margin-bottom: 25px; line-height: 1.5; }
     .alert-actions { display: flex; gap: 12px; }
-    .alert-btn { flex: 1; padding: 14px; border-radius: 30px; font-size: 13px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.15s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform; }
-    .alert-btn:active { transform: scale(0.96) translateZ(0); }
+    .alert-btn { flex: 1; padding: 14px; border-radius: 30px; font-size: 13px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.2s; }
+    .alert-btn:active { transform: scale(0.96); }
     .alert-btn.cancel { background: var(--icon-bg); color: var(--text-main); }
     .alert-btn.logout { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow);}
     .alert-btn.delete { background: #e3342f; color: #fff; box-shadow: 0 4px 15px rgba(227, 52, 47, 0.3);}
 
-    /* NAMAZ MODAL */
+    /* ==========================================
+       🌟 NAMAZ POPUP MODAL 🌟
+       ========================================== */
     .modal-namaz-list {
         display: flex; flex-direction: column; touch-action: none; user-select: none; padding: 0 5px;
     }
-    .namaz-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border-line); border-radius: 16px; margin-bottom: 12px; transition: transform 0.15s ease, background 0.15s ease; cursor: pointer; will-change: transform;}
+    .namaz-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border-line); border-radius: 16px; margin-bottom: 12px; transition: transform 0.2s ease, background 0.2s ease; cursor: pointer; will-change: transform;}
     .namaz-row:active { transform: scale(0.97) translate3d(0,0,0); background: var(--pill-bg); }
     
     .namaz-info { display: flex; align-items: center; gap: 14px; pointer-events: none; }
@@ -468,12 +458,14 @@
     .tick-box.ticked { background: var(--brand-color); border-color: var(--brand-color); transform: scale(1.1) translate3d(0,0,0); }
     .tick-box.ticked svg { stroke: var(--btn-text-color); stroke-dashoffset: 0; }
 
-    /* BOTTOM NAV */
+    /* ==========================================
+       🌟 GLASS BOTTOM NAVIGATION 🌟
+       ========================================== */
     .bottom-nav {
         position: absolute; bottom: calc(6px + env(safe-area-inset-bottom)); 
         left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px;
-        background: var(--bg-main); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
-        border: 1.5px solid var(--brand-color); border-radius: 40px; box-shadow: 0 8px 30px var(--shadow-color); 
+        background: var(--glass-bg); backdrop-filter: blur(25px); -webkit-backdrop-filter: blur(25px);
+        border: 1px solid var(--glass-border); border-radius: 40px; box-shadow: 0 8px 30px var(--shadow-color); 
         display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; z-index: 5000; will-change: transform;
     }
     .nav-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 33.333%; padding: 6px 0; border-radius: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: var(--text-sub); z-index: 2; will-change: transform;}
@@ -492,8 +484,10 @@
 </head>
 <body>
 
+    <!-- TOAST -->
     <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
 
+    <!-- 🌟 EXACT 2.2 SECOND SPLASH SCREEN 🌟 -->
     <div id="splash-screen">
         <div class="splash-glow"></div>
         <div class="splash-content-anim">
@@ -511,6 +505,7 @@
         </div>
     </div>
 
+    <!-- MAIN APP WRAPPER -->
     <div id="auth-flow-wrapper" class="hidden">
         <div id="welcome-screen" class="app-screen">
             <div class="screen-content">
@@ -542,6 +537,7 @@
         </div>
     </div> 
 
+    <!-- DASHBOARD -->
     <div id="dashboard-screen" class="app-screen hidden">
         
         <div class="top-filter-bar" id="filter-bar">
@@ -549,6 +545,7 @@
                 <div class="header-btn-clickable" onclick="openModal('month', this)">
                     <span id="display-month">AUG</span>
                     <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
+                    <!-- 🌟 Month Complete Tick 🌟 -->
                     <div id="month-complete-tick" class="month-complete-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="header-btn-clickable" onclick="openModal('year', this)">
@@ -576,12 +573,10 @@
                                 <div class="list-left"><svg viewBox="0 0 24 24"><path d="M12 20h9"></path><path d="M16.5 3.5a2.121 2.121 0 0 1 3 3L7 19l-4 1 1-4L16.5 3.5z"></path></svg> Edit Profile Name</div>
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
-                            
-                            <button class="ios-list-item" onclick="openModal('appearance', this)">
-                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Appearance</div>
-                                <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
-                            </button>
-
+                            <div class="ios-list-item" style="cursor: default;">
+                                <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Dark Mode</div>
+                                <div class="theme-switch" id="theme-toggle" onclick="toggleTheme()"><div class="switch-knob"></div></div>
+                            </div>
                             <div class="ios-list-item" onclick="openModal('theme', this)">
                                 <div class="list-left"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a10 10 0 0 0-10 10c0 5 4 10 10 10s10-5 10-10a10 10 0 0 0-10-10zm0 18v-8l6 6c-2 2-6 2-6 2zm0-8l6-6A8 8 0 0 1 18 12h-6z"></path></svg> App Theme Colors</div>
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -623,6 +618,7 @@
             </div>
         </div> 
 
+        <!-- 🌟 BOTTOM NAVIGATION 🌟 -->
         <div class="bottom-nav">
             <div class="nav-item active" data-target="tab-2026" onclick="switchNav(this)">
                 <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
@@ -640,43 +636,9 @@
 
     </div>
 
-    <div id="modal-appearance" class="modal-overlay" onclick="closeModal(event)">
-        <div class="modal-content" onclick="event.stopPropagation()">
-            <div class="sheet-header-box">
-                <div style="width:32px;"></div>
-                <div class="picker-title-pill">APPEARANCE</div>
-                <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-appearance')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
-            </div>
-            
-            <div class="theme-preview-container">
-                <div class="theme-preview" onclick="setTheme('light', event)">
-                    <div class="mockup-screen light-mockup">
-                        <div class="mockup-header"></div>
-                        <div class="mockup-body">
-                            <div class="mockup-line" style="width:60%"></div>
-                            <div class="mockup-line" style="width:80%"></div>
-                            <div class="mockup-line" style="width:50%"></div>
-                        </div>
-                    </div>
-                    <span class="theme-label">LIGHT</span>
-                    <div class="theme-radio" id="radio-light"></div>
-                </div>
-                <div class="theme-preview" onclick="setTheme('dark', event)">
-                    <div class="mockup-screen dark-mockup">
-                        <div class="mockup-header"></div>
-                        <div class="mockup-body">
-                            <div class="mockup-line" style="width:60%"></div>
-                            <div class="mockup-line" style="width:80%"></div>
-                            <div class="mockup-line" style="width:50%"></div>
-                        </div>
-                    </div>
-                    <span class="theme-label">DARK</span>
-                    <div class="theme-radio" id="radio-dark"></div>
-                </div>
-            </div>
-        </div>
-    </div>
-
+    <!-- 🌟 MODALS 🌟 -->
+    
+    <!-- 🌟 30 App Theme Colors Picker 🌟 -->
     <div id="modal-theme" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -685,6 +647,7 @@
                 <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-theme')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
             </div>
             <div class="theme-grid" style="padding-bottom: 5px;">
+                <!-- 15 Normal Colors -->
                 <div class="color-swatch" style="background: #f25c27;" onclick="changeThemeColor('#f25c27', false, false)"></div>
                 <div class="color-swatch" style="background: #e3342f;" onclick="changeThemeColor('#e3342f', false, false)"></div>
                 <div class="color-swatch" style="background: #e91e63;" onclick="changeThemeColor('#e91e63', false, false)"></div>
@@ -701,6 +664,7 @@
                 <div class="color-swatch" style="background: #795548;" onclick="changeThemeColor('#795548', false, false)"></div>
                 <div class="color-swatch" style="background: #607D8B;" onclick="changeThemeColor('#607D8B', false, false)"></div>
                 
+                <!-- 15 Neon Colors -->
                 <div class="color-swatch" style="background: #FF0000; box-shadow: 0 0 12px #FF0000;" onclick="changeThemeColor('#FF0000', true, false)"></div>
                 <div class="color-swatch" style="background: #FF00FF; box-shadow: 0 0 12px #FF00FF;" onclick="changeThemeColor('#FF00FF', true, false)"></div>
                 <div class="color-swatch" style="background: #B026FF; box-shadow: 0 0 12px #B026FF;" onclick="changeThemeColor('#B026FF', true, false)"></div>
@@ -720,6 +684,7 @@
         </div>
     </div>
 
+    <!-- Edit Profile -->
     <div id="modal-edit-profile" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -727,7 +692,7 @@
                 <div class="picker-title-pill">EDIT PROFILE</div>
                 <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-edit-profile')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
             </div>
-            <input type="text" id="edit-profile-input" class="edit-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 16px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase;" placeholder="Enter Name">
+            <input type="text" id="edit-profile-input" class="edit-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 15px; font-weight: 700; margin-bottom: 20px; text-transform: uppercase;" placeholder="Enter Name">
             <div class="modal-actions-row">
                 <button class="btn-action btn-cancel" onclick="closeModal({target: document.getElementById('modal-edit-profile')})">CANCEL</button>
                 <button class="btn-action btn-save" onclick="saveProfileName()">SAVE UPDATES</button>
@@ -735,6 +700,7 @@
         </div>
     </div>
 
+    <!-- Month/Year Picker -->
     <div id="modal-picker" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -746,6 +712,7 @@
         </div>
     </div>
 
+    <!-- Offline Backup -->
     <div id="modal-offline-backup" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -762,6 +729,7 @@
         </div>
     </div>
 
+    <!-- Offline Restore -->
     <div id="modal-offline-restore" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -778,6 +746,7 @@
         </div>
     </div>
 
+    <!-- Center Namaz Modal -->
     <div id="modal-namaz" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header-top" style="position:relative; display:flex; justify-content:center; margin-bottom:20px; height: 38px;">
@@ -828,13 +797,14 @@
         </div>
     </div>
 
+    <!-- LOGOUT / DELETE ALERTS -->
     <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top">
                 <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
             </div>
             <div class="alert-title-badge">LOG OUT</div>
-            <div class="alert-desc">ARE YOU SURE YOU WANT TO LOG OUT OF YOUR ACCOUNT?</div>
+            <div class="alert-desc">Are you sure you want to log out of your account?</div>
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-logout-confirm')})">CANCEL</button>
                 <button class="alert-btn logout" id="confirm-logout-btn">LOG OUT</button>
@@ -848,7 +818,7 @@
                 <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </div>
             <div class="alert-title-badge danger-badge">WARNING</div>
-            <div class="alert-desc">DELETE YOUR ACCOUNT PERMANENTLY? THIS ACTION CANNOT BE UNDONE.</div>
+            <div class="alert-desc">Delete your account permanently? This action cannot be undone.</div>
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-delete')})">CANCEL</button>
                 <button class="alert-btn delete" id="confirm-delete-btn">DELETE</button>
@@ -856,7 +826,9 @@
         </div>
     </div>
 
+    <!-- UI Scripts -->
     <script>
+        // 🔧 SYNC SYSTEM
         let isAuthResolved = false;
         let isMinSplashTimeOver = false;
 
@@ -868,6 +840,8 @@
                     const activeScreen = document.querySelector('#auth-flow-wrapper:not(.hidden), #dashboard-screen:not(.hidden)');
                     if(activeScreen) {
                         activeScreen.classList.add('trigger-app-entry');
+                        const innerContent = activeScreen.querySelector('.profile-inner-container') || activeScreen.querySelector('.screen-content');
+                        if (innerContent) innerContent.classList.add('animate-entry');
                     }
 
                     splash.classList.add('splash-fade-out');
@@ -906,21 +880,13 @@
             localStorage.setItem('namazTrackerColor', color);
             localStorage.setItem('namazTrackerNeon', isNeon ? 'true' : 'false');
             localStorage.setItem('namazTrackerText', isDarkText ? 'dark' : 'light');
-
             closeAllModals();
         }
 
-        // 🌟 INIT RADIOS 🌟
-        function initializeThemeRadios() {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
-            document.getElementById('radio-light').classList.toggle('active', currentTheme === 'light');
-            document.getElementById('radio-dark').classList.toggle('active', currentTheme === 'dark');
-        }
-
+        // 🌟 FIX 1: DYNAMIC BUTTON CENTER CALCULATION 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
-            if(modalId === 'appearance') initializeThemeRadios();
             
             const modal = document.getElementById('modal-' + modalId);
             const modalContent = modal.querySelector('.modal-content') || modal.querySelector('.alert-modal-content');
@@ -942,8 +908,9 @@
             modal.classList.add('show');
         }
 
+        // 🌟 FIX 2: ZERO DELAY CLOSE 🌟
         function closeModal(e) {
-            const overlay = e.target ? e.target.closest('.modal-overlay') : e;
+            const overlay = e.target.closest('.modal-overlay');
             if(overlay) overlay.classList.remove('show');
         }
         function closeAllModals() { document.querySelectorAll('.modal-overlay').forEach(el => el.classList.remove('show')); }
@@ -957,95 +924,21 @@
             }
         }
 
-        // 🌟 BUTTERY SMOOTH CIRCULAR REVEAL API LOGIC (LIKE PAYTM) 🌟
-        function setTheme(targetTheme, event) {
-            const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
+        /* 🌟 FIX: Updated toggleTheme Function with Smooth Inline Background Transitions 🌟 */
+        function toggleTheme() {
+            const toggle = document.getElementById('theme-toggle');
+            toggle.classList.toggle('active');
             
-            // Get exact click coordinates for the circle origin
-            let x = window.innerWidth / 2;
-            let y = window.innerHeight / 2;
-            
-            if (event) {
-                if (event.clientX !== undefined && event.clientX !== 0) { 
-                    x = event.clientX; 
-                    y = event.clientY; 
-                } else if (event.touches && event.touches.length > 0) { 
-                    x = event.touches[0].clientX; 
-                    y = event.touches[0].clientY; 
-                } else if (event.currentTarget) {
-                    const rect = event.currentTarget.getBoundingClientRect();
-                    x = rect.left + rect.width / 2;
-                    y = rect.top + rect.height / 2;
-                }
-
-                // Update modal origin to shrink directly into the clicked button
-                const modalContent = document.querySelector('#modal-appearance .modal-content');
-                if (modalContent) {
-                    let deltaX = x - (window.innerWidth / 2);
-                    let deltaY = y - (window.innerHeight / 2);
-                    modalContent.style.setProperty('--start-x', deltaX + 'px');
-                    modalContent.style.setProperty('--start-y', deltaY + 'px');
-                }
-            }
-
-            // Close modal smoothly first (It will automatically shrink to the original button coordinates)
-            closeAllModals();
-
-            // If same theme was clicked, just close the modal and stop.
-            if (currentTheme === targetTheme) return;
-
-            // Wait exactly 300ms for the modal to perfectly finish closing into the button
-            setTimeout(() => {
-                // Fallback for older browsers
-                if (!document.startViewTransition) {
-                    document.documentElement.classList.add('theme-transitioning-fallback');
-                    applyThemeColors(targetTheme);
-                    document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
-                    document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
-                    setTimeout(() => document.documentElement.classList.remove('theme-transitioning-fallback'), 400);
-                    return;
-                }
-
-                // View Transition API for perfectly smooth Circular Reveal
-                const transition = document.startViewTransition(() => {
-                    applyThemeColors(targetTheme);
-                    document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
-                    document.getElementById('radio-dark').classList.toggle('active', targetTheme === 'dark');
-                });
-
-                transition.ready.then(() => {
-                    // EXACT math to find furthest corner
-                    const maxRadius = Math.hypot(
-                        Math.max(x, window.innerWidth - x), 
-                        Math.max(y, window.innerHeight - y)
-                    ); 
-                    
-                    document.documentElement.animate(
-                        {
-                            clipPath: [
-                                `circle(0px at ${x}px ${y}px)`,
-                                `circle(${maxRadius}px at ${x}px ${y}px)`
-                            ]
-                        },
-                        {
-                            duration: 600, 
-                            easing: 'cubic-bezier(0.25, 1, 0.5, 1)', 
-                            pseudoElement: '::view-transition-new(root)',
-                            fill: 'forwards' // FIX: This absolutely prevents the end-of-animation snap/jerk
-                        }
-                    );
-                });
-            }, 300); 
-        }
-
-        function applyThemeColors(theme) {
-            if (theme === 'dark') {
+            // Adding smooth transition for inline background changes
+            document.documentElement.style.transition = "background-color 0.4s cubic-bezier(0.25, 1, 0.5, 1)";
+        
+            if(toggle.classList.contains('active')) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                document.documentElement.style.backgroundColor = '#121212';
+                document.documentElement.style.backgroundColor = '#121212'; // Inline background update
                 localStorage.setItem('namazTrackerTheme', 'dark');
             } else {
-                document.documentElement.setAttribute('data-theme', 'light');
-                document.documentElement.style.backgroundColor = '#ffffff';
+                document.documentElement.removeAttribute('data-theme');
+                document.documentElement.style.backgroundColor = '#ffffff'; // Inline background update
                 localStorage.setItem('namazTrackerTheme', 'light');
             }
         }
@@ -1108,8 +1001,6 @@
         function saveLocalState() {
             localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
             checkMonthCompletion(); 
-            // 🌟 BACKGROUND AUTO-SYNC TO CLOUD 🌟
-            window.dispatchEvent(new Event('triggerAutoSync'));
         }
 
         function checkMonthCompletion() {
@@ -1132,7 +1023,6 @@
         function generateCalendar() {
             let containerId = currentTabId === 'tab-2026' ? 'calendar-container-2026' : 'calendar-container-2019';
             const container = document.getElementById(containerId);
-            if(!container) return; // Failsafe
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const realToday = new Date(); 
@@ -1177,7 +1067,7 @@
                 `;
             }
             container.innerHTML = htmlBuffer;
-            checkMonthCompletion();
+            saveLocalState();
 
             document.getElementById('display-month').textContent = monthNamesShort[currentMonth];
             document.getElementById('display-year').textContent = currentYear;
@@ -1185,8 +1075,6 @@
             localStorage.setItem('namazSavedYear', currentYear);
             localStorage.setItem('namazSavedMonth', currentMonth);
         }
-
-        window.generateCalendar = generateCalendar; // Export for module
 
         function switchNav(selectedItem) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
@@ -1213,27 +1101,12 @@
                 filterBar.style.display = 'none';
                 dashWrapper.classList.add('no-header-padding');
                 localStorage.setItem('namazSavedTab', targetTabId);
-
-                // 🌟 SMOOTH PROFILE SECTION ANIMATION 🌟
-                if(targetTabId === 'tab-profile') {
-                    const animElements = document.querySelectorAll('.profile-header-new, .ios-card');
-                    if (animElements.length > 0) {
-                        animElements.forEach(child => {
-                            child.style.animation = 'none';
-                            child.style.opacity = '0';
-                        });
-                        void document.body.offsetWidth; 
-                        animElements.forEach((child, index) => {
-                            const delay = (index * 0.05).toFixed(2);
-                            child.style.animation = `smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) ${delay}s forwards`;
-                        });
-                    }
-                }
             }
         }
 
         let currentPickerType = ''; 
 
+        // 🌟 FIX 3: MATCHING MONTH POPUP TICK DESIGN 🌟
         function openCustomPicker(type, element) {
             currentPickerType = type;
             const listContainer = document.getElementById('picker-list');
@@ -1257,6 +1130,7 @@
                     }
                     if(totalValidDays > 0 && completedDays === totalValidDays) isComplete = true;
 
+                    // Perfect matching UI 3D tick
                     let tickBg = isSelected ? 'var(--btn-text-color)' : '#34c759';
                     let tickStroke = isSelected ? 'var(--brand-color)' : '#ffffff';
                     let borderCol = isSelected ? 'transparent' : 'var(--bg-main)';
@@ -1292,12 +1166,8 @@
         function selectPickerValue(val) {
             if(currentPickerType === 'month') currentMonth = val;
             else currentYear = val;
-            closeAllModals(); // 🔥 UI reacts immediately 
-            
-            // 🔥 FIX: Wait for modal to fully close (260ms) before recalculating DOM layout
-            setTimeout(() => {
-                generateCalendar();
-            }, 260);
+            closeAllModals();
+            generateCalendar();
         }
 
         let activeDayKey = null;
@@ -1469,12 +1339,9 @@
                 const decodedState = decompressState(encoded);
                 window.namazState = decodedState;
                 saveLocalState();
-                closeAllModals(); // 🔥 UI reacts immediately
-
-                setTimeout(() => {
-                    generateCalendar();
-                    showNotification("DATA RESTORED!");
-                }, 260); // Delay DOM recreation
+                generateCalendar();
+                closeAllModals();
+                showNotification("DATA RESTORED!");
             } catch(e) {
                 showNotification("INVALID CODE!");
             }
@@ -1503,6 +1370,7 @@
         }
     </script>
 
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -1522,19 +1390,6 @@
         const db = getFirestore(app); 
         const provider = new GoogleAuthProvider();
 
-        // 🌟 BACKGROUND SYNC OBSERVER 🌟
-        let autoSyncTimer;
-        window.addEventListener('triggerAutoSync', () => {
-            if(!auth.currentUser) return;
-            clearTimeout(autoSyncTimer);
-            autoSyncTimer = setTimeout(async () => {
-                try {
-                    const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
-                    await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave, {merge: true});
-                } catch(e) { console.log("Auto Sync Failed", e); }
-            }, 2000); 
-        });
-
         async function fetchAutoCloudRestore(user) {
             try {
                 const docSnap = await getDoc(doc(db, "users_backup", user.uid));
@@ -1543,8 +1398,8 @@
                     if(data.namazData) {
                         window.namazState = data.namazData; 
                         localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
-                        if(typeof window.generateCalendar === 'function') window.generateCalendar(); 
-                        showNotification("CLOUD DATA RESTORED!");
+                        generateCalendar(); 
+                        showNotification("CLOUD DATA SYNCED!");
                     }
                 }
             } catch(e) { console.log("Silent Cloud Fetch Error", e); }
@@ -1557,14 +1412,12 @@
             } 
         }).catch((error) => {});
 
-        onAuthStateChanged(auth, async (user) => {
+        onAuthStateChanged(auth, (user) => {
             if (user) {
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
                     document.getElementById('dashboard-screen').classList.add('hidden');
                     document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                 } else {
-                    await fetchAutoCloudRestore(user);
-
                     document.getElementById('auth-flow-wrapper').classList.add('hidden');
                     document.getElementById('dashboard-screen').classList.remove('hidden');
                     
@@ -1577,10 +1430,6 @@
                     }
                 }
             } else {
-                window.namazState = {};
-                localStorage.removeItem('namazTrackerLocalData');
-                if(typeof window.generateCalendar === 'function') window.generateCalendar();
-
                 document.getElementById('dashboard-screen').classList.add('hidden');
                 document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                 const welcomeScreen = document.getElementById('welcome-screen');
@@ -1601,7 +1450,7 @@
             try {
                 showNotification("SAVING TO CLOUD...");
                 const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
-                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave, {merge: true});
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave);
                 showNotification("BACKUP SUCCESSFUL!");
             } catch(e) { showNotification("BACKUP FAILED!"); }
         });
@@ -1610,7 +1459,16 @@
             if (!auth.currentUser) return;
             try {
                 showNotification("FETCHING FROM CLOUD...");
-                await fetchAutoCloudRestore(auth.currentUser);
+                const docSnap = await getDoc(doc(db, "users_backup", auth.currentUser.uid));
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if(data.namazData) {
+                        window.namazState = data.namazData; 
+                        localStorage.setItem('namazTrackerLocalData', JSON.stringify(window.namazState));
+                        generateCalendar(); 
+                    }
+                    showNotification("DATA RESTORED!");
+                } else { showNotification("NO CLOUD BACKUP."); }
             } catch(e) { showNotification("RESTORE FAILED!"); }
         });
 
@@ -1642,6 +1500,7 @@
                     if (!userCredential.user.emailVerified) { await signOut(auth); showNotification("UNVERIFIED! CHECK INBOX."); } 
                     else { 
                         showNotification("LOGIN SUCCESS!"); 
+                        fetchAutoCloudRestore(userCredential.user); 
                     }
                 } else {
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
