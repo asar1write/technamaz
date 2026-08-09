@@ -583,6 +583,7 @@
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
                             </button>
                             
+                            <!-- APPEARANCE BUTTON ID ADDED HERE -->
                             <button class="ios-list-item" id="btn-appearance" onclick="openModal('appearance', this)">
                                 <div class="list-left"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg> Appearance</div>
                                 <svg class="chevron-icon" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"></polyline></svg>
@@ -962,7 +963,7 @@
             }
         }
 
-        // 🌟 FIXED: Removed Lag/Blur for Clear Glass Effect & First-Click Bug 🌟
+        // 🌟 FIXED: Flawless Theme Switch with Glass Effect 🌟
         function setTheme(targetTheme) {
             const currentTheme = document.documentElement.getAttribute('data-theme') || 'light';
             
@@ -984,8 +985,7 @@
             // Close modal smoothly first 
             closeAllModals();
 
-            // Wait exactly 260ms to let the modal completely close before triggering screen change
-            // This totally prevents the 'first-click from corner' glitch.
+            // Wait exactly 350ms so the CSS modal closing animation is completely gone, preventing the first-click glitch
             setTimeout(() => {
                 // Fallback for older browsers
                 if (!document.startViewTransition) {
@@ -997,7 +997,7 @@
                     return;
                 }
 
-                // View Transition API (No Blur Filter = No Lag)
+                // View Transition API
                 const transition = document.startViewTransition(() => {
                     applyThemeColors(targetTheme);
                     document.getElementById('radio-light').classList.toggle('active', targetTheme === 'light');
@@ -1016,17 +1016,21 @@
                             clipPath: [
                                 `circle(0px at ${x}px ${y}px)`,
                                 `circle(${maxRadius}px at ${x}px ${y}px)`
+                            ],
+                            // This creates the amazing glassmorphism wave during transition
+                            filter: [
+                                'blur(12px) opacity(0.8)',
+                                'blur(0px) opacity(1)'
                             ]
                         },
                         {
-                            duration: 650, // Optimized speed to remove sluggishness
+                            duration: 800, 
                             easing: 'cubic-bezier(0.25, 1, 0.5, 1)', 
-                            pseudoElement: '::view-transition-new(root)',
-                            fill: 'forwards'
+                            pseudoElement: '::view-transition-new(root)'
                         }
                     );
                 });
-            }, 260); // 260ms is perfectly timed with CSS transition to avoid jitter
+            }, 350); // Exact 350ms wait time crucial for the first-click bug
         }
 
         function applyThemeColors(theme) {
