@@ -818,7 +818,7 @@
                 <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
             </div>
             <div class="alert-title-badge danger-badge">WARNING</div>
-            <div class="alert-desc">DELETE YOUR ACCOUNT PERMANENTLY? THIS ACTION CANNOT BE UNDONE.</div>
+            <div class="alert-desc">SCHEDULE YOUR ACCOUNT FOR PERMANENT DELETION (24 HOURS).</div>
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="closeModal({target: document.getElementById('modal-delete')})">CANCEL</button>
                 <button class="alert-btn delete" id="confirm-delete-btn">DELETE</button>
@@ -826,7 +826,7 @@
         </div>
     </div>
 
-    <!-- 🌟 NEW: REGISTRATION VERIFICATION POP-UP 🌟 -->
+    <!-- 🌟 REGISTRATION VERIFICATION POP-UP 🌟 -->
     <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top success-icon">
@@ -838,7 +838,23 @@
                 <b>Note:</b> If you don't find the link in your inbox, please make sure to check your <b>Spam</b> or <b>Junk</b> folder.
             </div>
             <div class="alert-actions">
-                <button class="alert-btn success-btn" onclick="closeModal({target: document.getElementById('modal-verification')}); openAuthScreen(true);">OK, I UNDERSTAND</button>
+                <button class="alert-btn success-btn" onclick="closeModal({target: document.getElementById('modal-verification')}); window.isRegistering = false; openAuthScreen(true);">OK, I UNDERSTAND</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 🌟 NEW: ACCOUNT RECOVERY MODAL 🌟 -->
+    <div id="modal-recovery" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top" style="border-color: #03a9f4;">
+                <svg viewBox="0 0 24 24" style="stroke: #03a9f4;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke-width="2.5"></path></svg>
+            </div>
+            <div class="alert-title-badge" style="background: rgba(3, 169, 244, 0.1); color: #03a9f4;">RECOVER ACCOUNT</div>
+            <div class="alert-desc" style="font-size: 12px; margin-bottom: 15px;">YOUR ACCOUNT IS SCHEDULED FOR DELETION. ENTER YOUR EMAIL TO VERIFY AND RESTORE IT.</div>
+            <input type="email" id="recovery-email-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 14px; font-weight: 700; margin-bottom: 20px; text-align: center;" placeholder="ENTER REGISTERED EMAIL">
+            <div class="alert-actions">
+                <button class="alert-btn cancel" onclick="window.cancelRecovery()">CANCEL</button>
+                <button class="alert-btn" style="background: #03a9f4; color: #fff; box-shadow: 0 4px 15px rgba(3, 169, 244, 0.3);" id="btn-recover-account">RESTORE</button>
             </div>
         </div>
     </div>
@@ -848,6 +864,7 @@
         // 🔧 SYNC SYSTEM
         let isAuthResolved = false;
         let isMinSplashTimeOver = false;
+        window.isRegistering = false; // Prevents register bounce back glitch smoothly
 
         const checkAndHideSplash = () => {
             if(isAuthResolved && isMinSplashTimeOver) {
@@ -1040,6 +1057,7 @@
         function generateCalendar() {
             let containerId = currentTabId === 'tab-2026' ? 'calendar-container-2026' : 'calendar-container-2019';
             const container = document.getElementById(containerId);
+            if(!container) return; // Guard clause
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const realToday = new Date(); 
@@ -1433,16 +1451,42 @@
         getRedirectResult(auth).then((result) => { 
             if (result) { 
                 showNotification("GOOGLE LOGIN SUCCESS!"); 
+                localStorage.removeItem('namazTrackerLocalData');
+                window.namazState = {};
                 fetchAutoCloudRestore(result.user); 
             } 
         }).catch((error) => {});
 
-        onAuthStateChanged(auth, (user) => {
+        onAuthStateChanged(auth, async (user) => {
             if (user) {
                 if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
                     document.getElementById('dashboard-screen').classList.add('hidden');
                     document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                 } else {
+                    
+                    // 🌟 NEW: 24-HOUR DELETION CHECK AND RECOVERY 🌟
+                    try {
+                        const docSnap = await getDoc(doc(db, "users_backup", user.uid));
+                        if (docSnap.exists() && docSnap.data().deleteScheduledAt) {
+                            const deleteTime = docSnap.data().deleteScheduledAt;
+                            const timePassed = Date.now() - deleteTime;
+                            
+                            // Check if exactly 24 Hours (86400000 ms) passed
+                            if (timePassed > 24 * 60 * 60 * 1000) {
+                                await deleteUser(user);
+                                showNotification("ACCOUNT PERMANENTLY DELETED.");
+                                return;
+                            } else {
+                                // User logged in under 24 hours, show smooth recovery process
+                                document.getElementById('dashboard-screen').classList.add('hidden');
+                                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                                openModal('recovery', null);
+                                return; 
+                            }
+                        }
+                    } catch(e) { console.log(e); }
+
+                    // Proceeding normal login
                     document.getElementById('auth-flow-wrapper').classList.add('hidden');
                     document.getElementById('dashboard-screen').classList.remove('hidden');
                     
@@ -1455,13 +1499,16 @@
                     }
                 }
             } else {
-                document.getElementById('dashboard-screen').classList.add('hidden');
-                document.getElementById('auth-flow-wrapper').classList.remove('hidden');
-                const welcomeScreen = document.getElementById('welcome-screen');
-                const authScreen = document.getElementById('auth-screen');
-                if (welcomeScreen && authScreen) {
-                    welcomeScreen.classList.remove('slide-left');
-                    authScreen.classList.remove('slide-in');
+                // Prevent jumping back to welcome-screen if popup is active during registration!
+                if (!window.isRegistering) {
+                    document.getElementById('dashboard-screen').classList.add('hidden');
+                    document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                    const welcomeScreen = document.getElementById('welcome-screen');
+                    const authScreen = document.getElementById('auth-screen');
+                    if (welcomeScreen && authScreen) {
+                        welcomeScreen.classList.remove('slide-left');
+                        authScreen.classList.remove('slide-in');
+                    }
                 }
             }
 
@@ -1475,7 +1522,7 @@
             try {
                 showNotification("SAVING TO CLOUD...");
                 const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
-                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave);
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave, { merge: true });
                 showNotification("BACKUP SUCCESSFUL!");
             } catch(e) { showNotification("BACKUP FAILED!"); }
         });
@@ -1525,18 +1572,31 @@
                     if (!userCredential.user.emailVerified) { await signOut(auth); showNotification("UNVERIFIED! CHECK INBOX."); } 
                     else { 
                         showNotification("LOGIN SUCCESS!"); 
+                        
+                        // 🌟 FIX: CLEAN DATA LEAK UPON NEW LOGIN 🌟
+                        localStorage.removeItem('namazTrackerLocalData');
+                        window.namazState = {};
+                        generateCalendar();
+                        
                         fetchAutoCloudRestore(userCredential.user); 
                     }
                 } else {
+                    window.isRegistering = true; // 🌟 Block page bounce-back layout shift 🌟
+                    
+                    // 🌟 FIX: WIPE DATA BEFORE NEW USER IS ATTACHED 🌟
+                    localStorage.removeItem('namazTrackerLocalData');
+                    window.namazState = {};
+                    generateCalendar();
+
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     await updateProfile(userCredential.user, { displayName: username });
                     await sendEmailVerification(userCredential.user);
-                    await signOut(auth);
+                    await signOut(auth); // Sign out safely behind the scenes
                     
-                    // 🌟 NEW: SHOW VERIFICATION POPUP 🌟
                     openModal('verification', btn);
                 }
             } catch (error) {
+                window.isRegistering = false; 
                 if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY IN USE");
                 else if(error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
                 else if(error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS");
@@ -1549,6 +1609,12 @@
         
         document.getElementById('confirm-logout-btn').addEventListener('click', () => { 
             closeAllModals();
+            
+            // 🌟 FIX: PREVENT DATA LEAK ON LOGOUT 🌟
+            localStorage.removeItem('namazTrackerLocalData');
+            window.namazState = {};
+            generateCalendar();
+            
             signOut(auth).then(() => { 
                 showNotification("LOGGED OUT!"); 
                 document.getElementById('password-input').value = ""; 
@@ -1556,21 +1622,56 @@
             }); 
         });
 
-        document.getElementById('confirm-delete-btn').addEventListener('click', () => {
+        // 🌟 NEW: SCHEDULE DELETION PROCESS (24H) 🌟
+        document.getElementById('confirm-delete-btn').addEventListener('click', async () => {
             closeAllModals(); 
             if (auth.currentUser) { 
-                deleteUser(auth.currentUser).then(() => { 
-                    showNotification("ACCOUNT DELETED."); 
-                }).catch((error) => {
-                    if (error.code === 'auth/requires-recent-login') {
-                        showNotification("RE-LOGIN TO DELETE");
-                        signOut(auth);
-                    } else {
-                        showNotification("DELETE FAILED");
-                    }
-                }); 
+                try {
+                    await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: Date.now() }, { merge: true });
+                    showNotification("SCHEDULED DELETION IN 24H.");
+                    
+                    // Clear app states securely
+                    localStorage.removeItem('namazTrackerLocalData');
+                    window.namazState = {};
+                    generateCalendar();
+                    
+                    await signOut(auth); 
+                } catch (error) {
+                    showNotification("ERROR INITIATING DELETE PROCESS");
+                }
             }
         });
+
+        // 🌟 NEW: RECOVER ACCOUNT VIA EMAIL LINK IN MODAL 🌟
+        document.getElementById('btn-recover-account').addEventListener('click', async () => {
+            const emailInput = document.getElementById('recovery-email-input').value.trim();
+            if (!auth.currentUser || emailInput !== auth.currentUser.email) {
+                showNotification("INCORRECT EMAIL. TRY AGAIN.");
+                return;
+            }
+            try {
+                // Process Recovery
+                await sendEmailVerification(auth.currentUser);
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
+                showNotification("RECOVERY LINK SENT! ACCOUNT RESTORED.");
+                
+                closeAllModals();
+                
+                // Route user straight back to dashboard normally
+                document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                fetchAutoCloudRestore(auth.currentUser);
+                
+            } catch(error) {
+                showNotification("ERROR SENDING RECOVERY LINK");
+            }
+        });
+
+        // Standard function to securely cancel Recovery Flow
+        window.cancelRecovery = async () => {
+            closeAllModals();
+            await signOut(auth);
+        };
     </script>
 </body>
 </html>
