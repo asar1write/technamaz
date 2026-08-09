@@ -98,22 +98,22 @@
 
     /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
-        0% { transform: scale(0.92); opacity: 0; }
+        0% { transform: scale(0.95); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
     }
     .trigger-app-entry {
-        animation: appCrossfade 0.85s cubic-bezier(0.25, 1, 0.4, 1) forwards !important;
+        animation: appCrossfade 0.4s cubic-bezier(0.25, 1, 0.4, 1) forwards !important;
     }
 
     @keyframes smoothSlideUp {
-        0% { opacity: 0; transform: translate3d(0, 20px, 0); }
+        0% { opacity: 0; transform: translate3d(0, 15px, 0); }
         100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
-    .animate-entry .profile-header-new { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.1s forwards; }
-    .animate-entry .ios-card:nth-child(1) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.2s forwards; }
-    .animate-entry .ios-card:nth-child(2) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.3s forwards; }
-    .animate-entry .ios-card:nth-child(3) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.4s forwards; }
-    .animate-entry .ios-card:nth-child(4) { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.5s forwards; }
+    .animate-entry .profile-header-new { opacity: 0; animation: smoothSlideUp 0.4s cubic-bezier(0.25, 1, 0.2, 1) 0.05s forwards; }
+    .animate-entry .ios-card:nth-child(1) { opacity: 0; animation: smoothSlideUp 0.4s cubic-bezier(0.25, 1, 0.2, 1) 0.1s forwards; }
+    .animate-entry .ios-card:nth-child(2) { opacity: 0; animation: smoothSlideUp 0.4s cubic-bezier(0.25, 1, 0.2, 1) 0.15s forwards; }
+    .animate-entry .ios-card:nth-child(3) { opacity: 0; animation: smoothSlideUp 0.4s cubic-bezier(0.25, 1, 0.2, 1) 0.2s forwards; }
+    .animate-entry .ios-card:nth-child(4) { opacity: 0; animation: smoothSlideUp 0.4s cubic-bezier(0.25, 1, 0.2, 1) 0.25s forwards; }
 
     /* TOAST NOTIFICATION */
     .toast {
@@ -135,19 +135,19 @@
     .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
 
     /* =========================================
-       🌟 EXACT 2.2 SECOND SPLASH 🌟
+       🌟 EXACT FASTER SPLASH 🌟
        ========================================= */
     #splash-screen {
         position: fixed; inset: 0; background: var(--bg-main); 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
         z-index: 10000; 
-        transition: opacity 0.8s cubic-bezier(0.25, 1, 0.4, 1), transform 0.8s cubic-bezier(0.25, 1, 0.4, 1);
+        transition: opacity 0.4s ease, transform 0.4s ease;
         will-change: opacity, transform;
     }
     
     .splash-fade-out { 
         opacity: 0 !important; 
-        transform: scale(1.08) !important; 
+        transform: scale(1.05) !important; 
         pointer-events: none !important; 
     }
 
@@ -164,29 +164,29 @@
     
     .svg-path { 
         stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; 
-        animation: drawLine 0.9s cubic-bezier(0.4, 0, 0.2, 1) 0.2s forwards, fillIcon 0.4s ease-out 1.1s forwards; 
+        animation: drawLine 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards, fillIcon 0.3s ease-out 0.6s forwards; 
     }
-    .ring-spin { transform-origin: 50px 50px; animation: spinRing 12s linear infinite; }
+    .ring-spin { transform-origin: 50px 50px; animation: spinRing 8s linear infinite; }
     
     @keyframes drawLine { to { stroke-dashoffset: 0; } }
     @keyframes fillIcon { to { fill-opacity: 1; filter: drop-shadow(0px 6px 12px var(--brand-shadow)); } }
     @keyframes spinRing { to { transform: rotate(360deg); } }
     
     @keyframes starPop { 0% { transform: scale(0) rotate(-45deg); opacity: 0; } 100% { transform: scale(1) rotate(0); opacity: 1; filter: drop-shadow(0 0 5px var(--brand-color)); } }
-    .star-pop { animation: starPop 0.5s cubic-bezier(0.25, 1, 0.5, 1) 1.5s forwards; transform-origin: 35px 33px; }
+    .star-pop { animation: starPop 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.8s forwards; transform-origin: 35px 33px; }
 
     .text-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; }
     
     .splash-title {
         font-size: 20px; font-weight: 900; letter-spacing: 5px; margin: 0; padding: 0; text-transform: uppercase;
         color: var(--text-main); opacity: 0; transform: translateY(12px);
-        animation: popUpFade 0.5s cubic-bezier(0.25, 1, 0.5, 1) 1.2s forwards;
+        animation: popUpFade 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
     }
     
     .glowing-line {
         width: 0px; height: 3px; background: var(--brand-color); margin: 12px 0; border-radius: 5px;
         box-shadow: 0 0 10px var(--brand-shadow); opacity: 0; 
-        animation: expandLine 0.5s ease-out 1.3s forwards;
+        animation: expandLine 0.4s ease-out 0.7s forwards;
     }
     
     @keyframes popUpFade { to { opacity: 1; transform: translateY(0); } }
@@ -357,12 +357,12 @@
         background: var(--modal-overlay); 
         backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
         z-index: 8000; opacity: 0; visibility: hidden; 
-        transition: opacity 0.35s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.35s;
+        transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.3s;
     }
     
     .modal-overlay.show { 
         opacity: 1; visibility: visible; 
-        transition: opacity 0.35s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; 
+        transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; 
     }
     
     .modal-content, .alert-modal-content {
@@ -373,10 +373,9 @@
         position: absolute; top: 50%; left: 50%; 
         border: 1.5px solid var(--border-line);
         
-        /* Starts from button center with scale 0 */
         transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(0); 
         opacity: 0; 
-        transition: transform 0.4s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.25s ease-out;
+        transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.25s ease-out;
         box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
         will-change: transform, opacity;
     }
@@ -384,7 +383,7 @@
     .modal-overlay.show .modal-content, .modal-overlay.show .alert-modal-content { 
         transform: translate(-50%, -50%) scale(1); 
         opacity: 1; 
-        transition: transform 0.4s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.35s ease-in; 
+        transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.3s ease-in; 
     }
     
     .sheet-header-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
@@ -487,7 +486,7 @@
     <!-- TOAST -->
     <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
 
-    <!-- 🌟 EXACT 2.2 SECOND SPLASH SCREEN 🌟 -->
+    <!-- 🌟 EXACT FASTER SPLASH SCREEN 🌟 -->
     <div id="splash-screen">
         <div class="splash-glow"></div>
         <div class="splash-content-anim">
@@ -871,7 +870,14 @@
                 const splash = document.getElementById('splash-screen');
                 if(splash && !splash.classList.contains('splash-fade-out')) {
                     
-                    const activeScreen = document.querySelector('#auth-flow-wrapper:not(.hidden), #dashboard-screen:not(.hidden)');
+                    let activeScreen = document.querySelector('#auth-flow-wrapper:not(.hidden), #dashboard-screen:not(.hidden)');
+                    
+                    // 🌟 WHITE SCREEN BUG FIX: Fallback if Firebase or Network failed
+                    if(!activeScreen) {
+                        document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                        activeScreen = document.getElementById('auth-flow-wrapper');
+                    }
+
                     if(activeScreen) {
                         activeScreen.classList.add('trigger-app-entry');
                         const innerContent = activeScreen.querySelector('.profile-inner-container') || activeScreen.querySelector('.screen-content');
@@ -879,21 +885,23 @@
                     }
 
                     splash.classList.add('splash-fade-out');
-                    setTimeout(() => { splash.style.display = 'none'; }, 850); 
+                    setTimeout(() => { splash.style.display = 'none'; }, 400); 
                 }
             }
         };
 
+        // FASTER SPLASH TIME
         setTimeout(() => {
             isMinSplashTimeOver = true;
             checkAndHideSplash();
-        }, 2200); 
+        }, 800); 
         
+        // SHORTER FALLBACK
         setTimeout(() => {
             isAuthResolved = true; 
             isMinSplashTimeOver = true;
             checkAndHideSplash();
-        }, 5000);
+        }, 2500);
 
         window.resolveAuthSplash = () => {
             isAuthResolved = true;
@@ -1057,7 +1065,7 @@
         function generateCalendar() {
             let containerId = currentTabId === 'tab-2026' ? 'calendar-container-2026' : 'calendar-container-2019';
             const container = document.getElementById(containerId);
-            if(!container) return; // Guard clause
+            if(!container) return; 
             
             const daysInMonth = new Date(currentYear, currentMonth + 1, 0).getDate();
             const realToday = new Date(); 
@@ -1194,7 +1202,6 @@
                 modalContent.style.setProperty('--start-y', deltaY + 'px');
             }
             
-            // 🌟 LAG FIX 🌟
             requestAnimationFrame(() => {
                 requestAnimationFrame(() => {
                     modal.classList.add('show');
