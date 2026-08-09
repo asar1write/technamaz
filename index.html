@@ -1591,7 +1591,8 @@
 
                     showNotification("SENDING OTP TO EMAIL...");
                     
-                    emailjs.send("TECHASAR", "template_techasar", templateParams)
+                    // ✅ FIXED TEMPLATE ID HERE
+                    emailjs.send("TECHASAR", "Template_NamazTracker", templateParams)
                         .then(async function(response) {
                             showNotification("OTP SENT SUCCESSFULLY!");
                             
