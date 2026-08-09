@@ -486,7 +486,7 @@
     .hidden { display: none !important; }
 </style>
 
-<!-- 🌟 NEW: EmailJS SDK integration 🌟 -->
+<!-- 🌟 EmailJS SDK integration 🌟 -->
 <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/@emailjs/browser@3/dist/email.min.js"></script>
 <script type="text/javascript">
     (function() {
@@ -860,7 +860,6 @@
         let isMinSplashTimeOver = false;
         window.isRegistering = false; 
 
-        // OTP variable add kiya
         window.generatedOTP = null;
 
         const checkAndHideSplash = () => {
@@ -1469,7 +1468,6 @@
             isAuthResolved = true; 
 
             if (user) {
-                // EmailJS OTP verification flow replaces Firebase Link verification, so no user.emailVerified check needed here.
                 try {
                     const docSnap = await getDoc(doc(db, "users_backup", user.uid));
                     if (docSnap.exists() && docSnap.data().deleteScheduledAt) {
@@ -1489,7 +1487,6 @@
                     }
                 } catch(e) { console.log(e); }
 
-                // Proceeding normal login smoothly
                 document.getElementById('auth-flow-wrapper').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
                 
@@ -1555,7 +1552,7 @@
             }
         });
 
-        // 🌟 UPDATED: EmailJS + Firebase Registration Flow 🌟
+        // 🌟 Registration Flow with EmailJS 🌟
         document.getElementById('email-auth-btn').addEventListener('click', async () => {
             const username = document.getElementById('username-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
@@ -1569,7 +1566,6 @@
             
             try {
                 if (isLoginMode) {
-                    // Normal Login
                     const userCredential = await signInWithEmailAndPassword(auth, email, password);
                     showNotification("LOGIN SUCCESS!"); 
                     localStorage.removeItem('namazTrackerLocalData');
@@ -1578,7 +1574,6 @@
                     fetchAutoCloudRestore(userCredential.user); 
                     
                 } else {
-                    // Registration via EmailJS OTP
                     window.isRegistering = true; 
                     
                     window.generatedOTP = Math.floor(100000 + Math.random() * 900000).toString();
@@ -1591,18 +1586,15 @@
 
                     showNotification("SENDING OTP TO EMAIL...");
                     
-                    // ✅ FIXED TEMPLATE AND SERVICE IDs HERE
-                    emailjs.send("Service_namaztracker", "template_namaztracker", templateParams)
+                    emailjs.send("service_namaztracker", "template_namaztracker", templateParams)
                         .then(async function(response) {
                             showNotification("OTP SENT SUCCESSFULLY!");
                             
-                            // User OTP popup dega
                             let enteredOTP = prompt("Please enter the 6-digit OTP sent to your email:");
                             
                             if (enteredOTP === window.generatedOTP) {
                                 showNotification("VERIFYING & CREATING ACCOUNT...");
                                 
-                                // ✅ OTP sahi hone par hi Firebase mein account create hoga
                                 const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                                 await updateProfile(userCredential.user, { displayName: username });
                                 
@@ -1610,7 +1602,6 @@
                                 window.namazState = {};
                                 generateCalendar();
                                 
-                                // User seedha dashboard me jayega
                                 document.getElementById('auth-flow-wrapper').classList.add('hidden');
                                 document.getElementById('dashboard-screen').classList.remove('hidden');
                                 document.getElementById('user-display-name').textContent = username.toUpperCase();
@@ -1691,7 +1682,6 @@
             btn.textContent = "PROCESSING...";
             try {
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
-                // Note: Password reset link behaves nicely for recovery verification here
                 await sendPasswordResetEmail(auth, emailInput);
                 
                 showNotification("RECOVERY LINK SENT! PLEASE LOGIN AGAIN.");
