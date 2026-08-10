@@ -224,6 +224,27 @@
     .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
     .create-account span { color: var(--brand-color); font-weight: 900; }
 
+    /* 🌟 SAVED ACCOUNT PILL CSS 🌟 */
+    .saved-account-pill {
+        background: var(--active-pill-bg);
+        border: 1.5px solid var(--brand-color);
+        border-radius: 14px;
+        padding: 14px;
+        margin-bottom: 16px;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        cursor: pointer;
+        transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
+    }
+    .saved-account-pill:active { transform: scale(0.96); }
+    .saved-account-pill.hidden { display: none !important; }
+    .saved-account-pill .icon { display: flex; align-items: center; justify-content: center; background: var(--bg-card); border-radius: 50%; width: 40px; height: 40px; box-shadow: 0 4px 10px var(--shadow-color); }
+    .saved-account-pill .icon svg { width: 22px; height: 22px; stroke: var(--brand-color); fill: none; stroke-width: 2.5; }
+    .saved-account-pill .info { display: flex; flex-direction: column; text-align: left; }
+    .saved-account-pill .info span:first-child { font-size: 14px; font-weight: 900; color: var(--text-main); }
+    .saved-account-pill .info span:last-child { font-size: 10px; font-weight: 800; color: var(--brand-color); text-transform: uppercase; margin-top: 2px; }
+
     .top-filter-bar {
         position: fixed; top: calc(15px + env(safe-area-inset-top)); 
         left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px; 
@@ -447,8 +468,17 @@
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
                 
+                <!-- 🌟 SAVED ACCOUNT PILL 🌟 -->
+                <div id="saved-account-pill" class="saved-account-pill hidden" onclick="window.autofillSavedAccount()">
+                    <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                    <div class="info">
+                        <span id="saved-email-text">user@gmail.com</span>
+                        <span>Tap to Auto-Login</span>
+                    </div>
+                </div>
+
                 <!-- 🌟 FIXED EMAIL SECTION FOR PASSWORD MANAGERS 🌟 -->
-                <form id="email-section" class="input-section" onsubmit="event.preventDefault(); handleAuth();">
+                <form id="email-section" class="input-section" onsubmit="event.preventDefault(); window.handleAuth();">
                     <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" name="username" autocomplete="name" placeholder="FULL NAME"></div>
                     <div class="input-group">
                         <input type="email" id="email-input" name="email" autocomplete="username email" placeholder="EMAIL ADDRESS">
@@ -566,6 +596,23 @@
     </div>
 
     <!-- MODALS -->
+
+    <!-- 🌟 SAVE PASSWORD MODAL 🌟 -->
+    <div id="modal-save-password" class="modal-overlay" onclick="closeModal(event)">
+        <div class="alert-modal-content" onclick="event.stopPropagation()">
+            <div class="alert-icon-top success-icon">
+                <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
+            </div>
+            <div class="alert-title-badge success-badge">SAVE PASSWORD?</div>
+            <div class="alert-desc" style="font-size: 12px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px;">
+                WOULD YOU LIKE TO SAVE YOUR LOGIN INFO FOR INSTANT ACCESS NEXT TIME?
+            </div>
+            <div class="alert-actions">
+                <button class="alert-btn cancel" onclick="window.handleSavePassword(false)">NOT NOW</button>
+                <button class="alert-btn success-btn" onclick="window.handleSavePassword(true)">SAVE PASSWORD</button>
+            </div>
+        </div>
+    </div>
     
     <!-- 30 App Theme Colors Picker -->
     <div id="modal-theme" class="modal-overlay" onclick="closeModal(event)">
@@ -904,6 +951,39 @@
             toastTimeout = setTimeout(() => toast.classList.remove('show'), 2000); 
         }
 
+        // 🌟 CHECK FOR SAVED ACCOUNT TO DISPLAY PILL 🌟
+        function checkSavedAccount() {
+            const savedEmail = localStorage.getItem('savedEmail');
+            const savedAccountPill = document.getElementById('saved-account-pill');
+            if(savedEmail && isLoginMode) {
+                document.getElementById('saved-email-text').textContent = savedEmail;
+                savedAccountPill.classList.remove('hidden');
+            } else {
+                savedAccountPill.classList.add('hidden');
+            }
+        }
+
+        // 🌟 AUTOFILL AND INSTANT LOGIN FUNCTION 🌟
+        window.autofillSavedAccount = function() {
+            const em = localStorage.getItem('savedEmail');
+            const pw = localStorage.getItem('savedPassword');
+            if(em && pw) {
+                document.getElementById('email-input').value = em;
+                document.getElementById('password-input').value = atob(pw);
+                document.getElementById('email-auth-btn').click(); // INSTANT TRIGGER
+            }
+        }
+
+        // 🌟 SAVE PASSWORD MODAL HANDLER 🌟
+        window.handleSavePassword = function(isSave) {
+            if(isSave) {
+                localStorage.setItem('savedEmail', window.tempLoginEmail);
+                localStorage.setItem('savedPassword', btoa(window.tempLoginPass));
+                showNotification("PASSWORD SAVED!");
+            }
+            closeModal({target: document.getElementById('modal-save-password')});
+        }
+
         let isLoginMode = true; 
         const welcomeScreen = document.getElementById('welcome-screen');
         const authScreen = document.getElementById('auth-screen');
@@ -919,6 +999,7 @@
                 document.getElementById('forgot-pass-link').style.display = "block";
                 document.getElementById('toggle-auth-mode').innerHTML = `DON'T HAVE AN ACCOUNT? <span>REGISTER</span>`;
                 usernameGroup.classList.add('hidden-smooth'); 
+                checkSavedAccount(); // Check for saved pill
             } else {
                 document.getElementById('form-title').textContent = "REGISTER HERE";
                 document.getElementById('form-subtitle').textContent = "CREATE ACCOUNT TO SAVE PROGRESS";
@@ -926,6 +1007,7 @@
                 document.getElementById('forgot-pass-link').style.display = "none";
                 document.getElementById('toggle-auth-mode').innerHTML = `ALREADY HAVE AN ACCOUNT? <span>LOGIN</span>`;
                 usernameGroup.classList.remove('hidden-smooth'); 
+                document.getElementById('saved-account-pill').classList.add('hidden');
             }
             welcomeScreen.classList.add('slide-left');
             authScreen.classList.add('slide-in');
@@ -1535,11 +1617,22 @@
                     else { 
                         showNotification("LOGIN SUCCESS!"); 
                         
+                        // 🌟 INSTANT TRANSITION WITHOUT WAITING 🌟
+                        document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                        document.getElementById('dashboard-screen').classList.remove('hidden');
+
                         localStorage.removeItem('namazTrackerLocalData');
                         window.namazState = {};
                         generateCalendar();
                         
                         fetchAutoCloudRestore(userCredential.user); 
+
+                        // Trigger Save Password pop-up if not saved
+                        window.tempLoginEmail = email;
+                        window.tempLoginPass = password;
+                        if(localStorage.getItem('savedEmail') !== email) {
+                            setTimeout(() => openModal('save-password', null), 800);
+                        }
                     }
                 } else {
                     window.isRegistering = true; 
@@ -1551,6 +1644,14 @@
                     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
                     await updateProfile(userCredential.user, { displayName: username });
                     await sendEmailVerification(userCredential.user);
+                    
+                    // Allow saving password on register too
+                    window.tempLoginEmail = email;
+                    window.tempLoginPass = password;
+                    if(localStorage.getItem('savedEmail') !== email) {
+                        setTimeout(() => openModal('save-password', null), 800);
+                    }
+
                     await signOut(auth); 
                     
                     openModal('verification', btn);
@@ -1577,6 +1678,9 @@
                 showNotification("LOGGED OUT!"); 
                 document.getElementById('password-input').value = ""; 
                 document.querySelector('[data-target="tab-2026"]').click(); 
+                
+                // Show saved account pill if exists
+                if(isLoginMode) checkSavedAccount();
             }); 
         });
 
@@ -1589,6 +1693,9 @@
                     showNotification("SCHEDULED DELETION IN 24H.");
                     
                     localStorage.removeItem('namazTrackerLocalData');
+                    localStorage.removeItem('savedEmail'); // Clear saved password on delete
+                    localStorage.removeItem('savedPassword');
+                    
                     window.namazState = {};
                     generateCalendar();
                     
