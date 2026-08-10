@@ -547,7 +547,7 @@
                         <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" style="text-align: center; letter-spacing: 5px; font-size: 16px;">
                     </div>
                     
-                    <!-- RECAPTCHA CONTAINER (Must be visible in DOM, but visually transparent) -->
+                    <!-- RECAPTCHA CONTAINER -->
                     <div id="recaptcha-container" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
                     
                     <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
@@ -1537,7 +1537,7 @@
                     },
                     'expired-callback': () => {
                         showNotification("reCAPTCHA EXPIRED. RELOADING...");
-                        if(window.recaptchaWidgetId !== null) {
+                        if(window.recaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
                             grecaptcha.reset(window.recaptchaWidgetId);
                         }
                     }
@@ -1632,7 +1632,7 @@
             checkAndHideSplash();
         });
 
-        // 🌟 SMART PHONE LOGIN WITH CRASH RECOVERY 🌟
+        // 🌟 SMART PHONE LOGIN WITH ADVANCED ERROR CATCHING 🌟
         document.getElementById('send-otp-btn').addEventListener('click', async () => {
             const phoneInput = document.getElementById('phone-input').value.trim();
             if (!phoneInput) { showNotification("ENTER PHONE NUMBER"); return; }
@@ -1650,7 +1650,7 @@
             const btn = document.getElementById('send-otp-btn');
             btn.disabled = true; btn.textContent = "VERIFYING CAPTCHA...";
 
-            // Failsafe: Ensure recaptcha is setup if button was clicked before proactive load
+            // Failsafe: Ensure recaptcha is setup
             if (!window.appVerifier) window.setupRecaptcha();
 
             try {
@@ -1669,10 +1669,11 @@
             } catch (error) {
                 console.error("OTP Error:", error);
                 
-                // 🚀 Dynamic Error Catching
+                // 🚀 Dynamic & Specific Error Catching
                 let errorMsg = "ERROR SENDING OTP";
-                if(error.code === 'auth/invalid-phone-number') errorMsg = "INVALID PHONE NUMBER";
-                else if(error.code === 'auth/too-many-requests') errorMsg = "TOO MANY ATTEMPTS. BLOCKED.";
+                if(error.code === 'auth/invalid-phone-number') errorMsg = "INVALID PHONE NUMBER FORMAT";
+                else if(error.code === 'auth/too-many-requests') errorMsg = "TOO MANY ATTEMPTS. TRY AGAIN LATER.";
+                else if(error.code === 'auth/operation-not-allowed') errorMsg = "PHONE AUTH DISABLED IN FIREBASE / DOMAIN NOT AUTHORIZED";
                 else if(error.code === 'auth/billing-not-enabled') errorMsg = "FIREBASE BILLING ERROR";
                 else if(error.message) errorMsg = error.code.replace('auth/', '').toUpperCase() || "OTP FAILED";
                 
@@ -1680,7 +1681,7 @@
                 
                 btn.disabled = false; btn.textContent = "SEND OTP";
                 
-                // 🚀 SMART RESET: Do NOT destroy the object, just reset the Google widget securely!
+                // SMART RESET
                 if(window.recaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
                     grecaptcha.reset(window.recaptchaWidgetId);
                 }
