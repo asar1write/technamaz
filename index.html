@@ -96,7 +96,6 @@
         transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
     }
 
-    /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
         0% { transform: scale(0.95); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
@@ -134,23 +133,13 @@
     .app-screen { width: 100%; height: 100%; position: absolute; top: 0; left: 0; display: flex; flex-direction: column; align-items: center; justify-content: center; background: var(--bg-main); will-change: transform; }
     .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
 
-    /* =========================================
-       🌟 EXACT FASTER SPLASH 🌟
-       ========================================= */
     #splash-screen {
         position: fixed; inset: 0; background: var(--bg-main); 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
-        z-index: 10000; 
-        transition: opacity 0.25s ease, transform 0.25s ease;
+        z-index: 10000; transition: opacity 0.25s ease, transform 0.25s ease;
         will-change: opacity, transform;
     }
-    
-    .splash-fade-out { 
-        opacity: 0 !important; 
-        transform: scale(1.05) !important; 
-        pointer-events: none !important; 
-    }
-
+    .splash-fade-out { opacity: 0 !important; transform: scale(1.05) !important; pointer-events: none !important; }
     .splash-glow {
         position: absolute; width: 350px; height: 350px;
         background: radial-gradient(circle, var(--active-pill-bg) 0%, transparent 70%);
@@ -162,10 +151,7 @@
     .svg-icon-wrapper { width: 110px; height: 110px; margin-bottom: 15px; display: flex; justify-content: center; align-items: center; }
     .splash-svg { width: 100%; height: 100%; overflow: visible; filter: drop-shadow(0px 10px 20px var(--brand-shadow)); }
     
-    .svg-path { 
-        stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; 
-        animation: drawLine 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards, fillIcon 0.3s ease-out 0.6s forwards; 
-    }
+    .svg-path { stroke-dasharray: 400; stroke-dashoffset: 400; fill-opacity: 0; animation: drawLine 0.5s cubic-bezier(0.4, 0, 0.2, 1) 0.1s forwards, fillIcon 0.3s ease-out 0.6s forwards; }
     .ring-spin { transform-origin: 50px 50px; animation: spinRing 8s linear infinite; }
     
     @keyframes drawLine { to { stroke-dashoffset: 0; } }
@@ -176,18 +162,8 @@
     .star-pop { animation: starPop 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.8s forwards; transform-origin: 35px 33px; }
 
     .text-container { display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; width: 100%; }
-    
-    .splash-title {
-        font-size: 20px; font-weight: 900; letter-spacing: 5px; margin: 0; padding: 0; text-transform: uppercase;
-        color: var(--text-main); opacity: 0; transform: translateY(12px);
-        animation: popUpFade 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards;
-    }
-    
-    .glowing-line {
-        width: 0px; height: 3px; background: var(--brand-color); margin: 12px 0; border-radius: 5px;
-        box-shadow: 0 0 10px var(--brand-shadow); opacity: 0; 
-        animation: expandLine 0.4s ease-out 0.7s forwards;
-    }
+    .splash-title { font-size: 20px; font-weight: 900; letter-spacing: 5px; margin: 0; padding: 0; text-transform: uppercase; color: var(--text-main); opacity: 0; transform: translateY(12px); animation: popUpFade 0.4s cubic-bezier(0.25, 1, 0.5, 1) 0.6s forwards; }
+    .glowing-line { width: 0px; height: 3px; background: var(--brand-color); margin: 12px 0; border-radius: 5px; box-shadow: 0 0 10px var(--brand-shadow); opacity: 0; animation: expandLine 0.4s ease-out 0.7s forwards; }
     
     @keyframes popUpFade { to { opacity: 1; transform: translateY(0); } }
     @keyframes expandLine { to { width: 110px; opacity: 1; } }
@@ -212,8 +188,17 @@
     .goal-box-back { position: absolute; top: 25px; left: 20px; width: 44px; height: 44px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; z-index: 100; }
     .goal-box-back svg { width: 20px; height: 20px; stroke: var(--text-main); }
     
-    .input-group { position: relative; max-height: 60px; margin-bottom: 16px; opacity: 1; transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); overflow: hidden; }
-    .input-group.hidden-smooth { max-height: 0; margin-bottom: 0; opacity: 0; border: none; }
+    /* 🌟 PERFECTED SMOOTH INPUT GROUP ANIMATION 🌟 */
+    .input-group { 
+        position: relative; max-height: 70px; margin-bottom: 16px; opacity: 1; 
+        transition: max-height 0.4s ease, margin-bottom 0.4s ease, opacity 0.3s ease, transform 0.4s ease; 
+        overflow: hidden; 
+        transform: translateY(0) scale(1);
+    }
+    .input-group.hidden-smooth { 
+        max-height: 0; margin-bottom: 0; opacity: 0; border: none; 
+        transform: translateY(-10px) scale(0.95);
+    }
     .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--text-main); transition: border-color 0.3s ease, background-color 0.4s ease; letter-spacing: 0.5px; }
     .input-group input:focus { border-color: var(--brand-color); }
     
@@ -225,18 +210,13 @@
     .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
     .create-account span { color: var(--brand-color); font-weight: 900; }
 
-    /* ==========================================
-       🌟 PREMIUM HEADER (Month & Year Buttons) 🌟
-       ========================================== */
     .top-filter-bar {
         position: fixed; top: calc(15px + env(safe-area-inset-top)); 
         left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px; 
         display: flex; justify-content: center; align-items: center;
         z-index: 5000; transition: opacity 0.3s ease; will-change: transform, opacity;
     }
-    .header-pill-wrapper {
-        background: transparent; width: 100%; display: flex; align-items: center; justify-content: space-evenly; gap: 15px;
-    }
+    .header-pill-wrapper { background: transparent; width: 100%; display: flex; align-items: center; justify-content: space-evenly; gap: 15px; }
     .header-btn-clickable {
         flex: 1; display: flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer;
         background: var(--brand-color); color: var(--btn-text-color); padding: 14px 10px; border-radius: 30px;
@@ -255,9 +235,6 @@
     .month-complete-tick.show { transform: scale(1); opacity: 1; }
     .month-complete-tick svg { width: 14px; height: 14px; stroke: #fff; stroke-width: 4; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
-    /* ==========================================
-       TABS SYSTEM
-       ========================================== */
     .dashboard-content-wrapper {
         width: 100%; height: var(--app-height); 
         padding-top: calc(85px + env(safe-area-inset-top)); padding-bottom: calc(75px + env(safe-area-inset-bottom));
@@ -268,18 +245,8 @@
     .tab-pane { width: 100%; max-width: 600px; display: none; height: 100%; overflow: hidden; }
     .tab-pane.active { display: flex; flex-direction: column; align-items: center; width: 100%; }
 
-    /* ==========================================
-       🌟 COMPACT CALENDAR GRID 🌟
-       ========================================== */
-    .calendar-grid { 
-        flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); 
-        gap: 8px; width: 100%; padding: 5px 15px 15px 15px; 
-    }
-    .day-card {
-        background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 12px;
-        display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; 
-        cursor: pointer; will-change: transform; transform: translate3d(0,0,0); padding: 4px 0;
-    }
+    .calendar-grid { flex-grow: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; width: 100%; padding: 5px 15px 15px 15px; }
+    .day-card { background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 12px; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; cursor: pointer; will-change: transform; transform: translate3d(0,0,0); padding: 4px 0; }
     .day-card:active { transform: scale(0.95) translate3d(0,0,0); background: var(--pill-bg); }
     .day-card.disabled-day { opacity: 0.35; pointer-events: none; background: var(--disabled-bg); border-color: var(--border-line); }
     .day-card.today-active { border: 1.5px solid var(--brand-color); background: var(--active-pill-bg); }
@@ -291,39 +258,41 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-line); transition: all 0.3s ease; }
     .dot.active { background: var(--brand-color); }
 
-    /* ==========================================
-       🌟 PROFILE TAB 🌟
-       ========================================== */
+    /* 🌟 PROFILE TAB 🌟 */
     #tab-profile.active { justify-content: flex-start; padding: 0 15px; }
-    .profile-inner-container { 
-        width: 100%; max-width: 360px; height: 100%; 
-        display: flex; flex-direction: column; align-items: center; 
-        padding-bottom: 5px; 
-    }   
+    .profile-inner-container { width: 100%; max-width: 360px; height: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 5px; }   
     
     .profile-header-new { 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         margin-bottom: 12px; text-align: center; width: 100%; flex-shrink: 0;
         background: var(--active-pill-bg); padding: 25px 15px; border-radius: 20px;
         border: 1.5px solid var(--brand-color); box-shadow: 0 8px 20px var(--brand-shadow);
+        position: relative; overflow: hidden; cursor: pointer;
     }
-    .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); }
+    .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); transition: opacity 0.3s; }
     
-    .cards-layout-wrapper {
-        flex-grow: 1; width: 100%;
-        display: flex; flex-direction: column; justify-content: space-between; gap: 10px;
+    /* 🌟 PROFILE CARD ONEPLUS STYLE ANIMATION 🌟 */
+    .creator-overlay {
+        position: absolute; inset: 0; background: var(--active-pill-bg);
+        display: flex; flex-direction: column; align-items: center; justify-content: center;
+        opacity: 0; pointer-events: none; z-index: 10;
+        transition: opacity 0.3s ease; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
     }
+    .creator-overlay.show-anim { opacity: 1; pointer-events: auto; }
+    .creator-text {
+        font-size: 18px; font-weight: 900; color: var(--brand-color);
+        text-transform: uppercase; letter-spacing: 2px;
+        white-space: nowrap; overflow: hidden; border-right: 3px solid var(--brand-color);
+        width: 0; text-shadow: 0 4px 15px var(--brand-shadow);
+    }
+    .creator-text.type { animation: typing 1s steps(22, end) forwards, blink 0.5s step-end infinite alternate; }
+    @keyframes typing { from { width: 0; } to { width: 100%; } }
+    @keyframes blink { 50% { border-color: transparent; } }
 
-    .ios-card { 
-        width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; 
-        display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly;
-    }
+    .cards-layout-wrapper { flex-grow: 1; width: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
+    .ios-card { width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly; }
     
-    .ios-list-item { 
-        width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); 
-        display: flex; justify-content: space-between; align-items: center; 
-        font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1;
-    }
+    .ios-list-item { width: 100%; padding: 16px 20px; background: transparent; border: none; border-bottom: 1px solid var(--border-line); display: flex; justify-content: space-between; align-items: center; font-size: 15px; font-weight: 700; color: var(--text-main); cursor: pointer; flex: 1; }
     button.ios-list-item:active { background: var(--pill-bg) !important; }
     .ios-list-item:last-child { border-bottom: none; }
     .ios-list-item.action-blue { color: #007aff; } .ios-list-item.action-green { color: #34c759; } .ios-list-item.action-orange { color: var(--brand-color);} .ios-list-item.danger { color: #e3342f; }
@@ -331,65 +300,21 @@
     .list-left svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
     .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
 
-    /* 🌟 PERFECTED DARK MODE TOGGLE 🌟 */
-    .theme-switch { 
-        width: 48px; height: 28px; background: #e5e5ea; border-radius: 14px; 
-        position: relative; transition: background 0.3s ease; cursor: pointer; 
-        -webkit-tap-highlight-color: transparent !important; outline: none; border: none;
-    }
+    .theme-switch { width: 48px; height: 28px; background: #e5e5ea; border-radius: 14px; position: relative; transition: background 0.3s ease; cursor: pointer; -webkit-tap-highlight-color: transparent !important; outline: none; border: none; }
     .theme-switch.active { background: #34c759; }
-    .switch-knob { 
-        width: 24px; height: 24px; background: #ffffff; border-radius: 50%; 
-        position: absolute; top: 2px; left: 2px; 
-        transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); 
-        box-shadow: 0 2px 5px rgba(0,0,0,0.2); will-change: transform;
-    }
+    .switch-knob { width: 24px; height: 24px; background: #ffffff; border-radius: 50%; position: absolute; top: 2px; left: 2px; transition: transform 0.3s cubic-bezier(0.25, 1, 0.5, 1); box-shadow: 0 2px 5px rgba(0,0,0,0.2); will-change: transform; }
     .theme-switch.active .switch-knob { transform: translate3d(20px, 0, 0); }
     [data-theme="dark"] .theme-switch:not(.active) { background: #3a3a3c; }
 
-    /* ==========================================
-       🌟 30 THEME COLOR SWATCHES 🌟
-       ========================================== */
     .theme-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; padding: 5px; justify-items: center; }
     .color-swatch { width: 38px; height: 38px; border-radius: 50%; cursor: pointer; border: 2.5px solid var(--bg-card); box-shadow: 0 4px 10px rgba(0,0,0,0.15); transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1); }
     .color-swatch:active { transform: scale(0.85); }
 
-    /* ==========================================
-       🌟 BUTTERY SMOOTH NATIVE BUTTON-ORIGIN MODALS 🌟
-       ========================================== */
-    .modal-overlay {
-        position: fixed; top: 0; left: 0; width: 100vw; height: var(--app-height);
-        background: var(--modal-overlay); 
-        backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
-        z-index: 8000; opacity: 0; visibility: hidden; 
-        transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.3s;
-    }
+    .modal-overlay { position: fixed; top: 0; left: 0; width: 100vw; height: var(--app-height); background: var(--modal-overlay); backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px); z-index: 8000; opacity: 0; visibility: hidden; transition: opacity 0.3s cubic-bezier(0.32, 0.72, 0, 1), visibility 0s linear 0.3s; }
+    .modal-overlay.show { opacity: 1; visibility: visible; transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; }
     
-    .modal-overlay.show { 
-        opacity: 1; visibility: visible; 
-        transition: opacity 0.3s cubic-bezier(0.22, 1, 0.36, 1), visibility 0s linear 0s; 
-    }
-    
-    .modal-content, .alert-modal-content {
-        --start-x: 0px;
-        --start-y: 0px;
-        background: var(--bg-card); width: 92%; max-width: 360px; max-height: 85vh;
-        border-radius: 28px; padding: 25px 15px; display: flex; flex-direction: column;
-        position: absolute; top: 50%; left: 50%; 
-        border: 1.5px solid var(--border-line);
-        
-        transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(0); 
-        opacity: 0; 
-        transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.25s ease-out;
-        box-shadow: 0 25px 50px rgba(0,0,0,0.2); 
-        will-change: transform, opacity;
-    }
-    
-    .modal-overlay.show .modal-content, .modal-overlay.show .alert-modal-content { 
-        transform: translate(-50%, -50%) scale(1); 
-        opacity: 1; 
-        transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.3s ease-in; 
-    }
+    .modal-content, .alert-modal-content { --start-x: 0px; --start-y: 0px; background: var(--bg-card); width: 92%; max-width: 360px; max-height: 85vh; border-radius: 28px; padding: 25px 15px; display: flex; flex-direction: column; position: absolute; top: 50%; left: 50%; border: 1.5px solid var(--border-line); transform: translate(calc(-50% + var(--start-x)), calc(-50% + var(--start-y))) scale(0); opacity: 0; transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.25s ease-out; box-shadow: 0 25px 50px rgba(0,0,0,0.2); will-change: transform, opacity; }
+    .modal-overlay.show .modal-content, .modal-overlay.show .alert-modal-content { transform: translate(-50%, -50%) scale(1); opacity: 1; transition: transform 0.3s cubic-bezier(0.34, 1.15, 0.64, 1), opacity 0.3s ease-in; }
     
     .sheet-header-box { display: flex; justify-content: center; align-items: center; margin-bottom: 20px; position: relative; }
     .picker-title-pill { background: var(--brand-color); color: var(--btn-text-color); padding: 6px 20px; border-radius: 20px; font-size: 14px; font-weight: 900; letter-spacing: 0.5px; margin: 0 auto; text-transform: uppercase; box-shadow: 0 4px 12px var(--brand-shadow);}
@@ -411,33 +336,17 @@
     .btn-cancel { background: var(--icon-bg); color: var(--text-main); }
     .btn-save { background: var(--brand-color); color: var(--btn-text-color); box-shadow: 0 4px 15px var(--brand-shadow); }
 
-    /* ==========================================
-       🌟 ALERTS (LOGOUT & DELETE PRO STYLE) 🌟
-       ========================================== */
-    .alert-icon-top {
-        position: absolute; top: -25px; left: 50%; transform: translateX(-50%);
-        width: 50px; height: 50px; background: var(--bg-card); border-radius: 50%;
-        display: flex; align-items: center; justify-content: center;
-        box-shadow: 0 5px 15px var(--shadow-color); border: 2.5px solid var(--border-line);
-        transition: background-color 0.4s ease, border-color 0.4s ease;
-    }
+    .alert-icon-top { position: absolute; top: -25px; left: 50%; transform: translateX(-50%); width: 50px; height: 50px; background: var(--bg-card); border-radius: 50%; display: flex; align-items: center; justify-content: center; box-shadow: 0 5px 15px var(--shadow-color); border: 2.5px solid var(--border-line); transition: background-color 0.4s ease, border-color 0.4s ease; }
     .alert-icon-top svg { width: 22px; height: 22px; stroke: var(--brand-color); stroke-width: 2.5; fill: none; }
     .alert-icon-top.danger-icon svg { stroke: #e3342f; }
     .alert-icon-top.success-icon svg { stroke: #34c759; }
 
-    .alert-title-badge {
-        background: var(--active-pill-bg); color: var(--brand-color); padding: 6px 16px; border-radius: 20px;
-        font-size: 14px; font-weight: 900; display: inline-block; margin: 0 auto 15px auto; letter-spacing: 1px;
-    }
+    .alert-title-badge { background: var(--active-pill-bg); color: var(--brand-color); padding: 6px 16px; border-radius: 20px; font-size: 14px; font-weight: 900; display: inline-block; margin: 0 auto 15px auto; letter-spacing: 1px; text-transform: uppercase; }
     .alert-title-badge.danger-badge { background: rgba(227, 52, 47, 0.1); color: #e3342f; }
     .alert-title-badge.success-badge { background: rgba(52, 199, 89, 0.1); color: #34c759; }
     
-    .alert-desc { 
-        font-size: 15px; font-weight: 800; color: var(--text-main); 
-        text-transform: uppercase; margin-bottom: 25px; line-height: 1.5; text-align: center;
-        transition: color 0.4s ease;
-    }
-    .alert-actions { display: flex; gap: 12px; }
+    .alert-desc { font-size: 15px; font-weight: 800; color: var(--text-main); text-transform: uppercase; margin-bottom: 25px; line-height: 1.5; text-align: center; transition: color 0.4s ease; }
+    .alert-actions { display: flex; gap: 12px; width: 100%;}
     .alert-btn { flex: 1; padding: 14px; border-radius: 30px; font-size: 14px; font-weight: 900; cursor: pointer; border: none; text-transform: uppercase; transition: transform 0.2s; letter-spacing: 0.5px;}
     .alert-btn:active { transform: scale(0.96); }
     .alert-btn.cancel { background: var(--icon-bg); color: var(--text-main); }
@@ -445,12 +354,7 @@
     .alert-btn.delete { background: #e3342f; color: #fff; box-shadow: 0 4px 15px rgba(227, 52, 47, 0.3);}
     .alert-btn.success-btn { background: #34c759; color: #fff; box-shadow: 0 4px 15px rgba(52, 199, 89, 0.3);}
 
-    /* ==========================================
-       🌟 NAMAZ POPUP MODAL 🌟
-       ========================================== */
-    .modal-namaz-list {
-        display: flex; flex-direction: column; touch-action: none; user-select: none; padding: 0 5px;
-    }
+    .modal-namaz-list { display: flex; flex-direction: column; touch-action: none; user-select: none; padding: 0 5px; }
     .namaz-row { display: flex; align-items: center; justify-content: space-between; padding: 14px 16px; border: 1.5px solid var(--border-line); border-radius: 16px; margin-bottom: 12px; cursor: pointer; will-change: transform;}
     .namaz-row:active { transform: scale(0.97) translate3d(0,0,0); background: var(--pill-bg); }
     
@@ -463,17 +367,7 @@
     .tick-box.ticked { background: var(--brand-color); border-color: var(--brand-color); transform: scale(1.1) translate3d(0,0,0); }
     .tick-box.ticked svg { stroke: var(--btn-text-color); stroke-dashoffset: 0; }
 
-    /* ==========================================
-       🌟 GLASS BOTTOM NAVIGATION 🌟
-       ========================================== */
-    .bottom-nav {
-        position: absolute; bottom: calc(6px + env(safe-area-inset-bottom)); 
-        left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px;
-        background: var(--bg-card); 
-        border: 1.5px solid var(--brand-color); 
-        border-radius: 40px; box-shadow: 0 8px 25px var(--brand-shadow); 
-        display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; z-index: 5000; will-change: transform;
-    }
+    .bottom-nav { position: absolute; bottom: calc(6px + env(safe-area-inset-bottom)); left: 50%; transform: translate3d(-50%, 0, 0); width: 94%; max-width: 400px; background: var(--bg-card); border: 1.5px solid var(--brand-color); border-radius: 40px; box-shadow: 0 8px 25px var(--brand-shadow); display: flex; justify-content: space-between; align-items: center; padding: 4px 6px; z-index: 5000; will-change: transform; }
     .nav-item { position: relative; display: flex; flex-direction: column; align-items: center; justify-content: center; width: 33.333%; padding: 6px 0; border-radius: 30px; cursor: pointer; transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1); color: var(--text-sub); z-index: 2; will-change: transform;}
     .nav-item::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background-color: var(--active-pill-bg); border-radius: 30px; z-index: -1; opacity: 0; transform: scale(0.5); transition: all 0.3s cubic-bezier(0.25, 1, 0.5, 1); will-change: transform, opacity;}
     .nav-item.active::before { opacity: 1; transform: scale(1) translate3d(0,0,0); }
@@ -493,7 +387,7 @@
     <!-- TOAST -->
     <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
 
-    <!-- 🌟 EXACT FASTER SPLASH SCREEN 🌟 -->
+    <!-- SPLASH SCREEN -->
     <div id="splash-screen">
         <div class="splash-glow"></div>
         <div class="splash-content-anim">
@@ -549,7 +443,6 @@
                 <div class="header-btn-clickable" onclick="openModal('month', this)">
                     <span id="display-month">AUG</span>
                     <svg viewBox="0 0 24 24"><polyline points="6 9 12 15 18 9"></polyline></svg>
-                    <!-- 🌟 Month Complete Tick 🌟 -->
                     <div id="month-complete-tick" class="month-complete-tick"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="header-btn-clickable" onclick="openModal('year', this)">
@@ -566,9 +459,14 @@
             <div id="tab-profile" class="tab-pane">
                 <div class="profile-inner-container animate-entry">
                     
-                    <div class="profile-header-new">
+                    <!-- 🌟 PROFILE HEADER & ANIMATION OVERLAY 🌟 -->
+                    <div class="profile-header-new" onclick="playCreatorAnimation()">
                         <div class="profile-name-bold" id="user-display-name">USER NAME</div>
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-top: 6px;" id="user-display-email"></div>
+                        
+                        <div class="creator-overlay" id="creator-overlay">
+                            <div class="creator-text" id="creator-text">CREATED BY TECH ASAR</div>
+                        </div>
                     </div>
 
                     <div class="cards-layout-wrapper">
@@ -622,7 +520,6 @@
             </div>
         </div> 
 
-        <!-- 🌟 BOTTOM NAVIGATION 🌟 -->
         <div class="bottom-nav">
             <div class="nav-item active" data-target="tab-2026" onclick="switchNav(this)">
                 <div class="icon-container"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect><line x1="16" y1="2" x2="16" y2="6"></line><line x1="8" y1="2" x2="8" y2="6"></line><line x1="3" y1="10" x2="21" y2="10"></line></svg></div>
@@ -640,9 +537,9 @@
 
     </div>
 
-    <!-- 🌟 MODALS 🌟 -->
+    <!-- MODALS -->
     
-    <!-- 🌟 30 App Theme Colors Picker 🌟 -->
+    <!-- 30 App Theme Colors Picker -->
     <div id="modal-theme" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -651,7 +548,6 @@
                 <div class="sheet-close-btn" onclick="closeModal({target: document.getElementById('modal-theme')})"><svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg></div>
             </div>
             <div class="theme-grid" style="padding-bottom: 5px;">
-                <!-- 15 Normal Colors -->
                 <div class="color-swatch" style="background: #f25c27;" onclick="changeThemeColor('#f25c27', false, false)"></div>
                 <div class="color-swatch" style="background: #e3342f;" onclick="changeThemeColor('#e3342f', false, false)"></div>
                 <div class="color-swatch" style="background: #e91e63;" onclick="changeThemeColor('#e91e63', false, false)"></div>
@@ -668,7 +564,6 @@
                 <div class="color-swatch" style="background: #795548;" onclick="changeThemeColor('#795548', false, false)"></div>
                 <div class="color-swatch" style="background: #607D8B;" onclick="changeThemeColor('#607D8B', false, false)"></div>
                 
-                <!-- 15 Neon Colors -->
                 <div class="color-swatch" style="background: #FF0000; box-shadow: 0 0 12px #FF0000;" onclick="changeThemeColor('#FF0000', true, false)"></div>
                 <div class="color-swatch" style="background: #FF00FF; box-shadow: 0 0 12px #FF00FF;" onclick="changeThemeColor('#FF00FF', true, false)"></div>
                 <div class="color-swatch" style="background: #B026FF; box-shadow: 0 0 12px #B026FF;" onclick="changeThemeColor('#B026FF', true, false)"></div>
@@ -688,7 +583,6 @@
         </div>
     </div>
 
-    <!-- Edit Profile -->
     <div id="modal-edit-profile" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -704,7 +598,6 @@
         </div>
     </div>
 
-    <!-- Month/Year Picker -->
     <div id="modal-picker" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -716,7 +609,6 @@
         </div>
     </div>
 
-    <!-- Offline Backup -->
     <div id="modal-offline-backup" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -733,7 +625,6 @@
         </div>
     </div>
 
-    <!-- Offline Restore -->
     <div id="modal-offline-restore" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -760,41 +651,23 @@
             
             <div class="modal-namaz-list" id="namaz-drag-container">
                 <div class="namaz-row">
-                    <div class="namaz-info">
-                        <svg viewBox="0 0 24 24">
-                            <path d="M12 4v4"></path><path d="M5.5 7.5l3 3"></path><path d="M18.5 7.5l-3 3"></path>
-                            <path d="M2 18h20"></path><path d="M17 18a5 5 0 0 0-10 0"></path>
-                        </svg>
-                        <span>FAJR</span>
-                    </div>
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M12 4v4"></path><path d="M5.5 7.5l3 3"></path><path d="M18.5 7.5l-3 3"></path><path d="M2 18h20"></path><path d="M17 18a5 5 0 0 0-10 0"></path></svg><span>FAJR</span></div>
                     <div class="tick-box" id="modal-tick-0"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="namaz-row">
-                    <div class="namaz-info">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg>
-                        <span>ZUHR</span>
-                    </div>
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="5"></circle><line x1="12" y1="1" x2="12" y2="3"></line><line x1="12" y1="21" x2="12" y2="23"></line><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line><line x1="1" y1="12" x2="3" y2="12"></line><line x1="21" y1="12" x2="23" y2="12"></line><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line></svg><span>ZUHR</span></div>
                     <div class="tick-box" id="modal-tick-1"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="namaz-row">
-                    <div class="namaz-info">
-                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg>
-                        <span>ASR</span>
-                    </div>
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"></circle><path d="M12 7v5l3 3"></path></svg><span>ASR</span></div>
                     <div class="tick-box" id="modal-tick-2"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="namaz-row">
-                    <div class="namaz-info">
-                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg>
-                        <span>MAGHRIB</span>
-                    </div>
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path></svg><span>MAGHRIB</span></div>
                     <div class="tick-box" id="modal-tick-3"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
                 <div class="namaz-row">
-                    <div class="namaz-info">
-                        <svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path><circle cx="15" cy="5" r="1"></circle><circle cx="18" cy="9" r="1.5"></circle></svg>
-                        <span>ISHA</span>
-                    </div>
+                    <div class="namaz-info"><svg viewBox="0 0 24 24"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path><circle cx="15" cy="5" r="1"></circle><circle cx="18" cy="9" r="1.5"></circle></svg><span>ISHA</span></div>
                     <div class="tick-box" id="modal-tick-4"><svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"></polyline></svg></div>
                 </div>
             </div>
@@ -804,9 +677,7 @@
     <!-- LOGOUT / DELETE / VERIFICATION ALERTS -->
     <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
-            <div class="alert-icon-top">
-                <svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg>
-            </div>
+            <div class="alert-icon-top"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
             <div class="alert-title-badge">LOG OUT</div>
             <div class="alert-desc">ARE YOU SURE YOU WANT TO LOG OUT OF YOUR ACCOUNT?</div>
             <div class="alert-actions">
@@ -818,9 +689,7 @@
 
     <div id="modal-delete" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
-            <div class="alert-icon-top danger-icon">
-                <svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg>
-            </div>
+            <div class="alert-icon-top danger-icon"><svg viewBox="0 0 24 24"><polyline points="3 6 5 6 21 6"></polyline><path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path></svg></div>
             <div class="alert-title-badge danger-badge">WARNING</div>
             <div class="alert-desc">SCHEDULE YOUR ACCOUNT FOR PERMANENT DELETION (24 HOURS).</div>
             <div class="alert-actions">
@@ -830,35 +699,44 @@
         </div>
     </div>
 
-    <!-- 🌟 REGISTRATION VERIFICATION POP-UP 🌟 -->
+    <!-- 🌟 REGISTRATION VERIFICATION POP-UP (UPDATED DESIGN) 🌟 -->
     <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top success-icon">
                 <svg viewBox="0 0 24 24"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path><polyline points="22,6 12,13 2,6"></polyline></svg>
             </div>
             <div class="alert-title-badge success-badge">VERIFY EMAIL</div>
-            <div class="alert-desc" style="font-size: 13px; text-transform: none; margin-bottom: 20px;">
-                We've sent a verification link to your email address.<br><br>
-                <b>Note:</b> If you don't find the link in your inbox, please make sure to check your <b>Spam</b> or <b>Junk</b> folder.
+            
+            <div class="alert-desc" style="font-size: 14px; font-weight: 800; text-transform: uppercase; margin-bottom: 25px; line-height: 1.6;">
+                WE'VE SENT A VERIFICATION LINK TO YOUR EMAIL ADDRESS.<br><br>
+                <span style="color: var(--brand-color);">NOTE:</span> IF YOU DON'T FIND THE LINK IN YOUR INBOX, PLEASE MAKE SURE TO CHECK YOUR <span style="color: var(--brand-color);">SPAM</span> OR <span style="color: var(--brand-color);">JUNK</span> FOLDER.
             </div>
+
             <div class="alert-actions">
                 <button class="alert-btn success-btn" onclick="closeModal({target: document.getElementById('modal-verification')}); window.isRegistering = false; openAuthScreen(true);">OK, I UNDERSTAND</button>
             </div>
         </div>
     </div>
 
-    <!-- ACCOUNT RECOVERY MODAL -->
+    <!-- 🌟 ACCOUNT RECOVERY MODAL (UPDATED DESIGN & FLOW) 🌟 -->
     <div id="modal-recovery" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
-            <div class="alert-icon-top" style="border-color: #03a9f4;">
-                <svg viewBox="0 0 24 24" style="stroke: #03a9f4;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" fill="none" stroke-width="2.5"></path></svg>
+            <div class="alert-icon-top" style="border-color: #ff9500; background: var(--bg-card);">
+                <svg viewBox="0 0 24 24" style="stroke: #ff9500; width: 22px; height: 22px; fill: none; stroke-width: 2.5;"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"></path></svg>
             </div>
-            <div class="alert-title-badge" style="background: rgba(3, 169, 244, 0.1); color: #03a9f4;">RECOVER ACCOUNT</div>
-            <div class="alert-desc" style="font-size: 12px; margin-bottom: 15px;">YOUR ACCOUNT IS SCHEDULED FOR DELETION. ENTER YOUR EMAIL TO VERIFY AND RESTORE IT.</div>
+            <div class="alert-title-badge" style="background: rgba(255, 149, 0, 0.1); color: #ff9500;">ACCOUNT RECOVERY</div>
+            
+            <div class="alert-desc" style="font-size: 12px; margin-bottom: 15px;">
+                YOUR ACCOUNT IS PENDING DELETION.<br>
+                <!-- Live Timer Added Here -->
+                <span id="recovery-timer" style="display:block; font-size: 24px; font-weight: 900; color: #ff9500; margin-top: 10px; letter-spacing: 2px;">23:59:59</span>
+            </div>
+
             <input type="email" id="recovery-email-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 14px; font-weight: 700; margin-bottom: 20px; text-align: center;" placeholder="ENTER REGISTERED EMAIL">
+            
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="window.cancelRecovery()">CANCEL</button>
-                <button class="alert-btn" style="background: #03a9f4; color: #fff; box-shadow: 0 4px 15px rgba(3, 169, 244, 0.3);" id="btn-recover-account">RESTORE</button>
+                <button class="alert-btn" style="background: #ff9500; color: #fff; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);" id="btn-recover-account">SEND LINK</button>
             </div>
         </div>
     </div>
@@ -868,7 +746,6 @@
         let isAuthResolved = false;
         window.isRegistering = false; 
 
-        // 🌟 INSTANT LOAD NO-WAIT SPLASH 🌟
         const checkAndHideSplash = () => {
             if(isAuthResolved) {
                 const splash = document.getElementById('splash-screen');
@@ -888,6 +765,22 @@
             }
         };
 
+        // 🌟 PROFILE CREATOR ANIMATION FUNCTION 🌟
+        function playCreatorAnimation() {
+            const overlay = document.getElementById('creator-overlay');
+            const text = document.getElementById('creator-text');
+            if(overlay.classList.contains('show-anim')) return;
+            
+            overlay.classList.add('show-anim');
+            text.classList.remove('type');
+            void text.offsetWidth; // Reflow to restart animation
+            text.classList.add('type');
+            
+            setTimeout(() => {
+                overlay.classList.remove('show-anim');
+            }, 1800); // Animation Time
+        }
+
         function changeThemeColor(color, isNeon, isDarkText) {
             document.documentElement.style.setProperty('--brand-color', color);
             document.documentElement.style.setProperty('--btn-text-color', isDarkText ? '#121212' : '#ffffff');
@@ -905,7 +798,6 @@
             closeAllModals();
         }
 
-        // 🌟 FAST MODAL OPEN 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -947,7 +839,6 @@
             }
         }
 
-        // 🌟 PERFECTED SMOOTH DARK MODE SWITCH 🌟
         function toggleTheme(e) {
             if(e) e.stopPropagation(); 
             const toggle = document.getElementById('theme-toggle');
@@ -1303,7 +1194,6 @@
         }, {passive: false});
         dragContainer.addEventListener('touchmove', pointerMove, {passive: false});
         window.addEventListener('touchend', pointerUp);
-
         dragContainer.addEventListener('mousedown', pointerDown);
         dragContainer.addEventListener('mousemove', pointerMove);
         window.addEventListener('mouseup', pointerUp);
@@ -1406,9 +1296,32 @@
             }
             generateCalendar(); 
         }
+
+        // 🌟 LIVE RECOVERY TIMER LOGIC 🌟
+        let recoveryTimerInterval;
+        function startRecoveryTimer(deleteTime) {
+            clearInterval(recoveryTimerInterval);
+            const timerEl = document.getElementById('recovery-timer');
+            const targetTime = deleteTime + (24 * 60 * 60 * 1000); // 24 Hours from Schedule
+            
+            recoveryTimerInterval = setInterval(() => {
+                const now = Date.now();
+                const diff = targetTime - now;
+                if (diff <= 0) {
+                    clearInterval(recoveryTimerInterval);
+                    timerEl.textContent = "00:00:00";
+                    return;
+                }
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
+                const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
+                const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
+                timerEl.textContent = `${h}:${m}:${s}`;
+            }, 1000);
+        }
+
     </script>
 
-    <!-- Firebase Script (Only Email/Password included) -->
+    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
@@ -1465,6 +1378,8 @@
                             } else {
                                 document.getElementById('dashboard-screen').classList.add('hidden');
                                 document.getElementById('auth-flow-wrapper').classList.remove('hidden');
+                                
+                                startRecoveryTimer(deleteTime); // Start 24hr live timer
                                 openModal('recovery', null);
                                 checkAndHideSplash();
                                 return; 
@@ -1495,7 +1410,6 @@
                     }
                 }
             }
-            // Execute exact instant splash hide when Firebase finishes loading
             checkAndHideSplash();
         });
 
@@ -1621,6 +1535,7 @@
             }
         });
 
+        // 🌟 UPDATED RECOVERY LOGIC (EMAIL VERIFY & SMOOTH TRANSITION) 🌟
         document.getElementById('btn-recover-account').addEventListener('click', async () => {
             const emailInput = document.getElementById('recovery-email-input').value.trim();
             if (!auth.currentUser || emailInput !== auth.currentUser.email) {
@@ -1628,29 +1543,31 @@
                 return;
             }
             const btn = document.getElementById('btn-recover-account');
-            btn.textContent = "PROCESSING...";
+            btn.textContent = "SENDING LINK...";
             try {
+                // 1. Recover account first by clearing deletion schedule in DB
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
                 
-                showNotification("ACCOUNT RESTORED SUCCESSFULLY!");
+                // 2. Send email verification / reset link securely
+                await sendPasswordResetEmail(auth, emailInput);
+                
+                showNotification("EMAIL SENT! VERIFY TO LOGIN.");
+                
+                // 3. Smoothly log out to enforce verification through login
                 closeAllModals();
+                await signOut(auth);
                 
-                document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                document.getElementById('dashboard-screen').classList.remove('hidden');
-                
-                const pName = (auth.currentUser.displayName || "USER").toUpperCase();
-                document.getElementById('user-display-name').textContent = pName;
-                const emailElement = document.getElementById('user-display-email');
-                if (emailElement) {
-                    emailElement.textContent = auth.currentUser.email || "No Contact Info Bound";
-                }
-                
-                fetchAutoCloudRestore(auth.currentUser);
+                // Reset UI to login screen perfectly
+                const welcomeScreen = document.getElementById('welcome-screen');
+                const authScreen = document.getElementById('auth-screen');
+                welcomeScreen.classList.remove('slide-left');
+                authScreen.classList.remove('slide-in');
+                openAuthScreen(true); 
 
             } catch(error) {
-                showNotification("ERROR RESTORING ACCOUNT");
+                showNotification("ERROR SENDING EMAIL");
             } finally {
-                btn.textContent = "RESTORE";
+                btn.textContent = "SEND LINK";
             }
         });
 
