@@ -91,8 +91,6 @@
         position: fixed; top: 0; left: 0; 
     }
 
-    /* REMOVED: Heavy global background transitions that caused lag and white lines in Dark Mode */
-
     /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
     @keyframes appCrossfade {
         0% { transform: scale(0.95); opacity: 0; }
@@ -219,12 +217,13 @@
 
     .primary-btn { width: 100%; background: var(--brand-color); color: var(--btn-text-color); border: none; margin-bottom: 12px; padding: 18px; border-radius: 16px; font-size: 14px; font-weight: 900; cursor: pointer; box-shadow: 0 10px 25px var(--brand-shadow); text-transform: uppercase; letter-spacing: 1px; transition: transform 0.2s;}
     .primary-btn:active { transform: scale(0.96); }
+    .primary-btn.hidden-smooth { display: none; }
     .create-account { display: block; margin-top: 10px; color: var(--text-sub); font-size: 12px; font-weight: 800; cursor: pointer; text-transform: uppercase; }
     .create-account span { color: var(--brand-color); font-weight: 900; }
     .divider { display: flex; align-items: center; text-align: center; margin: 25px 0; }
     .divider::before, .divider::after { content: ''; flex: 1; border-bottom: 1px solid var(--border-line); }
     .divider span { padding: 0 12px; color: var(--text-sub); font-size: 11px; font-weight: 900; text-transform: uppercase; }
-    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer;}
+    .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer; margin-bottom: 12px;}
     .social-btn svg { width: 20px; height: 20px; }
 
     /* ==========================================
@@ -334,7 +333,7 @@
     .list-left svg { width: 18px; height: 18px; stroke: currentColor; stroke-width: 2.2; fill: none; }
     .chevron-icon { width: 14px; height: 14px; stroke: var(--text-sub); stroke-width: 2.5; fill: none; pointer-events: none;}
 
-    /* 🌟 PERFECTED DARK MODE TOGGLE (Bug Fix) 🌟 */
+    /* 🌟 PERFECTED DARK MODE TOGGLE 🌟 */
     .theme-switch { 
         width: 48px; height: 28px; background: #e5e5ea; border-radius: 14px; 
         position: relative; transition: background 0.3s ease; cursor: pointer; 
@@ -528,6 +527,8 @@
             <div class="screen-content">
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
+                
+                <!-- 🌟 EMAIL SECTION 🌟 -->
                 <div id="email-section" class="input-section">
                     <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" placeholder="FULL NAME"></div>
                     <div class="input-group"><input type="email" id="email-input" placeholder="EMAIL ADDRESS"></div>
@@ -536,9 +537,29 @@
                     <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
                     <div class="create-account" id="toggle-auth-mode">DON'T HAVE AN ACCOUNT? <span>REGISTER</span></div>
                 </div>
-                <div class="divider"><span id="divider-text">OR CONTINUE WITH</span></div>
-                <div class="social-login">
-                    <button class="social-btn" id="google-login-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Sign in with Google</button>
+
+                <!-- 🌟 PHONE AUTH SECTION (Initially Hidden) 🌟 -->
+                <div id="phone-section" class="input-section" style="display: none;">
+                    <div class="input-group" id="phone-input-group">
+                        <input type="tel" id="phone-input" placeholder="PHONE (+91 9876543210)">
+                    </div>
+                    <div class="input-group hidden-smooth" id="otp-input-group">
+                        <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" style="text-align: center; letter-spacing: 5px; font-size: 16px;">
+                    </div>
+                    <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
+                    <button id="verify-otp-btn" class="primary-btn hidden-smooth">VERIFY & LOGIN</button>
+                    <div class="create-account" id="back-to-email-btn"><span>USE EMAIL INSTEAD</span></div>
+                    <div id="recaptcha-container"></div>
+                </div>
+
+                <div class="divider" id="auth-divider"><span id="divider-text">OR CONTINUE WITH</span></div>
+                
+                <div class="social-login" id="social-login-group">
+                    <button class="social-btn" id="phone-login-switch-btn">
+                        <svg viewBox="0 0 24 24" stroke="currentColor" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"></path></svg> 
+                        Continue with Phone
+                    </button>
+                    <button class="social-btn" id="google-login-btn"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48"><path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/><path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/><path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"/><path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.46-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/></svg> Continue with Google</button>
                 </div>
             </div>
         </div>
@@ -868,7 +889,7 @@
 
     <!-- UI Scripts -->
     <script>
-        // 🔧 🌟 BUG 1 FIX: FULL AUTH STATE SYNC SYSTEM 🌟
+        // 🔧 🌟 FULL AUTH STATE SYNC SYSTEM 🌟
         let isAuthResolved = false;
         let isMinSplashTimeOver = false;
         window.isRegistering = false; 
@@ -892,7 +913,7 @@
             }
         };
 
-        // FASTER SPLASH TIME (Reduced from 800ms to 150ms)
+        // FASTER SPLASH TIME 
         setTimeout(() => {
             isMinSplashTimeOver = true;
             checkAndHideSplash();
@@ -933,7 +954,7 @@
             closeAllModals();
         }
 
-        // 🌟 FAST MODAL OPEN (Removed extra rAF lag) 🌟
+        // 🌟 FAST MODAL OPEN 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -1004,9 +1025,20 @@
         let isLoginMode = true; 
         const welcomeScreen = document.getElementById('welcome-screen');
         const authScreen = document.getElementById('auth-screen');
+        const emailSection = document.getElementById('email-section');
+        const phoneSection = document.getElementById('phone-section');
+        const divider = document.getElementById('auth-divider');
+        const socialLogin = document.getElementById('social-login-group');
 
         function openAuthScreen(modeIsLogin) {
             isLoginMode = modeIsLogin;
+            
+            // Default to email view
+            emailSection.style.display = 'block';
+            phoneSection.style.display = 'none';
+            divider.style.display = 'flex';
+            socialLogin.style.display = 'block';
+
             const usernameGroup = document.getElementById('username-group');
             if (isLoginMode) {
                 document.getElementById('form-title').textContent = "LOGIN HERE";
@@ -1027,9 +1059,40 @@
             authScreen.classList.add('slide-in');
         }
 
+        // Phone UI Toggles
+        document.getElementById('phone-login-switch-btn').addEventListener('click', () => {
+            emailSection.style.display = 'none';
+            divider.style.display = 'none';
+            socialLogin.style.display = 'none';
+            phoneSection.style.display = 'block';
+            document.getElementById('form-title').textContent = "PHONE LOGIN";
+            document.getElementById('form-subtitle').textContent = "WE WILL SEND YOU A 6-DIGIT OTP";
+            
+            if (window.initRecaptcha) window.initRecaptcha();
+        });
+
+        document.getElementById('back-to-email-btn').addEventListener('click', () => {
+            resetPhoneUI();
+            openAuthScreen(true);
+        });
+
+        function resetPhoneUI() {
+            document.getElementById('phone-input-group').classList.remove('hidden-smooth');
+            document.getElementById('send-otp-btn').classList.remove('hidden-smooth');
+            document.getElementById('send-otp-btn').disabled = false; 
+            document.getElementById('send-otp-btn').textContent = "SEND OTP";
+            
+            document.getElementById('otp-input-group').classList.add('hidden-smooth');
+            document.getElementById('verify-otp-btn').classList.add('hidden-smooth');
+            document.getElementById('verify-otp-btn').disabled = false;
+            document.getElementById('verify-otp-btn').textContent = "VERIFY & LOGIN";
+            document.getElementById('phone-input').value = "";
+            document.getElementById('otp-input').value = "";
+        }
+
         document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
         document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
-        document.getElementById('back-to-welcome').addEventListener('click', () => { welcomeScreen.classList.remove('slide-left'); authScreen.classList.remove('slide-in'); });
+        document.getElementById('back-to-welcome').addEventListener('click', () => { welcomeScreen.classList.remove('slide-left'); authScreen.classList.remove('slide-in'); resetPhoneUI(); });
         document.getElementById('toggle-auth-mode').addEventListener('click', () => { openAuthScreen(!isLoginMode); });
 
         const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
@@ -1438,7 +1501,7 @@
     <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
-        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
+        import { getAuth, signInWithRedirect, getRedirectResult, GoogleAuthProvider, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail, RecaptchaVerifier, signInWithPhoneNumber } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
         import { getFirestore, doc, setDoc, getDoc } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore.js";
 
         const firebaseConfig = {
@@ -1454,6 +1517,24 @@
         const auth = getAuth(app);
         const db = getFirestore(app); 
         const provider = new GoogleAuthProvider();
+
+        // 🌟 RECAPTCHA SETUP (Invisible) 🌟
+        let recaptchaVerifier = null;
+        let confirmationResult = null;
+
+        window.initRecaptcha = () => {
+            if (!recaptchaVerifier) {
+                recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA solved
+                    },
+                    'expired-callback': () => {
+                        showNotification("reCAPTCHA EXPIRED. TRY AGAIN.");
+                    }
+                });
+            }
+        };
 
         async function fetchAutoCloudRestore(user) {
             try {
@@ -1483,7 +1564,8 @@
             isAuthResolved = true; 
 
             if (user) {
-                if (user.emailVerified === false && user.providerData[0].providerId === 'password') {
+                // If it's a password user and unverified
+                if (user.emailVerified === false && user.providerData[0] && user.providerData[0].providerId === 'password') {
                     document.getElementById('dashboard-screen').classList.add('hidden');
                     document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                 } else {
@@ -1516,7 +1598,8 @@
                     
                     const emailElement = document.getElementById('user-display-email');
                     if (emailElement) {
-                        emailElement.textContent = user.email || "No Email Bound";
+                        // Phone Auth handles will display phone number instead of email
+                        emailElement.textContent = user.email || user.phoneNumber || "No Contact Info";
                     }
                 }
             } else {
@@ -1533,6 +1616,76 @@
             }
             checkAndHideSplash();
         });
+
+        // 🌟 PHONE LOGIN SYSTEM 🌟
+        document.getElementById('send-otp-btn').addEventListener('click', async () => {
+            const phoneInput = document.getElementById('phone-input').value.trim();
+            if (!phoneInput) { showNotification("ENTER PHONE NUMBER"); return; }
+            
+            // Format check (Defaulting to India +91 if user forgets country code)
+            let formattedNumber = phoneInput;
+            if (!formattedNumber.startsWith('+')) {
+                formattedNumber = '+91' + formattedNumber.replace(/\D/g, ''); 
+            } else {
+                formattedNumber = '+' + formattedNumber.replace(/\D/g, '');
+            }
+
+            if(formattedNumber.length < 10) { showNotification("INVALID NUMBER"); return; }
+
+            const btn = document.getElementById('send-otp-btn');
+            btn.disabled = true; btn.textContent = "SENDING...";
+
+            try {
+                confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, recaptchaVerifier);
+                showNotification("OTP SENT!");
+                
+                // Switch UI to OTP input
+                document.getElementById('phone-input-group').classList.add('hidden-smooth');
+                btn.classList.add('hidden-smooth');
+                
+                document.getElementById('otp-input-group').classList.remove('hidden-smooth');
+                document.getElementById('verify-otp-btn').classList.remove('hidden-smooth');
+                document.getElementById('form-subtitle').textContent = "ENTER THE OTP SENT TO " + formattedNumber;
+                
+            } catch (error) {
+                console.error(error);
+                showNotification("ERROR SENDING OTP");
+                btn.disabled = false; btn.textContent = "SEND OTP";
+                if(recaptchaVerifier) {
+                    recaptchaVerifier.render().then(function(widgetId) {
+                        grecaptcha.reset(widgetId);
+                    });
+                }
+            }
+        });
+
+        document.getElementById('verify-otp-btn').addEventListener('click', async () => {
+            const otp = document.getElementById('otp-input').value.trim();
+            if (!otp || otp.length !== 6) { showNotification("ENTER 6-DIGIT OTP"); return; }
+
+            const btn = document.getElementById('verify-otp-btn');
+            btn.disabled = true; btn.textContent = "VERIFYING...";
+
+            try {
+                const result = await confirmationResult.confirm(otp);
+                showNotification("LOGIN SUCCESS!");
+                
+                localStorage.removeItem('namazTrackerLocalData');
+                window.namazState = {};
+                generateCalendar();
+                fetchAutoCloudRestore(result.user);
+                
+                // UI Reset done automatically by onAuthStateChanged, but reset form just in case
+                setTimeout(() => {
+                    document.getElementById('back-to-email-btn').click();
+                }, 1000);
+
+            } catch (error) {
+                showNotification("INVALID OTP");
+                btn.disabled = false; btn.textContent = "VERIFY & LOGIN";
+            }
+        });
+
 
         document.getElementById('btn-backup').addEventListener('click', async () => {
             if (!auth.currentUser) return;
@@ -1667,17 +1820,27 @@
             const btn = document.getElementById('btn-recover-account');
             btn.textContent = "PROCESSING...";
             try {
-                // Bug fix: Clear deletion status, send link, and immediately log out user to enforce security.
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
-                await sendEmailVerification(auth.currentUser);
                 
-                showNotification("VERIFICATION LINK SENT! PLEASE LOGIN AGAIN.");
-                
+                showNotification("ACCOUNT RESTORED SUCCESSFULLY!");
                 closeAllModals();
-                await signOut(auth); // THIS ENSURES NO IMMEDIATE LOGIN ACCESS WITHOUT LINK/PASSWORD
                 
+                // Transition UI to dashboard seamlessly
+                document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
+                
+                // Populate Profile Details
+                const pName = (auth.currentUser.displayName || "USER").toUpperCase();
+                document.getElementById('user-display-name').textContent = pName;
+                const emailElement = document.getElementById('user-display-email');
+                if (emailElement) {
+                    emailElement.textContent = auth.currentUser.email || auth.currentUser.phoneNumber || "No Contact Info Bound";
+                }
+                
+                fetchAutoCloudRestore(auth.currentUser);
+
             } catch(error) {
-                showNotification("ERROR SENDING RECOVERY LINK");
+                showNotification("ERROR RESTORING ACCOUNT");
             } finally {
                 btn.textContent = "RESTORE";
             }
