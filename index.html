@@ -301,7 +301,10 @@
 
     /* 🌟 PROFILE TAB & NEW APPLE HELLO ANIMATION 🌟 */
     #tab-profile.active { justify-content: flex-start; padding: 0 15px; }
-    .profile-inner-container { width: 100%; max-width: 360px; height: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 5px; }   
+    .profile-inner-container { 
+        width: 100%; max-width: 360px; height: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 5px; 
+        will-change: transform, opacity; transform: translateZ(0); /* Bug Fix 1: Added Hardware Acceleration for smoothness */
+    }   
     
     .profile-header-new { 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -310,6 +313,7 @@
         border: 1.5px solid var(--brand-color); box-shadow: 0 8px 20px var(--brand-shadow);
         position: relative; overflow: hidden; cursor: pointer;
         transition: all 0.4s ease;
+        will-change: transform, opacity; /* Bug Fix 1: Stop layout recalculation jerk */
     }
     
     .profile-name-bold, #user-display-email { transition: opacity 0.4s ease, transform 0.4s ease; }
@@ -343,7 +347,7 @@
         opacity: 0; transform: scale(1.15); filter: blur(10px);
         transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
         text-align: center;
-        white-space: nowrap; /* Forces text onto a single line */
+        white-space: nowrap; 
     }
     .creator-text.show-hello { opacity: 1; transform: scale(1); filter: blur(0px); }
 
@@ -403,12 +407,11 @@
     .alert-title-badge.danger-badge { background: rgba(227, 52, 47, 0.1); color: #e3342f; }
     .alert-title-badge.success-badge { background: rgba(52, 199, 89, 0.1); color: #34c759; }
     
-    /* 🌟 UPGRADED BEAUTIFUL MODAL TEXT DESIGN 🌟 */
     .alert-desc { 
         font-size: 14px; 
         font-weight: 600; 
         color: var(--text-sub); 
-        text-transform: none; /* Changed from uppercase to sentence case for better readability */
+        text-transform: none; 
         margin-bottom: 25px; 
         line-height: 1.6; 
         text-align: center; 
@@ -498,7 +501,6 @@
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
                 
-                <!-- 🌟 NEW SAVED ACCOUNT PILL WITH DELETE BTN 🌟 -->
                 <div id="saved-account-pill" class="saved-account-pill hidden">
                     <div class="pill-left" onclick="window.autofillSavedAccount()">
                         <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
@@ -512,7 +514,6 @@
                     </div>
                 </div>
 
-                <!-- 🌟 FIXED EMAIL SECTION FOR PASSWORD MANAGERS 🌟 -->
                 <form id="email-section" class="input-section" onsubmit="event.preventDefault(); window.handleAuth();">
                     <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" name="username" autocomplete="name" placeholder="FULL NAME"></div>
                     <div class="input-group">
@@ -552,13 +553,11 @@
             <div id="tab-profile" class="tab-pane">
                 <div class="profile-inner-container animate-entry">
                     
-                    <!-- 🌟 NEW APPLE STYLE HELLO ANIMATION 🌟 -->
                     <div class="profile-header-new" id="profile-header-box" onclick="playCreatorAnimation()">
                         <div class="profile-name-bold" id="user-display-name">USER NAME</div>
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-top: 6px;" id="user-display-email"></div>
                         
                         <div class="creator-overlay" id="creator-overlay">
-                            <!-- 🌟 ITALIC & SINGLE LINE CREATOR TEXT 🌟 -->
                             <div class="creator-text" id="creator-text">CREATED BY TECH ASAR</div>
                         </div>
                     </div>
@@ -633,9 +632,9 @@
 
     <!-- MODALS -->
 
-    <!-- 🌟 UPGRADED SAVE PASSWORD MODAL 🌟 -->
-    <div id="modal-save-password" class="modal-overlay" onclick="closeModal(event)">
-        <div class="alert-modal-content" onclick="event.stopPropagation()">
+    <!-- Bug Fix 4: Disabled background click to force user choice -->
+    <div id="modal-save-password" class="modal-overlay"> 
+        <div class="alert-modal-content">
             <div class="alert-icon-top success-icon">
                 <svg viewBox="0 0 24 24"><path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z"></path><polyline points="17 21 17 13 7 13 7 21"></polyline><polyline points="7 3 7 8 15 8"></polyline></svg>
             </div>
@@ -843,7 +842,8 @@
             
             <div class="alert-desc">
                 Your account is scheduled for deletion in:<br>
-                <span id="recovery-timer" style="display:block; font-size: 24px; font-weight: 900; color: #ff9500; margin-top: 10px; letter-spacing: 2px;">23:59:59</span>
+                <!-- Bug Fix 3: Monospace font added for Jitter-free timer -->
+                <span id="recovery-timer" style="display:block; font-size: 24px; font-weight: 900; color: #ff9500; margin-top: 10px; letter-spacing: 2px; font-variant-numeric: tabular-nums; font-family: monospace;">23:59:59</span>
             </div>
 
             <input type="email" id="recovery-email-input" style="width: 100%; padding: 14px; border: 1.5px solid var(--border-line); border-radius: 14px; background: var(--bg-main); color: var(--text-main); font-size: 14px; font-weight: 700; margin-bottom: 20px; text-align: center;" placeholder="ENTER REGISTERED EMAIL">
@@ -859,6 +859,14 @@
     <script>
         let isAuthResolved = false;
         window.isRegistering = false; 
+
+        // Bug Fix 2: Sync UI Dark Mode switch on Load
+        document.addEventListener('DOMContentLoaded', () => {
+            if (localStorage.getItem('namazTrackerTheme') === 'dark') {
+                const toggle = document.getElementById('theme-toggle');
+                if (toggle) toggle.classList.add('active');
+            }
+        });
 
         const checkAndHideSplash = () => {
             if(isAuthResolved) {
@@ -887,24 +895,17 @@
             
             if(overlay.classList.contains('show-anim')) return;
             
-            // Hide name and email
             headerBox.classList.add('animating');
-            
-            // Show overlay blur
             overlay.classList.add('show-anim');
             
-            // Pop text up smoothly
-            setTimeout(() => {
-                text.classList.add('show-hello');
-            }, 100);
+            setTimeout(() => { text.classList.add('show-hello'); }, 100);
             
-            // Revert Everything smoothly
             setTimeout(() => {
                 text.classList.remove('show-hello');
                 setTimeout(() => {
                     overlay.classList.remove('show-anim');
                     headerBox.classList.remove('animating');
-                }, 400); // Wait for text to fade before unblurring
+                }, 400); 
             }, 2500); 
         }
 
@@ -1023,6 +1024,12 @@
             showNotification("SAVED ACCOUNT DELETED!");
         }
 
+        // Helper to cleanly navigate to Dashboard
+        window.transitionToDashboard = function() {
+            document.getElementById('auth-flow-wrapper').classList.add('hidden');
+            document.getElementById('dashboard-screen').classList.remove('hidden');
+        }
+
         // 🌟 SAVE PASSWORD MODAL HANDLER 🌟
         window.handleSavePassword = function(isSave) {
             if(isSave) {
@@ -1032,6 +1039,7 @@
                 checkSavedAccount();
             }
             closeModal({target: document.getElementById('modal-save-password')});
+            setTimeout(window.transitionToDashboard, 300); // Trigger Dashboard after Popup finishes
         }
 
         let isLoginMode = true; 
@@ -1087,7 +1095,6 @@
                 this.value = val + '@gmail.com';
                 emailHint.classList.remove('show');
                 
-                // Pop animation for better feedback
                 this.style.transform = 'scale(0.96)';
                 setTimeout(() => this.style.transform = 'scale(1)', 150);
             }
@@ -1221,8 +1228,10 @@
                 
                 const innerProfile = activeTab.querySelector('.profile-inner-container');
                 if(innerProfile) {
-                    void innerProfile.offsetWidth; 
-                    innerProfile.classList.add('animate-entry');
+                    // Profile smooth animation fix
+                    requestAnimationFrame(() => {
+                        innerProfile.classList.add('animate-entry');
+                    });
                 }
             }
         }
@@ -1341,6 +1350,10 @@
                 if(activeDayKey) {
                     window.namazState[activeDayKey][index] = forceState;
                     saveLocalState(); 
+                    
+                    // Bug Fix 5: Auto Sync Data to cloud if function is available!
+                    if (window.autoSyncToCloud) window.autoSyncToCloud();
+                    
                     const dotElement = document.getElementById(`dots-${activeDayKey}`).children[index];
                     if(forceState) dotElement.classList.add('active');
                     else dotElement.classList.remove('active');
@@ -1464,6 +1477,7 @@
                 const decodedState = decompressState(encoded);
                 window.namazState = decodedState;
                 saveLocalState();
+                if(window.autoSyncToCloud) window.autoSyncToCloud();
                 generateCalendar();
                 closeAllModals();
                 showNotification("DATA RESTORED!");
@@ -1512,7 +1526,7 @@
                 const h = Math.floor((diff / (1000 * 60 * 60)) % 24).toString().padStart(2, '0');
                 const m = Math.floor((diff / 1000 / 60) % 60).toString().padStart(2, '0');
                 const s = Math.floor((diff / 1000) % 60).toString().padStart(2, '0');
-                timerEl.textContent = `${h}:${m}:${s}`;
+                timerEl.textContent = `${h}:${m}:${s}`; // Now perfectly accurate and zero-jitter.
             }, 1000);
         }
 
@@ -1536,6 +1550,15 @@
         const app = initializeApp(firebaseConfig);
         const auth = getAuth(app);
         const db = getFirestore(app); 
+
+        // Bug Fix 5: Exposing Auto-Sync Function to UI scripts
+        window.autoSyncToCloud = async function() {
+            if (!auth.currentUser) return;
+            try {
+                const appDataToSave = { lastBackupDate: new Date().toISOString(), namazData: window.namazState || {} };
+                await setDoc(doc(db, "users_backup", auth.currentUser.uid), appDataToSave, { merge: true });
+            } catch(e) { console.log("AutoSync Error", e); }
+        };
 
         async function fetchAutoCloudRestore(user) {
             try {
@@ -1576,7 +1599,7 @@
                                 document.getElementById('dashboard-screen').classList.add('hidden');
                                 document.getElementById('auth-flow-wrapper').classList.remove('hidden');
                                 
-                                startRecoveryTimer(deleteTime); // Start 24hr live timer
+                                startRecoveryTimer(deleteTime); 
                                 openModal('recovery', null);
                                 checkAndHideSplash();
                                 return; 
@@ -1667,21 +1690,19 @@
                     else { 
                         showNotification("LOGIN SUCCESS!"); 
                         
-                        // 🌟 INSTANT TRANSITION WITHOUT WAITING 🌟
-                        document.getElementById('auth-flow-wrapper').classList.add('hidden');
-                        document.getElementById('dashboard-screen').classList.remove('hidden');
-
                         localStorage.removeItem('namazTrackerLocalData');
                         window.namazState = {};
                         generateCalendar();
                         
                         fetchAutoCloudRestore(userCredential.user); 
 
-                        // Trigger Save Password pop-up if not saved
+                        // Trigger Save Password pop-up ON LOGIN PAGE if not saved
                         window.tempLoginEmail = email;
                         window.tempLoginPass = password;
                         if(localStorage.getItem('savedEmail') !== email) {
-                            setTimeout(() => openModal('save-password', null), 800);
+                            openModal('save-password', null); // Bug Fix 4: Triggers before dashboard transitions
+                        } else {
+                            window.transitionToDashboard();
                         }
                     }
                 } else {
@@ -1695,7 +1716,6 @@
                     await updateProfile(userCredential.user, { displayName: username });
                     await sendEmailVerification(userCredential.user);
                     
-                    // Allow saving password on register too
                     window.tempLoginEmail = email;
                     window.tempLoginPass = password;
                     if(localStorage.getItem('savedEmail') !== email) {
@@ -1729,7 +1749,6 @@
                 document.getElementById('password-input').value = ""; 
                 document.querySelector('[data-target="tab-2026"]').click(); 
                 
-                // Show saved account pill if exists
                 if(isLoginMode) checkSavedAccount();
             }); 
         });
@@ -1743,7 +1762,7 @@
                     showNotification("SCHEDULED DELETION IN 24H.");
                     
                     localStorage.removeItem('namazTrackerLocalData');
-                    localStorage.removeItem('savedEmail'); // Clear saved password on delete
+                    localStorage.removeItem('savedEmail'); 
                     localStorage.removeItem('savedPassword');
                     
                     window.namazState = {};
@@ -1759,7 +1778,6 @@
             }
         });
 
-        // 🌟 UPDATED RECOVERY LOGIC (FIXED LINK & BUTTON RESIZE) 🌟
         document.getElementById('btn-recover-account').addEventListener('click', async () => {
             const emailInput = document.getElementById('recovery-email-input').value.trim();
             if (!auth.currentUser || emailInput !== auth.currentUser.email) {
@@ -1767,16 +1785,11 @@
                 return;
             }
             const btn = document.getElementById('btn-recover-account');
-            btn.textContent = "PROCESSING..."; // Fits safely due to fixed min-width
+            btn.textContent = "PROCESSING..."; 
             try {
-                // 1. Recover account by clearing deletion schedule in DB
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
-                
-                // NO password reset email is sent anymore!
-                
                 showNotification("ACCOUNT RECOVERED!");
                 
-                // Smoothly route back to the Dashboard
                 closeAllModals();
                 document.getElementById('auth-flow-wrapper').classList.add('hidden');
                 document.getElementById('dashboard-screen').classList.remove('hidden');
