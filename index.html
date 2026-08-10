@@ -1071,7 +1071,7 @@
             document.getElementById('form-title').textContent = "PHONE LOGIN";
             document.getElementById('form-subtitle').textContent = "WE WILL SEND YOU A 6-DIGIT OTP";
             
-            // 🚀 PROACTIVE INITIALIZATION: Render Captcha Immediately when UI shows
+            // 🚀 PROACTIVE INITIALIZATION
             if (window.setupRecaptcha) window.setupRecaptcha();
         });
 
@@ -1527,13 +1527,12 @@
         window.confirmationResult = null;
         window.recaptchaWidgetId = null;
 
-        // Proactive Setup: Call this when Phone UI is opened
         window.setupRecaptcha = () => {
             if (!window.appVerifier) {
                 window.appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
                     'size': 'invisible',
                     'callback': (response) => {
-                        // reCAPTCHA verification passed automatically
+                        // Success
                     },
                     'expired-callback': () => {
                         showNotification("reCAPTCHA EXPIRED. RELOADING...");
@@ -1543,7 +1542,6 @@
                     }
                 });
                 
-                // Explicitly render to prevent background hanging
                 window.appVerifier.render().then((widgetId) => {
                     window.recaptchaWidgetId = widgetId;
                 }).catch((error) => {
@@ -1580,7 +1578,6 @@
             isAuthResolved = true; 
 
             if (user) {
-                // Check if email bound and unverified
                 if (user.emailVerified === false && user.providerData.some(p => p.providerId === 'password')) {
                     document.getElementById('dashboard-screen').classList.add('hidden');
                     document.getElementById('auth-flow-wrapper').classList.remove('hidden');
@@ -1605,7 +1602,6 @@
                         }
                     } catch(e) { console.log(e); }
 
-                    // Proceeding normal login smoothly
                     document.getElementById('auth-flow-wrapper').classList.add('hidden');
                     document.getElementById('dashboard-screen').classList.remove('hidden');
                     
@@ -1637,7 +1633,6 @@
             const phoneInput = document.getElementById('phone-input').value.trim();
             if (!phoneInput) { showNotification("ENTER PHONE NUMBER"); return; }
             
-            // Auto Format to +91 if missing
             let formattedNumber = phoneInput;
             if (!formattedNumber.startsWith('+')) {
                 formattedNumber = '+91' + formattedNumber.replace(/\D/g, ''); 
@@ -1650,7 +1645,6 @@
             const btn = document.getElementById('send-otp-btn');
             btn.disabled = true; btn.textContent = "VERIFYING CAPTCHA...";
 
-            // Failsafe: Ensure recaptcha is setup
             if (!window.appVerifier) window.setupRecaptcha();
 
             try {
@@ -1658,7 +1652,6 @@
                 
                 showNotification("OTP SENT SUCCESSFULLY!");
                 
-                // Switch UI
                 document.getElementById('phone-input-group').classList.add('hidden-smooth');
                 btn.classList.add('hidden-smooth');
                 
@@ -1669,11 +1662,10 @@
             } catch (error) {
                 console.error("OTP Error:", error);
                 
-                // 🚀 Dynamic & Specific Error Catching
                 let errorMsg = "ERROR SENDING OTP";
                 if(error.code === 'auth/invalid-phone-number') errorMsg = "INVALID PHONE NUMBER FORMAT";
                 else if(error.code === 'auth/too-many-requests') errorMsg = "TOO MANY ATTEMPTS. TRY AGAIN LATER.";
-                else if(error.code === 'auth/operation-not-allowed') errorMsg = "PHONE AUTH DISABLED IN FIREBASE / DOMAIN NOT AUTHORIZED";
+                else if(error.code === 'auth/operation-not-allowed') errorMsg = "DOMAIN NOT AUTHORIZED IN FIREBASE";
                 else if(error.code === 'auth/billing-not-enabled') errorMsg = "FIREBASE BILLING ERROR";
                 else if(error.message) errorMsg = error.code.replace('auth/', '').toUpperCase() || "OTP FAILED";
                 
@@ -1681,7 +1673,6 @@
                 
                 btn.disabled = false; btn.textContent = "SEND OTP";
                 
-                // SMART RESET
                 if(window.recaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
                     grecaptcha.reset(window.recaptchaWidgetId);
                 }
@@ -1704,7 +1695,7 @@
                 generateCalendar();
                 fetchAutoCloudRestore(result.user);
                 
-                setTimeout(() => { document.getElementById('back-to-email-btn').click(); }, 1000); // Silent reset UI
+                setTimeout(() => { document.getElementById('back-to-email-btn').click(); }, 1000); 
 
             } catch (error) {
                 showNotification("INVALID OTP");
@@ -1816,7 +1807,7 @@
 
         document.getElementById('confirm-delete-btn').addEventListener('click', async (e) => {
             const btn = e.target;
-            btn.textContent = "DELETING..."; // Instant UI change for lag perception
+            btn.textContent = "DELETING..."; 
             if (auth.currentUser) { 
                 try {
                     await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: Date.now() }, { merge: true });
