@@ -229,21 +229,27 @@
         background: var(--active-pill-bg);
         border: 1.5px solid var(--brand-color);
         border-radius: 14px;
-        padding: 14px;
+        padding: 8px 12px;
         margin-bottom: 16px;
         display: flex;
         align-items: center;
-        gap: 12px;
-        cursor: pointer;
+        justify-content: space-between;
         transition: transform 0.2s cubic-bezier(0.25, 1, 0.5, 1);
     }
-    .saved-account-pill:active { transform: scale(0.96); }
     .saved-account-pill.hidden { display: none !important; }
+    
+    .pill-left { display: flex; align-items: center; gap: 12px; flex-grow: 1; cursor: pointer; padding: 6px 0; transition: transform 0.2s ease; }
+    .pill-left:active { transform: scale(0.96); }
+    
     .saved-account-pill .icon { display: flex; align-items: center; justify-content: center; background: var(--bg-card); border-radius: 50%; width: 40px; height: 40px; box-shadow: 0 4px 10px var(--shadow-color); }
     .saved-account-pill .icon svg { width: 22px; height: 22px; stroke: var(--brand-color); fill: none; stroke-width: 2.5; }
     .saved-account-pill .info { display: flex; flex-direction: column; text-align: left; }
     .saved-account-pill .info span:first-child { font-size: 14px; font-weight: 900; color: var(--text-main); }
     .saved-account-pill .info span:last-child { font-size: 10px; font-weight: 800; color: var(--brand-color); text-transform: uppercase; margin-top: 2px; }
+
+    .delete-saved-btn { width: 38px; height: 38px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; background: rgba(227, 52, 47, 0.1); border: 1.5px solid transparent; }
+    .delete-saved-btn:active { transform: scale(0.85); background: rgba(227, 52, 47, 0.2); border-color: #e3342f;}
+    .delete-saved-btn svg { width: 18px; height: 18px; stroke: #e3342f; stroke-width: 2.5; fill: none; stroke-linecap: round; stroke-linejoin: round; }
 
     .top-filter-bar {
         position: fixed; top: calc(15px + env(safe-area-inset-top)); 
@@ -324,14 +330,19 @@
     }
     .creator-overlay.show-anim { opacity: 1; pointer-events: auto; }
     
-    /* APPLE HELLO CINEMATIC STYLE */
+    /* 🌟 CAPITAL AND BOLD CREATOR TEXT 🌟 */
     .creator-text {
         font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-        font-size: 24px; font-weight: 900; color: var(--brand-color);
-        text-transform: capitalize; letter-spacing: 1.5px; font-style: italic;
-        text-shadow: 0 4px 20px var(--brand-shadow);
+        font-size: 26px; 
+        font-weight: 900; 
+        color: var(--brand-color);
+        text-transform: uppercase; 
+        letter-spacing: 3px; 
+        font-style: normal;
+        text-shadow: 0 4px 20px var(--brand-shadow), 0 2px 5px rgba(0,0,0,0.3);
         opacity: 0; transform: scale(1.15); filter: blur(10px);
         transition: all 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+        text-align: center;
     }
     .creator-text.show-hello { opacity: 1; transform: scale(1); filter: blur(0px); }
 
@@ -468,12 +479,17 @@
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
                 
-                <!-- 🌟 SAVED ACCOUNT PILL 🌟 -->
-                <div id="saved-account-pill" class="saved-account-pill hidden" onclick="window.autofillSavedAccount()">
-                    <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
-                    <div class="info">
-                        <span id="saved-email-text">user@gmail.com</span>
-                        <span>Tap to Auto-Login</span>
+                <!-- 🌟 NEW SAVED ACCOUNT PILL WITH DELETE BTN 🌟 -->
+                <div id="saved-account-pill" class="saved-account-pill hidden">
+                    <div class="pill-left" onclick="window.autofillSavedAccount()">
+                        <div class="icon"><svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"></path><circle cx="12" cy="7" r="4"></circle></svg></div>
+                        <div class="info">
+                            <span id="saved-email-text">user@gmail.com</span>
+                            <span>Tap to Auto-Login</span>
+                        </div>
+                    </div>
+                    <div class="delete-saved-btn" onclick="window.deleteSavedAccount(event)">
+                        <svg viewBox="0 0 24 24"><path d="M3 6h18M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M10 11v6M14 11v6"></path></svg>
                     </div>
                 </div>
 
@@ -523,7 +539,8 @@
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-top: 6px;" id="user-display-email"></div>
                         
                         <div class="creator-overlay" id="creator-overlay">
-                            <div class="creator-text" id="creator-text">Created By Tech Asar</div>
+                            <!-- 🌟 BOLD & CAPITAL CREATOR TEXT 🌟 -->
+                            <div class="creator-text" id="creator-text">CREATED BY TECH ASAR</div>
                         </div>
                     </div>
 
@@ -974,12 +991,22 @@
             }
         }
 
+        // 🌟 DELETE SAVED ACCOUNT FUNCTION 🌟
+        window.deleteSavedAccount = function(e) {
+            e.stopPropagation();
+            localStorage.removeItem('savedEmail');
+            localStorage.removeItem('savedPassword');
+            checkSavedAccount();
+            showNotification("SAVED ACCOUNT DELETED!");
+        }
+
         // 🌟 SAVE PASSWORD MODAL HANDLER 🌟
         window.handleSavePassword = function(isSave) {
             if(isSave) {
                 localStorage.setItem('savedEmail', window.tempLoginEmail);
                 localStorage.setItem('savedPassword', btoa(window.tempLoginPass));
                 showNotification("PASSWORD SAVED!");
+                checkSavedAccount();
             }
             closeModal({target: document.getElementById('modal-save-password')});
         }
