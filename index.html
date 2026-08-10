@@ -271,7 +271,7 @@
     }
     .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); transition: opacity 0.3s; }
     
-    /* 🌟 PROFILE CARD ONEPLUS STYLE ANIMATION 🌟 */
+    /* 🌟 PROFILE CARD ONEPLUS STYLE ANIMATION (FIXED) 🌟 */
     .creator-overlay {
         position: absolute; inset: 0; background: var(--active-pill-bg);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
@@ -280,14 +280,14 @@
     }
     .creator-overlay.show-anim { opacity: 1; pointer-events: auto; }
     .creator-text {
-        font-size: 18px; font-weight: 900; color: var(--brand-color);
+        font-family: 'Courier New', Courier, monospace;
+        font-size: 19px; font-weight: 900; color: var(--brand-color);
         text-transform: uppercase; letter-spacing: 2px;
-        white-space: nowrap; overflow: hidden; border-right: 3px solid var(--brand-color);
+        white-space: nowrap; overflow: hidden; border-right: none;
         width: 0; text-shadow: 0 4px 15px var(--brand-shadow);
     }
-    .creator-text.type { animation: typing 1s steps(22, end) forwards, blink 0.5s step-end infinite alternate; }
+    .creator-text.type { animation: typing 1.2s steps(22, end) forwards; }
     @keyframes typing { from { width: 0; } to { width: 100%; } }
-    @keyframes blink { 50% { border-color: transparent; } }
 
     .cards-layout-wrapper { flex-grow: 1; width: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
     .ios-card { width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly; }
@@ -422,15 +422,15 @@
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
                 
-                <!-- 🌟 EMAIL SECTION 🌟 -->
-                <div id="email-section" class="input-section">
-                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" placeholder="FULL NAME"></div>
-                    <div class="input-group"><input type="email" id="email-input" placeholder="EMAIL ADDRESS"></div>
-                    <div class="input-group"><input type="password" id="password-input" placeholder="PASSWORD"></div>
+                <!-- 🌟 EMAIL SECTION (ADDED FORM TAG FOR SAVING PASSWORDS) 🌟 -->
+                <form id="email-section" class="input-section" onsubmit="event.preventDefault(); handleAuth();">
+                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" autocomplete="name" placeholder="FULL NAME"></div>
+                    <div class="input-group"><input type="email" id="email-input" autocomplete="username email" placeholder="EMAIL ADDRESS"></div>
+                    <div class="input-group"><input type="password" id="password-input" autocomplete="current-password" placeholder="PASSWORD"></div>
                     <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
-                    <button id="email-auth-btn" class="primary-btn">SIGN IN</button>
+                    <button id="email-auth-btn" type="submit" class="primary-btn">SIGN IN</button>
                     <div class="create-account" id="toggle-auth-mode">DON'T HAVE AN ACCOUNT? <span>REGISTER</span></div>
-                </div>
+                </form>
             </div>
         </div>
     </div> 
@@ -699,7 +699,7 @@
         </div>
     </div>
 
-    <!-- 🌟 REGISTRATION VERIFICATION POP-UP (UPDATED DESIGN) 🌟 -->
+    <!-- 🌟 REGISTRATION VERIFICATION POP-UP 🌟 -->
     <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top success-icon">
@@ -718,7 +718,7 @@
         </div>
     </div>
 
-    <!-- 🌟 ACCOUNT RECOVERY MODAL (UPDATED DESIGN & FLOW) 🌟 -->
+    <!-- 🌟 ACCOUNT RECOVERY MODAL 🌟 -->
     <div id="modal-recovery" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top" style="border-color: #ff9500; background: var(--bg-card);">
@@ -728,7 +728,6 @@
             
             <div class="alert-desc" style="font-size: 12px; margin-bottom: 15px;">
                 YOUR ACCOUNT IS PENDING DELETION.<br>
-                <!-- Live Timer Added Here -->
                 <span id="recovery-timer" style="display:block; font-size: 24px; font-weight: 900; color: #ff9500; margin-top: 10px; letter-spacing: 2px;">23:59:59</span>
             </div>
 
@@ -895,6 +894,14 @@
         document.getElementById('nav-register-btn').addEventListener('click', () => openAuthScreen(false));
         document.getElementById('back-to-welcome').addEventListener('click', () => { welcomeScreen.classList.remove('slide-left'); authScreen.classList.remove('slide-in'); });
         document.getElementById('toggle-auth-mode').addEventListener('click', () => { openAuthScreen(!isLoginMode); });
+
+        // 🌟 EMAIL AUTO-FILL ON DOUBLE CLICK 🌟
+        document.getElementById('email-input').addEventListener('dblclick', function() {
+            let val = this.value.trim();
+            if(val && !val.includes('@')) {
+                this.value = val + '@gmail.com';
+            }
+        });
 
         const dayNames = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
         const monthNamesFull = ["JANUARY", "FEBRUARY", "MARCH", "APRIL", "MAY", "JUNE", "JULY", "AUGUST", "SEPTEMBER", "OCTOBER", "NOVEMBER", "DECEMBER"];
@@ -1452,7 +1459,8 @@
             }
         });
 
-        document.getElementById('email-auth-btn').addEventListener('click', async () => {
+        // 🌟 AUTHENTICATION HANDLER (UPDATED FOR FORM SUBMISSION) 🌟
+        window.handleAuth = async () => {
             const username = document.getElementById('username-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
             const password = document.getElementById('password-input').value.trim();
@@ -1494,10 +1502,11 @@
                 if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY IN USE");
                 else if(error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
                 else if(error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS");
+                else if(error.code === 'auth/user-disabled') showNotification("YOUR ACCOUNT IS DISABLED"); // Added checking for disabled account
                 else showNotification("ERROR: " + error.message.substring(0, 20));
             } 
             finally { btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT"; }
-        });
+        };
 
         document.getElementById('confirm-logout-btn').addEventListener('click', () => { 
             closeAllModals();
