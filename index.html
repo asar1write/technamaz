@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
 <title>Namaz Tracker App</title>
 
-<!-- 🔧 Instant Theme Loading to prevent any white flash at launch -->
 <script> 
     (function() {
         let theme = localStorage.getItem('namazTrackerTheme');
@@ -306,14 +305,16 @@
         will-change: transform, opacity; transform: translateZ(0); /* Bug Fix 1: Added Hardware Acceleration for smoothness */
     }   
     
+    /* 🚀 FIXED FOUC/JERK CSS */
     .profile-header-new { 
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         margin-bottom: 12px; text-align: center; width: 100%; flex-shrink: 0;
         background: var(--active-pill-bg); padding: 25px 15px; border-radius: 20px;
         border: 1.5px solid var(--brand-color); box-shadow: 0 8px 20px var(--brand-shadow);
         position: relative; overflow: hidden; cursor: pointer;
-        transition: all 0.4s ease;
-        will-change: transform, opacity; /* Bug Fix 1: Stop layout recalculation jerk */
+        /* Removed "transition: all 0.4s ease;" to stop conflict with slideUp animation */
+        transition: background-color 0.4s ease, border-color 0.4s ease, box-shadow 0.4s ease;
+        will-change: transform, opacity;
     }
     
     .profile-name-bold, #user-display-email { transition: opacity 0.4s ease, transform 0.4s ease; }
@@ -463,10 +464,8 @@
 </head>
 <body>
 
-    <!-- TOAST -->
     <div id="toast" class="toast"><span id="toast-message">SUCCESS!</span></div>
 
-    <!-- SPLASH SCREEN -->
     <div id="splash-screen">
         <div class="splash-glow"></div>
         <div class="splash-content-anim">
@@ -484,7 +483,6 @@
         </div>
     </div>
 
-    <!-- MAIN APP WRAPPER -->
     <div id="auth-flow-wrapper" class="hidden">
         <div id="welcome-screen" class="app-screen">
             <div class="screen-content">
@@ -529,7 +527,6 @@
         </div>
     </div> 
 
-    <!-- DASHBOARD -->
     <div id="dashboard-screen" class="app-screen hidden">
         
         <div class="top-filter-bar" id="filter-bar">
@@ -630,9 +627,6 @@
 
     </div>
 
-    <!-- MODALS -->
-
-    <!-- Bug Fix 4: Disabled background click to force user choice -->
     <div id="modal-save-password" class="modal-overlay"> 
         <div class="alert-modal-content">
             <div class="alert-icon-top success-icon">
@@ -649,7 +643,6 @@
         </div>
     </div>
     
-    <!-- 30 App Theme Colors Picker -->
     <div id="modal-theme" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="sheet-header-box">
@@ -751,7 +744,6 @@
         </div>
     </div>
 
-    <!-- Center Namaz Modal -->
     <div id="modal-namaz" class="modal-overlay" onclick="closeModal(event)">
         <div class="modal-content" onclick="event.stopPropagation()">
             <div class="modal-header-top" style="position:relative; display:flex; justify-content:center; margin-bottom:20px; height: 38px;">
@@ -784,7 +776,6 @@
         </div>
     </div>
 
-    <!-- 🌟 UPGRADED LOGOUT & DELETE ALERTS 🌟 -->
     <div id="modal-logout-confirm" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top"><svg viewBox="0 0 24 24"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"></path><polyline points="16 17 21 12 16 7"></polyline><line x1="21" y1="12" x2="9" y2="12"></line></svg></div>
@@ -813,7 +804,6 @@
         </div>
     </div>
 
-    <!-- 🌟 REGISTRATION VERIFICATION POP-UP 🌟 -->
     <div id="modal-verification" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top success-icon">
@@ -832,7 +822,6 @@
         </div>
     </div>
 
-    <!-- 🌟 ACCOUNT RECOVERY MODAL 🌟 -->
     <div id="modal-recovery" class="modal-overlay" onclick="closeModal(event)">
         <div class="alert-modal-content" onclick="event.stopPropagation()">
             <div class="alert-icon-top" style="border-color: #ff9500; background: var(--bg-card);">
@@ -842,7 +831,6 @@
             
             <div class="alert-desc">
                 Your account is scheduled for deletion in:<br>
-                <!-- Bug Fix 3: Monospace font added for Jitter-free timer -->
                 <span id="recovery-timer" style="display:block; font-size: 24px; font-weight: 900; color: #ff9500; margin-top: 10px; letter-spacing: 2px; font-variant-numeric: tabular-nums; font-family: monospace;">23:59:59</span>
             </div>
 
@@ -855,7 +843,6 @@
         </div>
     </div>
 
-    <!-- UI Scripts -->
     <script>
         let isAuthResolved = false;
         window.isRegistering = false; 
@@ -1194,6 +1181,7 @@
             localStorage.setItem('namazSavedMonth', currentMonth);
         }
 
+        // 🚀 FIXED FOUC/JERK JavaScript Function
         function switchNav(selectedItem) {
             document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
             selectedItem.classList.add('active');
@@ -1202,10 +1190,20 @@
             document.querySelectorAll('.tab-pane').forEach(tab => {
                 tab.classList.remove('active');
                 const innerProfile = tab.querySelector('.profile-inner-container');
-                if(innerProfile) innerProfile.classList.remove('animate-entry');
+                if(innerProfile) {
+                    innerProfile.classList.remove('animate-entry');
+                }
             });
             
             const activeTab = document.getElementById(targetTabId);
+
+            // FIX: Add animation class BEFORE showing the tab to completely eliminate 1-frame flash
+            const innerProfileToAnimate = activeTab.querySelector('.profile-inner-container');
+            if(innerProfileToAnimate) {
+                void innerProfileToAnimate.offsetWidth; // Force Reflow
+                innerProfileToAnimate.classList.add('animate-entry');
+            }
+
             activeTab.classList.add('active');
 
             const filterBar = document.getElementById('filter-bar');
@@ -1225,14 +1223,6 @@
                 filterBar.style.display = 'none';
                 dashWrapper.classList.add('no-header-padding');
                 localStorage.setItem('namazSavedTab', targetTabId);
-                
-                const innerProfile = activeTab.querySelector('.profile-inner-container');
-                if(innerProfile) {
-                    // Profile smooth animation fix
-                    requestAnimationFrame(() => {
-                        innerProfile.classList.add('animate-entry');
-                    });
-                }
             }
         }
 
@@ -1532,7 +1522,6 @@
 
     </script>
 
-    <!-- Firebase Script -->
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged, signOut, deleteUser, updateProfile, sendEmailVerification, sendPasswordResetEmail } from "https://www.gstatic.com/firebasejs/10.8.0/firebase-auth.js";
