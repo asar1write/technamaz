@@ -225,8 +225,6 @@
     .divider span { padding: 0 12px; color: var(--text-sub); font-size: 11px; font-weight: 900; text-transform: uppercase; }
     .social-btn { width: 100%; padding: 15px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; gap: 10px; font-size: 13px; font-weight: 800; color: var(--text-main); text-transform: uppercase; cursor: pointer; margin-bottom: 12px;}
     .social-btn svg { width: 20px; height: 20px; }
-    
-    #recaptcha-container { display: none; } /* Kept invisible properly */
 
     /* ==========================================
        🌟 PREMIUM HEADER (Month & Year Buttons) 🌟
@@ -548,12 +546,13 @@
                     <div class="input-group hidden-smooth" id="otp-input-group">
                         <input type="number" id="otp-input" placeholder="ENTER 6-DIGIT OTP" style="text-align: center; letter-spacing: 5px; font-size: 16px;">
                     </div>
+                    
+                    <!-- RECAPTCHA CONTAINER (Must be visible in DOM, but visually transparent) -->
+                    <div id="recaptcha-container" style="margin-bottom: 15px; display: flex; justify-content: center;"></div>
+                    
                     <button id="send-otp-btn" class="primary-btn">SEND OTP</button>
                     <button id="verify-otp-btn" class="primary-btn hidden-smooth">VERIFY & LOGIN</button>
-                    <div class="create-account" id="back-to-email-btn"><span>USE EMAIL INSTEAD</span></div>
-                    
-                    <!-- INVISIBLE RECAPTCHA CONTAINER -->
-                    <div id="recaptcha-container"></div>
+                    <div class="create-account" id="back-to-email-btn" style="margin-top: 20px;"><span>USE EMAIL INSTEAD</span></div>
                 </div>
 
                 <div class="divider" id="auth-divider"><span id="divider-text">OR CONTINUE WITH</span></div>
@@ -1072,7 +1071,8 @@
             document.getElementById('form-title').textContent = "PHONE LOGIN";
             document.getElementById('form-subtitle').textContent = "WE WILL SEND YOU A 6-DIGIT OTP";
             
-            if (window.initRecaptcha) window.initRecaptcha();
+            // 🚀 PROACTIVE INITIALIZATION: Render Captcha Immediately when UI shows
+            if (window.setupRecaptcha) window.setupRecaptcha();
         });
 
         document.getElementById('back-to-email-btn').addEventListener('click', () => {
@@ -1092,11 +1092,6 @@
             document.getElementById('verify-otp-btn').textContent = "VERIFY & LOGIN";
             document.getElementById('phone-input').value = "";
             document.getElementById('otp-input').value = "";
-            
-            if(window.recaptchaVerifier) {
-                try { window.recaptchaVerifier.clear(); } catch(e){}
-                window.recaptchaVerifier = null;
-            }
         }
 
         document.getElementById('nav-login-btn').addEventListener('click', () => openAuthScreen(true));
@@ -1528,27 +1523,33 @@
         const provider = new GoogleAuthProvider();
 
         // 🌟 POWERFUL RECAPTCHA & OTP SETUP 🌟
-        window.recaptchaVerifier = null;
+        window.appVerifier = null;
         window.confirmationResult = null;
+        window.recaptchaWidgetId = null;
 
-        window.initRecaptcha = () => {
-            if (window.recaptchaVerifier) {
-                try { window.recaptchaVerifier.clear(); } catch(e){} // Clear any crashed instance
-            }
-            window.recaptchaVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
-                'size': 'invisible',
-                'callback': (response) => {
-                    // reCAPTCHA verification passed automatically
-                },
-                'expired-callback': () => {
-                    showNotification("reCAPTCHA EXPIRED. TRY AGAIN.");
-                    if(window.recaptchaVerifier) {
-                        try { window.recaptchaVerifier.clear(); } catch(e){}
-                        window.recaptchaVerifier = null;
+        // Proactive Setup: Call this when Phone UI is opened
+        window.setupRecaptcha = () => {
+            if (!window.appVerifier) {
+                window.appVerifier = new RecaptchaVerifier(auth, 'recaptcha-container', {
+                    'size': 'invisible',
+                    'callback': (response) => {
+                        // reCAPTCHA verification passed automatically
+                    },
+                    'expired-callback': () => {
+                        showNotification("reCAPTCHA EXPIRED. RELOADING...");
+                        if(window.recaptchaWidgetId !== null) {
+                            grecaptcha.reset(window.recaptchaWidgetId);
+                        }
                     }
-                    window.initRecaptcha(); // Re-init
-                }
-            });
+                });
+                
+                // Explicitly render to prevent background hanging
+                window.appVerifier.render().then((widgetId) => {
+                    window.recaptchaWidgetId = widgetId;
+                }).catch((error) => {
+                    console.log("Recaptcha Render Error: ", error);
+                });
+            }
         };
 
         async function fetchAutoCloudRestore(user) {
@@ -1649,10 +1650,11 @@
             const btn = document.getElementById('send-otp-btn');
             btn.disabled = true; btn.textContent = "VERIFYING CAPTCHA...";
 
+            // Failsafe: Ensure recaptcha is setup if button was clicked before proactive load
+            if (!window.appVerifier) window.setupRecaptcha();
+
             try {
-                if (!window.recaptchaVerifier) window.initRecaptcha();
-                
-                window.confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, window.recaptchaVerifier);
+                window.confirmationResult = await signInWithPhoneNumber(auth, formattedNumber, window.appVerifier);
                 
                 showNotification("OTP SENT SUCCESSFULLY!");
                 
@@ -1667,7 +1669,7 @@
             } catch (error) {
                 console.error("OTP Error:", error);
                 
-                // 🚀 Dynamic Error Catching (So you know exactly why it failed)
+                // 🚀 Dynamic Error Catching
                 let errorMsg = "ERROR SENDING OTP";
                 if(error.code === 'auth/invalid-phone-number') errorMsg = "INVALID PHONE NUMBER";
                 else if(error.code === 'auth/too-many-requests') errorMsg = "TOO MANY ATTEMPTS. BLOCKED.";
@@ -1678,12 +1680,10 @@
                 
                 btn.disabled = false; btn.textContent = "SEND OTP";
                 
-                // 🚀 CRITICAL FIX: Reset the crashed invisible captcha so the user can try again immediately!
-                if(window.recaptchaVerifier) {
-                    try { window.recaptchaVerifier.clear(); } catch(e){}
-                    window.recaptchaVerifier = null;
+                // 🚀 SMART RESET: Do NOT destroy the object, just reset the Google widget securely!
+                if(window.recaptchaWidgetId !== null && typeof grecaptcha !== "undefined") {
+                    grecaptcha.reset(window.recaptchaWidgetId);
                 }
-                window.initRecaptcha(); 
             }
         });
 
