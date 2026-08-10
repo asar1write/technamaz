@@ -13,6 +13,7 @@
             document.documentElement.setAttribute('data-theme', 'dark');
             document.documentElement.style.backgroundColor = '#121212';
         } else {
+            document.documentElement.setAttribute('data-theme', 'light');
             document.documentElement.style.backgroundColor = '#ffffff';
         }
         
@@ -91,18 +92,18 @@
         position: fixed; top: 0; left: 0; 
     }
 
-    /* 🌟 SMOOTH THEME TRANSITION 🌟 */
-    body, .app-screen, .ios-card, .day-card, .modal-content, .bottom-nav, .input-group input, .ios-list-item, .alert-modal-content, .namaz-row, .offline-textarea {
+    /* 🌟 PERFECTED SMOOTH TRANSITION EVERYWHERE 🌟 */
+    html, body, .app-screen, .ios-card, .day-card, .modal-content, .bottom-nav, .input-group input, .ios-list-item, .alert-modal-content, .namaz-row, .offline-textarea {
         transition: background-color 0.4s ease, border-color 0.4s ease, color 0.4s ease, box-shadow 0.4s ease, transform 0.2s ease;
     }
 
-    /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE 🌟 */
+    /* 🌟 PRO-LEVEL CINEMATIC APP ENTRANCE - 2 SECONDS 🌟 */
     @keyframes appCrossfade {
         0% { transform: scale(0.95); opacity: 0; }
         100% { transform: scale(1); opacity: 1; }
     }
     .trigger-app-entry {
-        animation: appCrossfade 0.5s cubic-bezier(0.25, 1, 0.4, 1) forwards !important;
+        animation: appCrossfade 2s cubic-bezier(0.25, 1, 0.4, 1) forwards !important;
     }
 
     @keyframes smoothSlideUp {
@@ -110,11 +111,29 @@
         100% { opacity: 1; transform: translate3d(0, 0, 0); }
     }
     
-    .animate-entry .profile-header-new { opacity: 0; animation: smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) 0.05s forwards; }
-    .animate-entry .ios-card:nth-child(2) { opacity: 0; animation: smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) 0.1s forwards; }
-    .animate-entry .ios-card:nth-child(3) { opacity: 0; animation: smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) 0.15s forwards; }
-    .animate-entry .ios-card:nth-child(4) { opacity: 0; animation: smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) 0.2s forwards; }
-    .animate-entry .ios-card:nth-child(5) { opacity: 0; animation: smoothSlideUp 0.5s cubic-bezier(0.25, 1, 0.2, 1) 0.25s forwards; }
+    /* 🌟 PROFILE SECTION CASCADING ANIMATIONS FOR ALL CARDS AND BUTTONS 🌟 */
+    .animate-entry .profile-header-new { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) 0.1s forwards; }
+    
+    .animate-entry .ios-card { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) forwards; }
+    .animate-entry .ios-card:nth-child(1) { animation-delay: 0.2s; }
+    .animate-entry .ios-card:nth-child(2) { animation-delay: 0.3s; }
+    .animate-entry .ios-card:nth-child(3) { animation-delay: 0.4s; }
+    .animate-entry .ios-card:nth-child(4) { animation-delay: 0.5s; }
+
+    .animate-entry .ios-list-item { opacity: 0; animation: smoothSlideUp 0.6s cubic-bezier(0.25, 1, 0.2, 1) forwards; }
+    
+    .animate-entry .ios-card:nth-child(1) .ios-list-item:nth-child(1) { animation-delay: 0.25s; }
+    .animate-entry .ios-card:nth-child(1) .ios-list-item:nth-child(2) { animation-delay: 0.3s; }
+    .animate-entry .ios-card:nth-child(1) .ios-list-item:nth-child(3) { animation-delay: 0.35s; }
+    
+    .animate-entry .ios-card:nth-child(2) .ios-list-item:nth-child(1) { animation-delay: 0.4s; }
+    .animate-entry .ios-card:nth-child(2) .ios-list-item:nth-child(2) { animation-delay: 0.45s; }
+    
+    .animate-entry .ios-card:nth-child(3) .ios-list-item:nth-child(1) { animation-delay: 0.5s; }
+    .animate-entry .ios-card:nth-child(3) .ios-list-item:nth-child(2) { animation-delay: 0.55s; }
+    
+    .animate-entry .ios-card:nth-child(4) .ios-list-item:nth-child(1) { animation-delay: 0.6s; }
+    .animate-entry .ios-card:nth-child(4) .ios-list-item:nth-child(2) { animation-delay: 0.65s; }
 
     /* TOAST NOTIFICATION */
     .toast {
@@ -136,13 +155,13 @@
     .screen-content { width: 88%; max-width: 400px; text-align: center; position: relative; }
 
     /* =========================================
-       🌟 EXACT FASTER SPLASH 🌟
+       🌟 SPLASH SCREEN - 2 SECONDS 🌟
        ========================================= */
     #splash-screen {
         position: fixed; inset: 0; background: var(--bg-main); 
         display: flex; flex-direction: column; justify-content: center; align-items: center;
         z-index: 10000; 
-        transition: opacity 0.4s cubic-bezier(0.25, 1, 0.5, 1), transform 0.4s cubic-bezier(0.25, 1, 0.5, 1);
+        transition: opacity 2s cubic-bezier(0.25, 1, 0.5, 1), transform 2s cubic-bezier(0.25, 1, 0.5, 1);
         will-change: opacity, transform;
     }
     
@@ -213,7 +232,6 @@
     .goal-box-back { position: absolute; top: 25px; left: 20px; width: 44px; height: 44px; background: var(--bg-card); border: 1.5px solid var(--border-line); border-radius: 14px; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s ease; z-index: 100; }
     .goal-box-back svg { width: 20px; height: 20px; stroke: var(--text-main); }
     
-    /* 🌟 PERFECTED JITTER-FREE INPUT ANIMATION 🌟 */
     .input-group { 
         position: relative; 
         max-height: 80px; 
@@ -928,7 +946,7 @@
         window.isRegistering = false; 
         window.recoveryTimerInterval = null;
 
-        // 🌟 INSTANT LOAD NO-WAIT SPLASH 🌟
+        // 🌟 INSTANT LOAD 2-SEC SMOOTH SPLASH 🌟
         const checkAndHideSplash = () => {
             if(isAuthResolved) {
                 const splash = document.getElementById('splash-screen');
@@ -940,7 +958,7 @@
                         if (innerContent) innerContent.classList.add('animate-entry');
                     }
                     splash.classList.add('splash-fade-out');
-                    setTimeout(() => { splash.style.display = 'none'; }, 400); 
+                    setTimeout(() => { splash.style.display = 'none'; }, 2000); 
                 }
             }
         };
@@ -962,7 +980,6 @@
             closeAllModals();
         }
 
-        // 🌟 FAST MODAL OPEN 🌟
         function openModal(modalId, element) {
             if(modalId === 'edit-profile') document.getElementById('edit-profile-input').value = document.getElementById('user-display-name').textContent;
             if(modalId === 'month' || modalId === 'year') { openCustomPicker(modalId, element); return; }
@@ -1008,13 +1025,14 @@
             const toggle = document.getElementById('theme-toggle');
             toggle.classList.toggle('active');
         
+            // Removed inline background-color setting here so the CSS transition handles it smoothly
+            document.documentElement.style.backgroundColor = '';
+
             if(toggle.classList.contains('active')) {
                 document.documentElement.setAttribute('data-theme', 'dark');
-                document.documentElement.style.backgroundColor = '#121212'; 
                 localStorage.setItem('namazTrackerTheme', 'dark');
             } else {
-                document.documentElement.removeAttribute('data-theme');
-                document.documentElement.style.backgroundColor = '#ffffff'; 
+                document.documentElement.setAttribute('data-theme', 'light');
                 localStorage.setItem('namazTrackerTheme', 'light');
             }
         }
