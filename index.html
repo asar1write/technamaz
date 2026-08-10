@@ -191,13 +191,13 @@
     /* 🌟 PERFECTED SMOOTH INPUT GROUP ANIMATION 🌟 */
     .input-group { 
         position: relative; max-height: 70px; margin-bottom: 16px; opacity: 1; 
-        transition: max-height 0.4s ease, margin-bottom 0.4s ease, opacity 0.3s ease, transform 0.4s ease; 
+        transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1); 
         overflow: hidden; 
-        transform: translateY(0) scale(1);
+        transform: translateY(0);
     }
     .input-group.hidden-smooth { 
         max-height: 0; margin-bottom: 0; opacity: 0; border: none; 
-        transform: translateY(-10px) scale(0.95);
+        transform: translateY(15px);
     }
     .input-group input { width: 100%; background: var(--bg-main); border: 1.5px solid var(--border-line); padding: 16px 18px; border-radius: 14px; font-size: 14px; font-weight: 700; color: var(--text-main); transition: border-color 0.3s ease, background-color 0.4s ease; letter-spacing: 0.5px; }
     .input-group input:focus { border-color: var(--brand-color); }
@@ -258,7 +258,7 @@
     .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--border-line); transition: all 0.3s ease; }
     .dot.active { background: var(--brand-color); }
 
-    /* 🌟 PROFILE TAB 🌟 */
+    /* 🌟 PROFILE TAB & NEW APPLE HELLO ANIMATION 🌟 */
     #tab-profile.active { justify-content: flex-start; padding: 0 15px; }
     .profile-inner-container { width: 100%; max-width: 360px; height: 100%; display: flex; flex-direction: column; align-items: center; padding-bottom: 5px; }   
     
@@ -268,26 +268,36 @@
         background: var(--active-pill-bg); padding: 25px 15px; border-radius: 20px;
         border: 1.5px solid var(--brand-color); box-shadow: 0 8px 20px var(--brand-shadow);
         position: relative; overflow: hidden; cursor: pointer;
+        transition: all 0.4s ease;
     }
-    .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); transition: opacity 0.3s; }
     
-    /* 🌟 PROFILE CARD ONEPLUS STYLE ANIMATION (FIXED) 🌟 */
+    .profile-name-bold, #user-display-email { transition: opacity 0.4s ease, transform 0.4s ease; }
+    
+    .profile-header-new.animating .profile-name-bold,
+    .profile-header-new.animating #user-display-email {
+        opacity: 0;
+        transform: scale(0.95);
+    }
+    
+    .profile-name-bold { font-size: 28px; font-weight: 900; color: var(--brand-color); text-transform: uppercase; letter-spacing: 2px; line-height: 1.1; text-shadow: 0 4px 15px var(--brand-shadow); }
+    
     .creator-overlay {
         position: absolute; inset: 0; background: var(--active-pill-bg);
         display: flex; flex-direction: column; align-items: center; justify-content: center;
         opacity: 0; pointer-events: none; z-index: 10;
-        transition: opacity 0.3s ease; backdrop-filter: blur(5px); -webkit-backdrop-filter: blur(5px);
+        transition: opacity 0.5s ease; backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px);
     }
     .creator-overlay.show-anim { opacity: 1; pointer-events: auto; }
+    
     .creator-text {
-        font-family: 'Courier New', Courier, monospace;
-        font-size: 19px; font-weight: 900; color: var(--brand-color);
-        text-transform: uppercase; letter-spacing: 2px;
-        white-space: nowrap; overflow: hidden; border-right: none;
-        width: 0; text-shadow: 0 4px 15px var(--brand-shadow);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+        font-size: 20px; font-weight: 900; color: var(--brand-color);
+        text-transform: uppercase; letter-spacing: 1px;
+        text-shadow: 0 4px 15px var(--brand-shadow);
+        opacity: 0; transform: scale(0.85);
+        transition: opacity 0.6s ease-out, transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
     }
-    .creator-text.type { animation: typing 1.2s steps(22, end) forwards; }
-    @keyframes typing { from { width: 0; } to { width: 100%; } }
+    .creator-text.show-hello { opacity: 1; transform: scale(1); }
 
     .cards-layout-wrapper { flex-grow: 1; width: 100%; display: flex; flex-direction: column; justify-content: space-between; gap: 10px; }
     .ios-card { width: 100%; background: var(--bg-card); border-radius: 14px; box-shadow: 0 4px 10px var(--shadow-color); border: 1px solid var(--border-line); overflow: hidden; display: flex; flex-direction: column; flex-grow: 1; justify-content: space-evenly; }
@@ -422,11 +432,11 @@
                 <h2 id="form-title">LOGIN HERE</h2>
                 <p id="form-subtitle">WELCOME BACK YOU'VE BEEN MISSED!</p>
                 
-                <!-- 🌟 EMAIL SECTION (ADDED FORM TAG FOR SAVING PASSWORDS) 🌟 -->
+                <!-- 🌟 FIXED EMAIL SECTION FOR PASSWORD MANAGERS 🌟 -->
                 <form id="email-section" class="input-section" onsubmit="event.preventDefault(); handleAuth();">
-                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" autocomplete="name" placeholder="FULL NAME"></div>
-                    <div class="input-group"><input type="email" id="email-input" autocomplete="username email" placeholder="EMAIL ADDRESS"></div>
-                    <div class="input-group"><input type="password" id="password-input" autocomplete="current-password" placeholder="PASSWORD"></div>
+                    <div class="input-group hidden-smooth" id="username-group"><input type="text" id="username-input" name="username" autocomplete="name" placeholder="FULL NAME"></div>
+                    <div class="input-group"><input type="email" id="email-input" name="email" autocomplete="username email" placeholder="EMAIL ADDRESS"></div>
+                    <div class="input-group"><input type="password" id="password-input" name="password" autocomplete="current-password" placeholder="PASSWORD"></div>
                     <a class="forgot-pass" id="forgot-pass-link">FORGOT YOUR PASSWORD?</a>
                     <button id="email-auth-btn" type="submit" class="primary-btn">SIGN IN</button>
                     <div class="create-account" id="toggle-auth-mode">DON'T HAVE AN ACCOUNT? <span>REGISTER</span></div>
@@ -459,8 +469,8 @@
             <div id="tab-profile" class="tab-pane">
                 <div class="profile-inner-container animate-entry">
                     
-                    <!-- 🌟 PROFILE HEADER & ANIMATION OVERLAY 🌟 -->
-                    <div class="profile-header-new" onclick="playCreatorAnimation()">
+                    <!-- 🌟 NEW APPLE STYLE HELLO ANIMATION 🌟 -->
+                    <div class="profile-header-new" id="profile-header-box" onclick="playCreatorAnimation()">
                         <div class="profile-name-bold" id="user-display-name">USER NAME</div>
                         <div style="font-size: 10px; font-weight: 800; color: var(--text-sub); text-transform: uppercase; margin-top: 6px;" id="user-display-email"></div>
                         
@@ -735,7 +745,7 @@
             
             <div class="alert-actions">
                 <button class="alert-btn cancel" onclick="window.cancelRecovery()">CANCEL</button>
-                <button class="alert-btn" style="background: #ff9500; color: #fff; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3);" id="btn-recover-account">SEND LINK</button>
+                <button class="alert-btn" style="background: #ff9500; color: #fff; box-shadow: 0 4px 15px rgba(255, 149, 0, 0.3); white-space: nowrap; min-width: 130px;" id="btn-recover-account">RECOVER</button>
             </div>
         </div>
     </div>
@@ -764,20 +774,31 @@
             }
         };
 
-        // 🌟 PROFILE CREATOR ANIMATION FUNCTION 🌟
+        // 🌟 APPLE HELLO STYLE PROFILE ANIMATION 🌟
         function playCreatorAnimation() {
+            const headerBox = document.getElementById('profile-header-box');
             const overlay = document.getElementById('creator-overlay');
             const text = document.getElementById('creator-text');
+            
             if(overlay.classList.contains('show-anim')) return;
             
-            overlay.classList.add('show-anim');
-            text.classList.remove('type');
-            void text.offsetWidth; // Reflow to restart animation
-            text.classList.add('type');
+            // Hide name and email
+            headerBox.classList.add('animating');
             
+            // Show overlay blur
+            overlay.classList.add('show-anim');
+            
+            // Pop text up smoothly
             setTimeout(() => {
+                text.classList.add('show-hello');
+            }, 100);
+            
+            // Revert Everything
+            setTimeout(() => {
+                text.classList.remove('show-hello');
                 overlay.classList.remove('show-anim');
-            }, 1800); // Animation Time
+                headerBox.classList.remove('animating');
+            }, 2000); // 2 Seconds Total Time
         }
 
         function changeThemeColor(color, isNeon, isDarkText) {
@@ -1459,7 +1480,7 @@
             }
         });
 
-        // 🌟 AUTHENTICATION HANDLER (UPDATED FOR FORM SUBMISSION) 🌟
+        // 🌟 AUTHENTICATION HANDLER 🌟
         window.handleAuth = async () => {
             const username = document.getElementById('username-input').value.trim();
             const email = document.getElementById('email-input').value.trim();
@@ -1502,7 +1523,7 @@
                 if(error.code === 'auth/email-already-in-use') showNotification("EMAIL ALREADY IN USE");
                 else if(error.code === 'auth/weak-password') showNotification("PASSWORD TOO WEAK");
                 else if(error.code === 'auth/invalid-credential') showNotification("INVALID CREDENTIALS");
-                else if(error.code === 'auth/user-disabled') showNotification("YOUR ACCOUNT IS DISABLED"); // Added checking for disabled account
+                else if(error.code === 'auth/user-disabled') showNotification("YOUR ACCOUNT IS DISABLED"); 
                 else showNotification("ERROR: " + error.message.substring(0, 20));
             } 
             finally { btn.disabled = false; btn.textContent = isLoginMode ? "SIGN IN" : "CREATE ACCOUNT"; }
@@ -1544,7 +1565,7 @@
             }
         });
 
-        // 🌟 UPDATED RECOVERY LOGIC (EMAIL VERIFY & SMOOTH TRANSITION) 🌟
+        // 🌟 UPDATED RECOVERY LOGIC (FIXED LINK & BUTTON RESIZE) 🌟
         document.getElementById('btn-recover-account').addEventListener('click', async () => {
             const emailInput = document.getElementById('recovery-email-input').value.trim();
             if (!auth.currentUser || emailInput !== auth.currentUser.email) {
@@ -1552,31 +1573,24 @@
                 return;
             }
             const btn = document.getElementById('btn-recover-account');
-            btn.textContent = "SENDING LINK...";
+            btn.textContent = "PROCESSING..."; // Fits safely due to fixed min-width
             try {
-                // 1. Recover account first by clearing deletion schedule in DB
+                // 1. Recover account by clearing deletion schedule in DB
                 await setDoc(doc(db, "users_backup", auth.currentUser.uid), { deleteScheduledAt: null }, { merge: true });
                 
-                // 2. Send email verification / reset link securely
-                await sendPasswordResetEmail(auth, emailInput);
+                // NO password reset email is sent anymore!
                 
-                showNotification("EMAIL SENT! VERIFY TO LOGIN.");
+                showNotification("ACCOUNT RECOVERED!");
                 
-                // 3. Smoothly log out to enforce verification through login
+                // Smoothly route back to the Dashboard
                 closeAllModals();
-                await signOut(auth);
-                
-                // Reset UI to login screen perfectly
-                const welcomeScreen = document.getElementById('welcome-screen');
-                const authScreen = document.getElementById('auth-screen');
-                welcomeScreen.classList.remove('slide-left');
-                authScreen.classList.remove('slide-in');
-                openAuthScreen(true); 
+                document.getElementById('auth-flow-wrapper').classList.add('hidden');
+                document.getElementById('dashboard-screen').classList.remove('hidden');
 
             } catch(error) {
-                showNotification("ERROR SENDING EMAIL");
+                showNotification("ERROR RECOVERING ACCOUNT");
             } finally {
-                btn.textContent = "SEND LINK";
+                btn.textContent = "RECOVER";
             }
         });
 
