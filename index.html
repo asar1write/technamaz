@@ -845,6 +845,9 @@
     <script>
         let isAuthResolved = false;
         window.isRegistering = false; 
+        
+        // 🌟 FIX: Moved up to ensure checkSavedAccount doesn't throw errors when called
+        let isLoginMode = true; 
 
         // Bug Fix 2: Sync UI Dark Mode switch on Load
         document.addEventListener('DOMContentLoaded', () => {
@@ -854,8 +857,8 @@
             }
         });
 
-        // ⭐ NEW SPLASH SCREEN LOGIC (1.5s Minimum Time) ⭐
-        const SPLASH_MIN_TIME = 1500; // 1.5 Seconds
+        // ⭐ NEW SPLASH SCREEN LOGIC (1.0s Minimum Time) ⭐
+        const SPLASH_MIN_TIME = 1000; // 1.0 Seconds exactly as requested
         const splashStartTime = Date.now();
 
         const checkAndHideSplash = () => {
@@ -1037,7 +1040,6 @@
             setTimeout(window.transitionToDashboard, 300); // Trigger Dashboard after Popup finishes
         }
 
-        let isLoginMode = true; 
         const welcomeScreen = document.getElementById('welcome-screen');
         const authScreen = document.getElementById('auth-screen');
 
@@ -1697,7 +1699,7 @@
                         window.tempLoginEmail = email;
                         window.tempLoginPass = password;
                         if(localStorage.getItem('savedEmail') !== email) {
-                            openModal('save-password', null); // Bug Fix 4: Triggers before dashboard transitions
+                            openModal('save-password', null); 
                         } else {
                             window.transitionToDashboard();
                         }
